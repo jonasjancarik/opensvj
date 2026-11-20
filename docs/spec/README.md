@@ -48,6 +48,7 @@ nesmí znemožnit, ale nemusí je řešit.
 | Dlužníci, úrok z prodlení, potvrzení o dluzích | Hotovo. |
 | Vyúčtování záloh na správu | Hotovo. |
 | Vyúčtování služeb | Zatím ne. |
+| Úvěr | Operace v katalogu jako návrh. Vyúčtování záloh na správu zatím neodliší náklady kryté zálohou na úvěr (955300) od běžného fondu oprav a potvrzení o dluzích při prodeji jednotky neukazuje nesplacený zbytek podílu na úvěru. |
 | Uzávěrka | Kontrolní seznam, výkazy, inventurní soupisy, daň z příjmů a návrh přílohy. Uzávěrkové zápisy a otevření dalšího roku z konečných zůstatků zatím ne. |
 | Podklady, podpisové záznamy, role | Zatím ne. Přístup řídí seznam e-mailů, část uživatelů může jen nahlížet. |
 
