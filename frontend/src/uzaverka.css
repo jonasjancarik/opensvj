@@ -45,3 +45,5 @@ td.vyplnit { min-width: 8rem; border-bottom: 1px dotted var(--okraj-silny); }
   .soupis + .soupis { margin-top: 0; }
   mark.doplnit { background: none; }
 }
+.uzavreni-roku { margin-top: 2rem; }
+.uzavreni-roku ul { margin: 0.25rem 0 0.75rem; padding-left: 1.2rem; }

@@ -15,7 +15,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import predpisy
+from . import meridla, predpisy
 from .db import Rozhodnuti, RozhodnutiPro
 from .domena.profil import Profil
 
@@ -115,7 +115,8 @@ def polozky(profil: Profil, nastaveni: predpisy.Nastaveni) -> list[Polozka]:
     for kod, u in profil.sluzby.items():
         k = u.get("klic", "osoby")
         druh = u.get("meridlo")
-        jak = _KLICE_SLUZEB.get(k, k) + (f" ({druh.replace('_', ' ')})" if druh else "")
+        nazev_druhu = meridla.DRUHY.get(druh, (druh,))[0].lower() if druh else ""
+        jak = _KLICE_SLUZEB.get(k, k) + (f" ({nazev_druhu})" if druh else "")
         vysledek.append(
             Polozka(
                 klic=f"klic-sluzby:{kod}:{k}" + (f":{druh}" if druh else ""),

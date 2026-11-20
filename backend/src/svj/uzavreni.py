@@ -119,11 +119,15 @@ def proc_nejde(
             "zaúčtuje sama z konečných zůstatků; ty ruční nejdřív stornujte v Deníku."
         )
     odskrtnute = ulozene.odskrtnute(s, rok)
-    for k in uzaverka.kontroly(s, profil, nastaveni, rok, date(rok, 12, 31)):
-        if k.stav == "chybi":
-            duvody.append(f"{k.nazev}: {k.detail}" if k.detail else k.nazev)
-        elif k.stav == "rucne" and k.kod not in odskrtnute:
-            duvody.append(f"Není odškrtnuté: {k.nazev}.")
+    nehotove = [
+        k.nazev
+        for k in uzaverka.kontroly(s, profil, nastaveni, rok, date(rok, 12, 31))
+        if k.stav == "chybi" or (k.stav == "rucne" and k.kod not in odskrtnute)
+    ]
+    if nehotove:
+        duvody.append(
+            "Ještě nejsou hotové nebo odškrtnuté body uzávěrky: " + "; ".join(nehotove) + "."
+        )
     return duvody
 
 

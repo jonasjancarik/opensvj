@@ -1,6 +1,7 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { api } from './auth'
 import { kc } from './penize'
+import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import './tisk.css'
 import './uzaverka.css'
@@ -42,6 +43,12 @@ type Data = {
   soupisy: Soupis[]
   dan: { musi_podat: boolean; vynosy: Vynos[] }
   priloha: { nadpis: string; odstavce: string[] }[]
+  uzavreni: {
+    stav: 'otevrene' | 'uzavrene' | null
+    dalsi: 'otevrene' | 'uzavrene' | null
+    zapisy: string[]
+    proc_nejde: string[]
+  }
 }
 
 const ZALOZKY = {
@@ -72,7 +79,7 @@ const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
  * Ručně odškrtnuté body seznamu. Ukládají se v databázi, takže je vidí celý výbor;
  * u každého je vidět, kdo ho odškrtl a kdy.
  */
-function useOdskrtnute(data: Data) {
+function useOdskrtnute(data: Data, poZmene: () => void) {
   const [odskrtnute, setOdskrtnute] = useState<Record<string, Odskrtnuti | null>>(() =>
     Object.fromEntries(data.kontroly.map((k) => [k.kod, k.odskrtnuti])),
   )
@@ -88,6 +95,7 @@ function useOdskrtnute(data: Data) {
         json: { kod, hotovo },
       })
       setOdskrtnute((o) => ({ ...o, [kod]: z }))
+      poZmene()
     } catch (e) {
       setChyba((e as Error).message)
     } finally {
@@ -177,7 +185,13 @@ export function Uzaverka() {
           </button>
         ))}
       </nav>
-      {zalozka === 'kontroly' && <Kontroly data={data} />}
+      {data.uzavreni.stav === 'uzavrene' && (
+        <p className="uspech">
+          Rok {data.rok} je uzavřený a zápisy do něj už nejdou. Zůstatky jsou převedené do roku{' '}
+          {data.rok + 1}.
+        </p>
+      )}
+      {zalozka === 'kontroly' && <Kontroly data={data} setData={setData} />}
       {zalozka === 'vykazy' && <Vykazy data={data} />}
       {zalozka === 'inventura' && <Inventura data={data} tisk={() => setTisk('soupisy')} />}
       {zalozka === 'dan' && <Dan data={data} />}
@@ -186,13 +200,19 @@ export function Uzaverka() {
   )
 }
 
-function Kontroly({ data }: { data: Data }) {
-  const { odskrtnute, nastav, ukladam, chyba } = useOdskrtnute(data)
+function Kontroly({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const obnovit = () => {
+    api<Data>(`/api/uzaverka/${data.rok}`)
+      .then(setData)
+      .catch(() => undefined)
+  }
+  const { odskrtnute, nastav, ukladam, chyba } = useOdskrtnute(data, obnovit)
   const zbyva = data.kontroly.filter(
     (k) => k.stav === 'chybi' || (k.stav === 'rucne' && !odskrtnute[k.kod]),
   ).length
   return (
     <>
+      <DalsiRok data={data} setData={setData} />
       <p className="tlumene">
         {zbyva === 0
           ? 'Všechno je hotové nebo odškrtnuté.'
@@ -237,6 +257,7 @@ function Kontroly({ data }: { data: Data }) {
           )
         })}
       </ul>
+      <UzavreniRoku data={data} setData={setData} />
     </>
   )
 }
@@ -600,5 +621,156 @@ function TiskPrilohy({ data, zpet }: { data: Data; zpet: () => void }) {
         <p>Sestaveno dne ………………… Podpis statutárního orgánu ……………………………</p>
       </article>
     </>
+  )
+}
+
+/** Další rok jde založit už v prosinci, aby šly v lednu účtovat předpisy a výpisy. */
+function DalsiRok({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const [pracuji, setPracuji] = useState(false)
+  const [chyba, setChyba] = useState<string | null>(null)
+  if (data.uzavreni.stav !== 'otevrene' || data.uzavreni.dalsi !== null) return null
+  if (new Date(data.dnes) < new Date(data.rok, 11, 1)) return null
+
+  async function zacit() {
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setData(await api<Data>(`/api/uzaverka/${data.rok}/dalsi-rok`, { method: 'POST' }))
+    } catch (e) {
+      setChyba((e as Error).message)
+    } finally {
+      setPracuji(false)
+    }
+  }
+
+  return (
+    <div className="upozorneni">
+      <p>
+        Rok {data.rok + 1} v aplikaci zatím není, takže do něj nejde zaúčtovat lednový předpis
+        ani výpisy. Začněte ho, uzávěrka roku {data.rok} může počkat. Zůstatky se do nového roku
+        převedou, až rok {data.rok} uzavřete.
+      </p>
+      <div className="radek">
+        <button onClick={zacit} disabled={pracuji}>
+          {pracuji ? 'Zakládám…' : `Začít účtovat rok ${data.rok + 1}`}
+        </button>
+        {chyba && <span className="chyba">{chyba}</span>}
+      </div>
+    </div>
+  )
+}
+
+function UzavreniRoku({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const u = data.uzavreni
+  const [pracuji, setPracuji] = useState(false)
+  const [chyba, setChyba] = useState<string | null>(null)
+  const [otevirani, setOtevirani] = useState(false)
+  const [duvod, setDuvod] = useState('')
+  if (u.stav === null) return null
+
+  async function proved(cesta: string, json?: object) {
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setData(await api<Data>(`/api/uzaverka/${data.rok}/${cesta}`, { method: 'POST', json }))
+      setOtevirani(false)
+      setDuvod('')
+    } catch (e) {
+      setChyba((e as Error).message)
+    } finally {
+      setPracuji(false)
+    }
+  }
+
+  async function uzavrit() {
+    const ok = await potvrdit({
+      nadpis: `Uzavřít rok ${data.rok}?`,
+      text:
+        `Aplikace zaúčtuje uzávěrkové zápisy k 31. 12. ${data.rok} a převede zůstatky do roku ${data.rok + 1}, ` +
+        'dluhy vlastníků i se splatností. Do uzavřeného roku už nepůjde nic zaúčtovat. ' +
+        'Než shromáždění závěrku schválí, jde rok znovu otevřít.',
+      ano: 'Uzavřít rok',
+    })
+    if (ok) await proved('uzavrit')
+  }
+
+  function otevrit(e: FormEvent) {
+    e.preventDefault()
+    void proved('znovu-otevrit', { duvod })
+  }
+
+  return (
+    <section className="uzavreni-roku">
+      <h2>Uzavření roku</h2>
+      {u.stav === 'uzavrene' ? (
+        <>
+          <p>
+            Rok {data.rok} je uzavřený. Uzávěrkové zápisy a počáteční stavy roku {data.rok + 1}{' '}
+            jsou v <a href="#denik">Deníku</a> pod čísly {u.zapisy.join(', ')}.
+          </p>
+          <p className="tlumene">
+            Pokud se před schválením závěrky najde chyba, rok jde znovu otevřít. Uzávěrkové zápisy
+            i počáteční stavy roku {data.rok + 1} se stornují, po opravě rok uzavřete znovu. Po
+            schválení závěrky se chyby opravují v běžném roce.
+          </p>
+          {u.dalsi === 'otevrene' &&
+            (otevirani ? (
+              <form className="vlastnictvi-formular" onSubmit={otevrit}>
+                <div className="faktura-formular">
+                  <label className="cely-radek">
+                    Proč rok znovu otevíráte
+                    <textarea
+                      value={duvod}
+                      onChange={(e) => setDuvod(e.target.value)}
+                      rows={2}
+                      maxLength={500}
+                      placeholder="třeba Dodatečně došlá faktura za prosinec"
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="radek">
+                  <button type="submit" disabled={pracuji || !duvod.trim()}>
+                    {pracuji ? 'Otevírám…' : `Znovu otevřít rok ${data.rok}`}
+                  </button>
+                  <button type="button" className="vedlejsi" onClick={() => setOtevirani(false)}>
+                    Zrušit
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="radek">
+                <button className="vedlejsi" onClick={() => setOtevirani(true)}>
+                  Znovu otevřít rok
+                </button>
+              </div>
+            ))}
+        </>
+      ) : (
+        <>
+          <p>
+            Až bude všechno výše hotové nebo odškrtnuté, aplikace uzavře účty k 31. 12. {data.rok}{' '}
+            a převede zůstatky do roku {data.rok + 1}: peníze na účtech, nezaplacené faktury
+            a dluhy vlastníků po jednotlivých položkách i se splatností.
+          </p>
+          {u.proc_nejde.length > 0 && (
+            <div className="tlumene">
+              <p>Zatím to nejde:</p>
+              <ul>
+                {u.proc_nejde.map((d) => (
+                  <li key={d}>{d}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="radek">
+            <button onClick={uzavrit} disabled={pracuji || u.proc_nejde.length > 0}>
+              {pracuji ? 'Uzavírám…' : `Uzavřít rok ${data.rok}`}
+            </button>
+          </div>
+        </>
+      )}
+      {chyba && <p className="chyba">{chyba}</p>}
+    </section>
   )
 }

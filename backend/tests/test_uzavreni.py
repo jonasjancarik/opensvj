@@ -109,8 +109,9 @@ def test_kdy_uzavrit_nejde(session):
     duvody = uzavreni.proc_nejde(session, PROFIL, NAST, 2026, date(2026, 12, 31))
     assert duvody == ["Rok jde uzavřít až po 31. 12. 2026."]
     duvody = uzavreni.proc_nejde(session, PROFIL, NAST, 2026, DNES)
-    assert any(d.startswith("Zálohy na služby jsou vyúčtované") for d in duvody)
-    assert any(d.startswith("Není odškrtnuté") for d in duvody)
+    [nehotove] = duvody
+    assert "Zálohy na služby jsou vyúčtované" in nehotove
+    assert "Náklady patří do správného roku" in nehotove
     with pytest.raises(uzavreni.ChybaUzavreni):
         uzavreni.uzavri(session, PROFIL, NAST, 2026, zauctoval="x", dnes=DNES)
 
