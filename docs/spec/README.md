@@ -45,7 +45,7 @@ nesmí znemožnit, ale nemusí je řešit.
 | Banka | Hotovo pro GPC (ABO) a přehled pohybů Raiffeisenbank (CSV). |
 | Přijaté faktury | Hotovo bez příloh a bez schvalování více lidmi. |
 | Deník, storno, uzavřené období | Hotovo, hlídané triggery v databázi. |
-| Dlužníci, úrok z prodlení, potvrzení o dluzích | Hotovo. |
+| Dlužníci, úrok z prodlení, potvrzení o dluzích | Přehled, upomínka a potvrzení fungují. Dluhy jsou vedené na jednotku, ne na vlastníka, takže po prodeji jednotky je nejde rozdělit mezi prodávajícího a kupujícího. Předepsaný úrok z prodlení (311400) stránka Dlužníci neukazuje. Platby se přiřazují podle splatnosti, bez ohledu na upomínky a na to, který dluh určil vlastník (§ 1933 OZ). Odepsané dluhy se nesledují na podrozvaze. |
 | Vyúčtování záloh na správu | Hotovo. |
 | Vyúčtování služeb | Zatím ne. |
 | Úvěr | Operace v katalogu jako návrh. Vyúčtování záloh na správu zatím neodliší náklady kryté zálohou na úvěr (955300) od běžného fondu oprav a potvrzení o dluzích při prodeji jednotky neukazuje nesplacený zbytek podílu na úvěru. |
