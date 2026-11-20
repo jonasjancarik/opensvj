@@ -204,3 +204,74 @@ def test_api_vlastniku(klient):
     assert j["vlastnici"] == [
         {"jmeno": "Jan Novák", "adresa": "Praha", "email": None, "souhlas_email": False}
     ]
+
+
+def _predpis_mesice(session, mesic):
+    from svj import predpisy
+    from svj.db import Obdobi
+
+    if session.get(Obdobi, 2026) is None:
+        session.add(Obdobi(rok=2026, stav="otevrene"))
+        session.flush()
+    nast = predpisy.nacti(PROFIL)
+    return predpisy.vygeneruj(
+        session, PROFIL, nast, 2026, mesic, zauctoval=KDO, dnes=date(2026, 6, 1)
+    )
+
+
+def test_dluh_zustava_prevodci(session):
+    from svj import dluznici, predpisy, prevody
+
+    nast = predpisy.nacti(PROFIL)
+    for m in (3, 4, 5):
+        _predpis_mesice(session, m)
+    dvorak, novak = _osoba(session, "Petr Dvořák"), _osoba(session, "Jan Novák")
+    lide.zapis_vlastnictvi(session, PROFIL, "1001/3", date(2020, 1, 1), _clen(dvorak), "", KDO)
+    v = lide.zapis_vlastnictvi(session, PROFIL, "1001/3", date(2026, 4, 15), _clen(novak), "", KDO)
+
+    p = prevody.prevod(session, PROFIL, nast, v.id, date(2026, 5, 10))
+    assert p.prevodce == "Petr Dvořák"
+    # Březen a duben patří převodci (duben podle volby "dosavadni"), květen novému vlastníkovi.
+    assert [(d.popis, d.navrh) for d in p.dluhy] == [
+        ("Zálohy za březen 2026", True),
+        ("Zálohy za duben 2026", True),
+        ("Zálohy za květen 2026", False),
+    ]
+    mesicni = p.dluhy[0].zbyva
+
+    prevody.ponech_prevodci(
+        session, PROFIL, nast, v.id, [d.klic for d in p.dluhy if d.navrh], KDO, date(2026, 5, 10)
+    )
+    jednotka = next(
+        d
+        for d in dluznici.prehled(session, PROFIL, nast, 2026, date(2026, 5, 10))
+        if d.jednotka == "1001/3"
+    )
+    assert jednotka.saldo == mesicni
+    drivejsi = predpisy.drivejsi_vlastnici(session, 2026)
+    assert [(d.jednotka, d.vlastnik, d.castka) for d in drivejsi] == [
+        ("1001/3", "Petr Dvořák", 2 * mesicni)
+    ]
+    assert drivejsi[0].popis.startswith("Zálohy za březen 2026, Zálohy za duben 2026")
+    # Přesun dluhu není platba: snižuje předepsané, zaplaceno zůstává nula.
+    s = next(x for x in predpisy.saldo(session, PROFIL, 2026) if x.jednotka == "1001/3")
+    assert (s.predepsano, s.zaplaceno) == (mesicni, 0)
+    with pytest.raises(prevody.ChybaPrevodu, match="už jsou zapsané"):
+        prevody.ponech_prevodci(session, PROFIL, nast, v.id, ["x"], KDO, date(2026, 5, 10))
+    assert prevody.prevod(session, PROFIL, nast, v.id, date(2026, 5, 10)).zapis is not None
+
+
+def test_volba_novy_vlastnik_plati_mesic_prevodu(session):
+    from dataclasses import replace
+
+    from svj import predpisy, prevody
+
+    profil_novy = replace(PROFIL, predpis_mesice_prevodu="novy")
+    nast = predpisy.nacti(PROFIL)
+    for m in (3, 4):
+        _predpis_mesice(session, m)
+    a, b = _osoba(session, "A"), _osoba(session, "B")
+    lide.zapis_vlastnictvi(session, PROFIL, "1001/4", date(2020, 1, 1), _clen(a), "", KDO)
+    v = lide.zapis_vlastnictvi(session, PROFIL, "1001/4", date(2026, 4, 15), _clen(b), "", KDO)
+    p = prevody.prevod(session, profil_novy, nast, v.id, date(2026, 4, 20))
+    assert [d.navrh for d in p.dluhy] == [True, False]

@@ -41,6 +41,9 @@ class Profil:
     statutarni_organ: str | None = None
     # Příspěvky na správu: "zalohove" (stanoví se k 31. 12. ze záloh) nebo "nezalohove".
     prispevky: str | None = None
+    # Kdo platí předpis za měsíc, ve kterém se jednotka převedla: "dosavadni" (vlastník
+    # k prvnímu dni měsíce), nebo "novy" (vlastník, kterému jednotka patří od převodu).
+    predpis_mesice_prevodu: str = "dosavadni"
 
     @property
     def jednotky(self) -> list[str]:
@@ -137,6 +140,15 @@ def nacti(nazev: str, cesta: Path | None = None) -> Profil:
         sidlo=d.get("sidlo"),
         statutarni_organ=d.get("statutarni_organ"),
         prispevky=d.get("prispevky"),
+        predpis_mesice_prevodu=_volba_prevodu(d.get("predpis_mesice_prevodu")),
+    )
+
+
+def _volba_prevodu(hodnota: str | None) -> str:
+    if hodnota in (None, "dosavadni", "novy"):
+        return hodnota or "dosavadni"
+    raise ValueError(
+        f"predpis_mesice_prevodu v profilu musí být dosavadni nebo novy, ne {hodnota!r}"
     )
 
 

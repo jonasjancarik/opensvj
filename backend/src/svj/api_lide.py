@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 
-from . import lide
+from . import lide, predpisy, prevody
 from .db import Osoba as OsobaDb
 from .db import Vlastnictvi as VlastnictviDb
 from .db import sezeni
@@ -251,3 +251,70 @@ def uprav_vlastnictvi(vlastnictvi_id: int, z: UpravaVlastnictvi, uzivatel: Zapis
 @router.delete("/vlastnictvi/{vlastnictvi_id}")
 def smaz_vlastnictvi(vlastnictvi_id: int, _: Zapisujici) -> Prehled:
     return _proved(lambda s: lide.smaz_vlastnictvi(s, vlastnictvi_id))
+
+
+class DluhPriPrevodu(BaseModel):
+    klic: str
+    popis: str
+    zbyva: int
+    splatnost: date | None
+    navrh: bool
+
+
+class Prevod(BaseModel):
+    jednotka: str
+    plati_od: date
+    prevodce: str
+    nabyvatel: str
+    volba: str  # predpis_mesice_prevodu z profilu
+    dluhy: list[DluhPriPrevodu]
+    zapis: str | None  # "n/rok", když už je ponechání dluhů zaúčtované
+    zauctovano: int  # kolik převodci zůstalo podle zápisu
+
+
+class PonechaniDluhu(BaseModel):
+    klice: list[str] = Field(min_length=1, max_length=200)
+
+
+def _prevod(s, vlastnictvi_id: int) -> Prevod:
+    prof = profil.nacti(nastaveni().profil)
+    try:
+        p = prevody.prevod(s, prof, predpisy.nacti(prof), vlastnictvi_id)
+    except prevody.ChybaPrevodu as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
+    return Prevod(
+        jednotka=p.vlastnictvi.jednotka,
+        plati_od=p.vlastnictvi.plati_od,
+        prevodce=p.prevodce,
+        nabyvatel=", ".join(c.osoba.jmeno for c in p.vlastnictvi.vlastnici),
+        volba=prof.predpis_mesice_prevodu,
+        dluhy=[
+            DluhPriPrevodu(
+                klic=d.klic, popis=d.popis, zbyva=d.zbyva, splatnost=d.splatnost, navrh=d.navrh
+            )
+            for d in p.dluhy
+        ],
+        zapis=f"{p.zapis.poradove_cislo}/{p.zapis.rok}" if p.zapis else None,
+        zauctovano=sum(r.castka for r in p.zapis.radky if r.strana == "md") if p.zapis else 0,
+    )
+
+
+@router.get("/prevody/{vlastnictvi_id}")
+def prevod(vlastnictvi_id: int, _: Prihlaseny) -> Prevod:
+    with sezeni()() as s:
+        return _prevod(s, vlastnictvi_id)
+
+
+@router.post("/prevody/{vlastnictvi_id}")
+def ponech_prevodci(vlastnictvi_id: int, z: PonechaniDluhu, uzivatel: Zapisujici) -> Prevod:
+    prof = profil.nacti(nastaveni().profil)
+    with sezeni()() as s:
+        try:
+            prevody.ponech_prevodci(
+                s, prof, predpisy.nacti(prof), vlastnictvi_id, z.klice, uzivatel.email
+            )
+        except prevody.ChybaPrevodu as e:
+            s.rollback()
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
+        s.commit()
+        return _prevod(s, vlastnictvi_id)

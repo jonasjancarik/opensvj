@@ -26,6 +26,29 @@
         - [md, banka.provozni, "10000.00", {}]
         - [d, pohledavky_vlastnici, "10000.00", {jednotka: "1001/8"}]
 
+- id: uhrada-dluhu-drivejsiho
+  nazev: Úhrada dluhu dřívějšího vlastníka
+  kdy: Příchozí platba od dřívějšího vlastníka jednotky na dluh, který mu po převodu zůstal.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, drivejsi_vlastnik: jméno dřívějšího vlastníka, castka: částka platby}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_vlastnici
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}", protistrana: "{drivejsi_vlastnik}"}
+  pravidla:
+    - Platba sníží dluh dřívějšího vlastníka, ne saldo současného vlastníka jednotky.
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1186 odst. 2"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Prodávající doplatí dluh po převodu
+      vstupy: {castka: "5000.00", ucet: provozni, jednotka: "1001/3", drivejsi_vlastnik: Petr Dvořák}
+      ocekavane:
+        - [md, banka.provozni, "5000.00", {jednotka: "1001/3", protistrana: Petr Dvořák}]
+        - [d, pohledavky_vlastnici, "5000.00", {jednotka: "1001/3", protistrana: Petr Dvořák}]
+
 - id: prijem-nesparovany
   nazev: Nespárovaný příchozí pohyb
   kdy: Příchozí platbu se nepodařilo přiřadit a je třeba ji zaúčtovat (měsíční kontrola nebo uzávěrka).

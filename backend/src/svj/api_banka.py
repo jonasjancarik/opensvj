@@ -91,9 +91,16 @@ class OtevrenaFaktura(BaseModel):
     splatnost: date
 
 
+class DluhDrivejsiho(BaseModel):
+    jednotka: str
+    vlastnik: str
+    castka: int
+
+
 class Banka(BaseModel):
     ucty: list[Ucet]
     jednotky: list[str]
+    drivejsi: list[DluhDrivejsiho]  # dluhy dřívějších vlastníků pro jejich platby
     faktury: list[OtevrenaFaktura]
     moznosti: dict[str, list[Moznost]]
     pohyby: list[Pohyb]
@@ -236,6 +243,10 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
         return Banka(
             ucty=vysledek_ucty,
             jednotky=prof.jednotky,
+            drivejsi=[
+                DluhDrivejsiho(jednotka=d.jednotka, vlastnik=d.vlastnik, castka=d.castka)
+                for d in predpisy.drivejsi_vlastnici(s, dnes.year)
+            ],
             faktury=[
                 OtevrenaFaktura(
                     cislo=x.faktura.cislo,

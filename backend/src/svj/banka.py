@@ -32,6 +32,7 @@ from .domena.profil import Profil
 OPERACE = {
     "prijem": {
         "uhrada-predpisu": ["jednotka"],
+        "uhrada-dluhu-drivejsiho": ["jednotka", "drivejsi_vlastnik"],
         "prevod-mezi-ucty": ["druhy_ucet"],
         "prijem-nesparovany": [],
     },
@@ -503,6 +504,7 @@ POPISKY = {
     "protistrana": "dodavatel",
     "druhy_ucet": "druhý účet",
     "faktura": "faktura",
+    "drivejsi_vlastnik": "dřívější vlastník",
 }
 
 

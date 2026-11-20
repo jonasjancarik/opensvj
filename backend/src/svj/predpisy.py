@@ -222,6 +222,10 @@ def vygeneruj(
         raise ChybaPredpisu(str(e)) from e
 
 
+# Operace z katalogu, kterou se dluh při převodu jednotky přesouvá na převodce (viz prevody.py).
+OPERACE_PREVODU = "dluh-zustava-prevodci"
+
+
 @dataclass
 class SaldoJednotky:
     jednotka: str
@@ -269,16 +273,20 @@ def saldo(session: Session, profil: Profil, rok: int) -> list[SaldoJednotky]:
     md = func.sum(case((RadekZapisu.strana == "md", RadekZapisu.castka), else_=0))
     d = func.sum(case((RadekZapisu.strana == "d", RadekZapisu.castka), else_=0))
     otevreni = Zapis.operace == pocatecni.OPERACE
+    # Dluh přesunutý na převodce snižuje to, co má platit současný vlastník; platba to není.
+    prevod = Zapis.operace == OPERACE_PREVODU
     radky = session.execute(
-        _radky_vlastniku(rok, RadekZapisu.jednotka, otevreni, md, d)
+        _radky_vlastniku(rok, RadekZapisu.jednotka, otevreni, prevod, md, d)
         .where(RadekZapisu.protistrana.is_(None))
-        .group_by(RadekZapisu.jednotka, otevreni)
+        .group_by(RadekZapisu.jednotka, otevreni, prevod)
     ).all()
     podle: dict[str | None, list[int]] = {}
-    for j, je_pocatek, m, p in radky:
+    for j, je_pocatek, je_prevod, m, p in radky:
         x = podle.setdefault(j, [0, 0, 0])
         if je_pocatek:
             x[0] += int(m) - int(p)
+        elif je_prevod:
+            x[1] += int(m) - int(p)
         else:
             x[1] += int(m)
             x[2] += int(p)
@@ -303,9 +311,18 @@ def drivejsi_vlastnici(session: Session, rok: int) -> list[DluhDrivejsiho]:
         )
         .where(RadekZapisu.protistrana.is_not(None))
         .group_by(RadekZapisu.jednotka, RadekZapisu.protistrana, RadekZapisu.popis)
-        .order_by(RadekZapisu.jednotka, RadekZapisu.protistrana)
+        .order_by(RadekZapisu.jednotka, RadekZapisu.protistrana, func.min(RadekZapisu.id))
     ).all()
-    return [DluhDrivejsiho(j or "", v, p or "", int(c)) for j, v, p, c in radky if c]
+    # Jeden řádek za dřívějšího vlastníka jednotky: dluhy i jeho pozdější platby dohromady.
+    podle: dict[tuple[str, str], tuple[list[str], int]] = {}
+    for j, v, p, c in radky:
+        popisy, castka = podle.get((j or "", v), ([], 0))
+        if p and c and p not in popisy:
+            popisy.append(p)
+        podle[(j or "", v)] = (popisy, castka + int(c))
+    return [
+        DluhDrivejsiho(j, v, ", ".join(popisy), c) for (j, v), (popisy, c) in podle.items() if c
+    ]
 
 
 def dalsi_k_zauctovani(session: Session, nastaveni: Nastaveni, rok: int) -> int | None:

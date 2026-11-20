@@ -131,3 +131,21 @@
       ocekavane:
         - [md, naklady.odpis_pohledavky, "42000.00", {jednotka: "1001/3"}]
         - [d, pohledavky_vlastnici, "42000.00", {jednotka: "1001/3"}]
+
+- id: dluh-zustava-prevodci
+  nazev: Dluh, který při převodu jednotky nepřešel na nabyvatele
+  kdy: Po převodu jednotky dluh převodce na kupujícího nepřešel (kupující o něm nevěděl ani nemohl vědět, nebo se na tom strany dohodly a SVJ souhlasí).
+  stav: navrh
+  doklad: ID
+  zpusob: kod
+  postup:
+    - Pro každý dluh, který zůstává převodci, MD role pohledávky (`pohledavky_vlastnici`, `pohledavky_vyuctovani`…) s dimenzí jednotky a jménem převodce v `protistrana` / D stejná role jen s dimenzí jednotky.
+    - Účet se nemění, mění se jen to, komu dluh patří. Saldo jednotky (současného vlastníka) klesne, dluh dřívějšího vlastníka se objeví zvlášť.
+    - Které položky převodci zůstávají, navrhne aplikace podle data převodu a volby `predpis_mesice_prevodu` v profilu SVJ; potvrzuje je člověk.
+  pravidla:
+    - Bez tohoto zápisu dluhy jdou s jednotkou a vymáhají se po současném vlastníkovi (§ 1186 odst. 2 OZ).
+    - Převodce za přešlé dluhy ručí i tak; zápis je potřeba jen u dluhu, který na nabyvatele nepřešel.
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1186 odst. 2 a 3"}
+  platnost: {od: 2014-01-01}
+  priklady: []

@@ -10,6 +10,8 @@ ico: "12345678"
 sidlo: Ukázková 1001/12, 120 00 Praha 2
 statutarni_organ: výbor společenství (3 členové)
 prispevky: zalohove
+# Kdo platí předpis za měsíc převodu jednotky: dosavadni (vlastník k 1. dni měsíce) nebo novy.
+predpis_mesice_prevodu: dosavadni
 
 # Jednotky: označení (číslo popisné/číslo jednotky), podlahová plocha v m² a podíl na
 # společných částech (tady podle plochy, jmenovatel 8600).

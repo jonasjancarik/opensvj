@@ -32,6 +32,9 @@ class Polozka:
     castka: int
     zbyva: int = 0
     poradi: tuple = field(default=(), repr=False, compare=False)
+    role: str = "pohledavky_vlastnici"
+    vznik: date | None = None  # datum zápisu, ze kterého dluh vznikl
+    mesic: date | None = None  # u měsíčního předpisu první den měsíce
 
     def po_splatnosti(self, dnes: date) -> bool:
         return self.splatnost is None or self.splatnost < dnes
@@ -129,19 +132,26 @@ def prehled(
         if operace == pocatecni.OPERACE:
             klic = ("pocatek", popis_radku or POPIS_ROLE.get(role, role))
             poradi = (STARI.get(role, 9), klic[1])
-            p = dluhy[jednotka].setdefault(klic, Polozka(klic[1], None, 0, poradi=poradi))
+            p = dluhy[jednotka].setdefault(
+                klic, Polozka(klic[1], None, 0, poradi=poradi, role=role)
+            )
             p.castka += znamenko * castka
         elif strana == "d":
             kredit[jednotka] += castka
         else:
+            mesic = None
             if operace == "predpis-mesicni":
                 splatnost = splatnost_mesice(datum.year, datum.month, nastaveni.splatnost_den)
                 text = f"Zálohy za {predpisy.MESICE[datum.month - 1]} {datum.year}"
+                mesic = datum.replace(day=1)
             elif operace == vyuctovani_spravy.OPERACE:
                 splatnost, text = vyuctovani_spravy.splatnost(datum.year), popis
             else:
                 splatnost, text = datum, popis
-            p = dluhy[jednotka].setdefault(("zapis", zapis_id), Polozka(text, splatnost, 0))
+            p = dluhy[jednotka].setdefault(
+                ("zapis", zapis_id, role),
+                Polozka(text, splatnost, 0, role=role, vznik=datum, mesic=mesic),
+            )
             p.castka += castka
 
     vysledek = []
