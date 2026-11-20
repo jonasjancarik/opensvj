@@ -18,17 +18,37 @@ class ChybaUctovani(ValueError):
 STORNO = "storno"
 
 
-def platny() -> ColumnElement[bool]:
-    """Podmínka na zápis, který platí: není to storno a nikdo ho nestornoval.
+# Uzávěrkové zápisy k 31. 12. vynulují účty roku. Přehledy a výkazy roku je nevidí, jinak
+# by po uzavření ukazovaly samé nuly; deník a dotazy přes víc let (úhrady faktur) ano.
+UZAVERKA = ("uzavreni-vysledkovych", "uzavreni-rozvahovych")
 
-    Storno a stornovaný zápis se v zůstatcích přesně vyruší; v přehledech (předpisy,
-    platby, saldo) je ale nechceme vidět vůbec.
-    """
+
+def nestornovany() -> ColumnElement[bool]:
+    """Zápis, který platí: není to storno a nikdo ho nestornoval."""
     storno = aliased(Zapis)
     return and_(
         Zapis.operace != STORNO,
         ~exists().where(storno.opravuje_zapis == Zapis.id, storno.operace == STORNO),
     )
+
+
+def bez_uzaverky() -> ColumnElement[bool]:
+    """Zápis není uzávěrkový ani storno uzávěrkového (to by po znovuotevření roku zůstatky
+    zdvojilo)."""
+    puvodni = aliased(Zapis)
+    return and_(
+        Zapis.operace.not_in(UZAVERKA),
+        ~exists().where(puvodni.id == Zapis.opravuje_zapis, puvodni.operace.in_(UZAVERKA)),
+    )
+
+
+def platny() -> ColumnElement[bool]:
+    """Podmínka pro přehledy roku: zápis platí a není uzávěrkový.
+
+    Storno a stornovaný zápis se v zůstatcích přesně vyruší; v přehledech (předpisy,
+    platby, saldo) je ale nechceme vidět vůbec.
+    """
+    return and_(nestornovany(), bez_uzaverky())
 
 
 def _s_klicem(klic: str) -> ColumnElement[bool]:
@@ -43,7 +63,7 @@ def zakladni_klic(klic: str | None) -> str | None:
 
 def aktivni(session: Session, klic: str) -> Zapis | None:
     """Platný zápis s daným idempotenčním klíčem (nestornovaný)."""
-    return session.scalar(select(Zapis).where(_s_klicem(klic), platny()))
+    return session.scalar(select(Zapis).where(_s_klicem(klic), nestornovany()))
 
 
 def _volny_klic(session: Session, klic: str) -> str:
@@ -113,6 +133,9 @@ def zauctuj(
                 protistrana=r.dimenze.get("protistrana"),
                 popis=r.dimenze.get("popis"),
                 parovaci_symbol=r.dimenze.get("parovaci_symbol"),
+                splatnost=date.fromisoformat(r.dimenze["splatnost"])
+                if r.dimenze.get("splatnost")
+                else None,
             )
         )
     session.add(zapis)
@@ -120,7 +143,14 @@ def zauctuj(
     return zapis
 
 
-def storno(session: Session, zapis_id: int, *, duvod: str, zauctoval: str) -> Zapis:
+def storno(
+    session: Session,
+    zapis_id: int,
+    *,
+    duvod: str,
+    zauctoval: str,
+    kontrolovat_navaznost: bool = True,
+) -> Zapis:
     """Stornuje zápis: kopie řádků s prohozenými stranami ke stejnému datu.
 
     Původní zápis zůstane beze změny. Co bylo stornované, jde potom zaúčtovat znovu.
@@ -139,11 +169,11 @@ def storno(session: Session, zapis_id: int, *, duvod: str, zauctoval: str) -> Za
     ):
         raise ChybaUctovani(f"Zápis {cislo} už je stornovaný.")
     symboly = {r.parovaci_symbol for r in z.radky if r.parovaci_symbol}
-    if symboly:
+    if symboly and kontrolovat_navaznost:
         navazujici = session.execute(
             select(Zapis.poradove_cislo, Zapis.rok)
             .join(RadekZapisu)
-            .where(RadekZapisu.parovaci_symbol.in_(symboly), Zapis.id > z.id, platny())
+            .where(RadekZapisu.parovaci_symbol.in_(symboly), Zapis.id > z.id, nestornovany())
             .order_by(Zapis.id)
         ).first()
         if navazujici:
@@ -173,6 +203,7 @@ def storno(session: Session, zapis_id: int, *, duvod: str, zauctoval: str) -> Za
                 protistrana=r.protistrana,
                 popis=r.popis,
                 parovaci_symbol=r.parovaci_symbol,
+                splatnost=r.splatnost,
             )
         )
     session.add(novy)
@@ -180,8 +211,10 @@ def storno(session: Session, zapis_id: int, *, duvod: str, zauctoval: str) -> Za
     return novy
 
 
-def zustatky(session: Session, rok: int, do: date | None = None) -> dict[str, int]:
-    """Zůstatky účtů za rok v haléřích, kladné na straně MD."""
+def zustatky(
+    session: Session, rok: int, do: date | None = None, *, vcetne_uzaverky: bool = False
+) -> dict[str, int]:
+    """Zůstatky účtů za rok v haléřích, kladné na straně MD, před uzávěrkovými zápisy."""
     znamenko = func.sum(
         case((RadekZapisu.strana == "md", RadekZapisu.castka), else_=-RadekZapisu.castka)
     )
@@ -193,4 +226,6 @@ def zustatky(session: Session, rok: int, do: date | None = None) -> dict[str, in
     )
     if do is not None:
         dotaz = dotaz.where(Zapis.datum <= do)
+    if not vcetne_uzaverky:
+        dotaz = dotaz.where(bez_uzaverky())
     return {ucet: int(z) for ucet, z in session.execute(dotaz)}

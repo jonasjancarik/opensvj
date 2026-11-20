@@ -3,9 +3,9 @@
 from datetime import date, datetime
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from . import predpisy, ulozene, uzaverka
+from . import denik, predpisy, ulozene, uzaverka, uzavreni
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -72,6 +72,17 @@ class OddilPrilohy(BaseModel):
     odstavce: list[str]
 
 
+class Uzavreni(BaseModel):
+    stav: str | None  # otevrene | uzavrene | None, když rok v aplikaci není
+    dalsi: str | None  # stav dalšího roku
+    zapisy: list[str]  # uzávěrkové zápisy a počáteční stavy dalšího roku, "n/rok"
+    proc_nejde: list[str]  # proč rok zatím nejde uzavřít
+
+
+class ZnovuOtevreni(BaseModel):
+    duvod: str = Field(max_length=500)
+
+
 class Uzaverka(BaseModel):
     rok: int
     k_datu: date
@@ -86,6 +97,7 @@ class Uzaverka(BaseModel):
     soupisy: list[Soupis]
     dan: Dan
     priloha: list[OddilPrilohy]
+    uzavreni: Uzavreni
 
 
 def _radky(v) -> list[RadekVykazu]:
@@ -115,6 +127,13 @@ def prehled(rok: int, _: Prihlaseny) -> Uzaverka:
         soupisy = uzaverka.soupisy(s, prof, rok, k_datu)
         dan = uzaverka.dan(s, prof, rok)
         priloha = uzaverka.priloha(s, prof, nast, rok, k_datu)
+        st = uzavreni.stav(s, rok)
+        zapisy = [
+            f"{z.poradove_cislo}/{z.rok}"
+            for z in (st.vysledkove, st.rozvahove, st.otevreni)
+            if z is not None and st.uzavreny
+        ]
+        proc = [] if st.uzavreny else uzavreni.proc_nejde(s, prof, nast, rok, date.today())
     return Uzaverka(
         rok=rok,
         k_datu=k_datu,
@@ -138,6 +157,43 @@ def prehled(rok: int, _: Prihlaseny) -> Uzaverka:
         ],
         dan=Dan(musi_podat=dan.musi_podat, vynosy=[VynosProDan(**v.__dict__) for v in dan.vynosy]),
         priloha=[OddilPrilohy(**o.__dict__) for o in priloha],
+        uzavreni=Uzavreni(stav=st.stav, dalsi=st.dalsi, zapisy=zapisy, proc_nejde=proc),
+    )
+
+
+def _proved(rok: int, akce) -> Uzaverka:
+    prof = profil.nacti(nastaveni().profil)
+    with sezeni()() as s:
+        try:
+            akce(s, prof)
+        except (uzavreni.ChybaUzavreni, denik.ChybaUctovani) as e:
+            s.rollback()
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
+        s.commit()
+    return prehled(rok, None)
+
+
+@router.post("/{rok}/dalsi-rok")
+def zacni_dalsi_rok(rok: int, _: Zapisujici) -> Uzaverka:
+    """Založí další rok, aby šlo účtovat ještě před uzávěrkou tohoto."""
+    return _proved(rok, lambda s, prof: uzavreni.zacni_dalsi_rok(s, rok))
+
+
+@router.post("/{rok}/uzavrit")
+def uzavri(rok: int, uzivatel: Zapisujici) -> Uzaverka:
+    return _proved(
+        rok,
+        lambda s, prof: uzavreni.uzavri(
+            s, prof, predpisy.nacti(prof), rok, zauctoval=uzivatel.email
+        ),
+    )
+
+
+@router.post("/{rok}/znovu-otevrit")
+def znovu_otevri(rok: int, z: ZnovuOtevreni, uzivatel: Zapisujici) -> Uzaverka:
+    return _proved(
+        rok,
+        lambda s, prof: uzavreni.znovu_otevri(s, rok, duvod=z.duvod, zauctoval=uzivatel.email),
     )
 
 

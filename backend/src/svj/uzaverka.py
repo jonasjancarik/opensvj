@@ -426,7 +426,7 @@ def _rozpis_dodavatelu(
         .where(RadekZapisu.ucet == profil.ucet("dodavatele"))
         .group_by(RadekZapisu.parovaci_symbol)
     )
-    dotaz = dotaz.where(Zapis.rok == rok, Zapis.datum <= k_datu)
+    dotaz = dotaz.where(Zapis.rok == rok, Zapis.datum <= k_datu, denik.bez_uzaverky())
     radky = session.execute(dotaz).all()
     faktury = {f.cislo: f for f in session.scalars(select(Faktura))}
     vysledek = []
@@ -472,7 +472,7 @@ def soupisy(session: Session, profil: Profil, rok: int, k_datu: date) -> list[So
     znamenko = func.sum(
         case((RadekZapisu.strana == "md", RadekZapisu.castka), else_=-RadekZapisu.castka)
     )
-    v_roce = (Zapis.rok == rok, Zapis.datum <= k_datu)
+    v_roce = (Zapis.rok == rok, Zapis.datum <= k_datu, denik.bez_uzaverky())
     ucty = session.execute(
         select(RadekZapisu.ucet, func.min(RadekZapisu.role), znamenko)
         .join(Zapis)

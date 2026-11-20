@@ -97,6 +97,11 @@ role:
   zalohy_dlouhodobe: "955100"
   zalohy_dlouhodobe_mimoradne: "955200"
   pocatecni_rozvazny: "961000"
+  # Uzavření roku: náklady a výnosy na účet výsledku, rozvahové účty na konečný účet
+  # rozvažný; výsledek se v dalším roce otevře jako výsledek ve schvalovacím řízení.
+  konecny_rozvazny: "962000"
+  ucet_vysledku: "963000"
+  vysledek_ve_schvalovani: "931000"
   # Obecné role pro operace z knihy (Durec, Účetnictví SVJ, 3. vyd.: úvěry kap. 7, dotace 6.3.4,
   # majetek 9, dluhy vlastníků 10, odměny orgánů 15; syntetické účty podle vzorového rozvrhu
   # s. 111–114). Analytiky jsou návrh k ověření s účetní.
@@ -151,5 +156,8 @@ nazvy_uctu:
   "389100": Dohadné účty pasivní
   "955100": Fond oprav (dlouhodobé zálohy)
   "955200": Mimořádné zálohy do fondu oprav
+  "931000": Výsledek hospodaření ve schvalovacím řízení
   "961000": Počáteční účet rozvažný
+  "962000": Konečný účet rozvažný
+  "963000": Účet výsledku hospodaření
   zalohy_dlouhodobe_mimoradne: "955200"

@@ -10,7 +10,8 @@
   postup:
     - Každý zůstatek třídy 5 proti `ucet_vysledku` (MD ucet_vysledku / D náklad).
     - Každý zůstatek třídy 6 proti `ucet_vysledku` (MD výnos / D ucet_vysledku).
-    - Rozdíl na `vysledek`. U SVJ má vyjít nula; nenulový výsledek uzávěrku zastaví s rozpisem.
+    - Zůstatek `ucet_vysledku` je výsledek roku. U SVJ bývá nulový; nenulový (třeba zdaněné úroky) se uzavře na `konecny_rozvazny` a v dalším roce otevře na `vysledek_ve_schvalovani`.
+    - Jde jen tehdy, když uzávěrka nehlásí nic chybějícího a ruční body jsou odškrtnuté.
   zdroje:
     - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, skupiny 93 a 96"}
   platnost: {od: 2014-01-01}
@@ -23,9 +24,10 @@
   doklad: UZ
   zpusob: kod
   postup:
-    - Každý rozvahový zůstatek včetně dimenzí proti `konecny_rozvazny`.
-    - Zrcadlově proti `pocatecni_rozvazny` k 1. 1.; součet otevření musí přesně odpovídat uzavření.
-    - Po otevření je předchozí rok uzavřený a export do Beancountu se uloží s hashem.
+    - Každý rozvahový zůstatek včetně dimenzí (jednotka, služba, faktura, dřívější vlastník) proti `konecny_rozvazny`.
+    - Dluhy současných vlastníků po položkách se splatností; platby se započítávají jen v rámci účtu, aby počáteční stav každého účtu navazoval.
+    - Zrcadlově proti `pocatecni_rozvazny` k 1. 1. jako `otevreni-pocatecnimi-stavy`; součet otevření přesně odpovídá uzavření.
+    - Potom je rok uzavřený. Do schválení závěrky ho jde znovu otevřít: uzávěrkové zápisy i počáteční stavy dalšího roku se stornují (ZoÚ § 17 odst. 7).
   zdroje:
     - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, skupina 96"}
   platnost: {od: 2014-01-01}

@@ -36,7 +36,7 @@ _KLICE_SLUZEB = {
     "plocha": "podle podlahové plochy",
     "podil": "podle podílu na společných částech",
     "meridla": "podle spotřeby na měřidlech",
-    "zuctovatel": "podle rozúčtování od zúčtovatele",
+    "zuctovatel": "podle výsledků od zúčtovatele",
 }
 _MESIC_PREVODU = {"dosavadni": "dosavadní vlastník", "novy": "nový vlastník"}
 _PRISPEVKY = {"zalohove": "zálohové", "nezalohove": "nezálohové"}

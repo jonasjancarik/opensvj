@@ -76,7 +76,7 @@ class DluhJednotky:
 
     @property
     def z_minulych_let(self) -> bool:
-        return any(p.splatnost is None for p in self.polozky)
+        return any(p.splatnost is None or p.vznik is None for p in self.polozky)
 
     @property
     def urok(self) -> int:
@@ -97,20 +97,25 @@ def splatnost_mesice(rok: int, mesic: int, den: int) -> date:
     return date(rok, mesic, min(den, calendar.monthrange(rok, mesic)[1]))
 
 
-def prehled(
+def _rozpis(
     session: Session,
     profil: Profil,
     nastaveni: predpisy.Nastaveni,
     rok: int,
-    dnes: date | None = None,
-) -> list[DluhJednotky]:
-    dnes = dnes or date.today()
+    podle_uctu: bool,
+) -> tuple[dict, dict]:
+    """Dluhy a nevyčerpané platby po jednotkách (nebo po jednotkách a účtech).
+
+    Vrací (skupina → klíč → položka, skupina → kredit). Skupina je jednotka, nebo
+    dvojice (jednotka, role), když se platby započítávají jen v rámci účtu.
+    """
     radky = session.execute(
         predpisy._radky_vlastniku(
             rok,
             RadekZapisu.jednotka,
             RadekZapisu.role,
             RadekZapisu.popis,
+            RadekZapisu.splatnost,
             RadekZapisu.strana,
             RadekZapisu.castka,
             Zapis.id,
@@ -122,22 +127,38 @@ def prehled(
         .order_by(Zapis.datum, Zapis.id)
     ).all()
 
-    # Pro každou jednotku: dluhy (klíč → položka) a celkem zaplaceno nebo přeplaceno.
-    dluhy: dict[str, dict[tuple, Polozka]] = {j: {} for j in profil.jednotky}
-    kredit: dict[str, int] = dict.fromkeys(profil.jednotky, 0)
-    for jednotka, role, popis_radku, strana, castka, zapis_id, operace, datum, popis in radky:
-        if jednotka not in dluhy:
+    dluhy: dict = {}
+    kredit: dict = {}
+    for (
+        jednotka,
+        role,
+        popis_radku,
+        splatnost_radku,
+        strana,
+        castka,
+        zapis_id,
+        operace,
+        datum,
+        popis,
+    ) in radky:
+        if jednotka not in profil.jednotky:
             continue
+        skupina = (jednotka, role) if podle_uctu else jednotka
+        dluhy.setdefault(skupina, {})
+        kredit.setdefault(skupina, 0)
         znamenko = 1 if strana == "md" else -1
         if operace == pocatecni.OPERACE:
-            klic = ("pocatek", popis_radku or POPIS_ROLE.get(role, role))
-            poradi = (STARI.get(role, 9), klic[1])
-            p = dluhy[jednotka].setdefault(
-                klic, Polozka(klic[1], None, 0, poradi=poradi, role=role)
+            # Počáteční stav převzatý z minulého roku v aplikaci nese splatnost položky;
+            # u zůstatků z dřívějšího účetnictví ji neznáme.
+            text = popis_radku or POPIS_ROLE.get(role, role)
+            klic = ("pocatek", role, text, splatnost_radku)
+            poradi = (STARI.get(role, 9), text)
+            p = dluhy[skupina].setdefault(
+                klic, Polozka(text, splatnost_radku, 0, poradi=poradi, role=role)
             )
             p.castka += znamenko * castka
         elif strana == "d":
-            kredit[jednotka] += castka
+            kredit[skupina] += castka
         else:
             mesic = None
             if operace == "predpis-mesicni":
@@ -148,28 +169,62 @@ def prehled(
                 splatnost, text = vyuctovani_spravy.splatnost(datum.year), popis
             else:
                 splatnost, text = datum, popis
-            p = dluhy[jednotka].setdefault(
+            p = dluhy[skupina].setdefault(
                 ("zapis", zapis_id, role),
                 Polozka(text, splatnost, 0, role=role, vznik=datum, mesic=mesic),
             )
             p.castka += castka
 
-    vysledek = []
-    for jednotka in profil.jednotky:
-        polozky = []
-        zbyva_kreditu = kredit[jednotka]
-        for p in dluhy[jednotka].values():
+    for skupina, polozky in dluhy.items():
+        zbyva_kreditu = kredit[skupina]
+        kladne = []
+        for p in polozky.values():
             if p.castka < 0:  # přeplatek z minulých let se chová jako platba
                 zbyva_kreditu -= p.castka
             elif p.castka > 0:
-                polozky.append(p)
-        polozky.sort(key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi))
-        nezaplacene = []
-        for p in polozky:
+                kladne.append(p)
+        kladne.sort(key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi))
+        for p in kladne:
             uhrazeno = min(p.castka, zbyva_kreditu)
             zbyva_kreditu -= uhrazeno
             p.zbyva = p.castka - uhrazeno
-            if p.zbyva:
-                nezaplacene.append(p)
-        vysledek.append(DluhJednotky(jednotka, nezaplacene, zbyva_kreditu, dnes))
+        dluhy[skupina] = {k: p for k, p in polozky.items() if p.castka > 0}
+        kredit[skupina] = zbyva_kreditu
+    return dluhy, kredit
+
+
+def prehled(
+    session: Session,
+    profil: Profil,
+    nastaveni: predpisy.Nastaveni,
+    rok: int,
+    dnes: date | None = None,
+) -> list[DluhJednotky]:
+    dnes = dnes or date.today()
+    dluhy, kredit = _rozpis(session, profil, nastaveni, rok, podle_uctu=False)
+    vysledek = []
+    for jednotka in profil.jednotky:
+        polozky = sorted(
+            dluhy.get(jednotka, {}).values(),
+            key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi),
+        )
+        nezaplacene = [p for p in polozky if p.zbyva]
+        vysledek.append(DluhJednotky(jednotka, nezaplacene, kredit.get(jednotka, 0), dnes))
+    return vysledek
+
+
+def k_prevodu(
+    session: Session, profil: Profil, nastaveni: predpisy.Nastaveni, rok: int
+) -> list[tuple[str, str, list[Polozka], int]]:
+    """Co se k 31. 12. převádí do dalšího roku: po jednotkách a účtech nezaplacené položky
+    a nevyčerpaný přeplatek. Platby se tu započítávají jen v rámci účtu, aby počáteční stav
+    každého účtu navazoval na jeho konečný zůstatek."""
+    dluhy, kredit = _rozpis(session, profil, nastaveni, rok, podle_uctu=True)
+    vysledek = []
+    for (jednotka, role), polozky in sorted(dluhy.items()):
+        nezaplacene = sorted(
+            (p for p in polozky.values() if p.zbyva),
+            key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi),
+        )
+        vysledek.append((jednotka, role, nezaplacene, kredit[(jednotka, role)]))
     return vysledek

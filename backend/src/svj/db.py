@@ -87,6 +87,8 @@ class RadekZapisu(Zaklad):
     popis: Mapped[str | None] = mapped_column(String(200), nullable=True)
     # Spojí závazek (faktura) s jeho úhradami, např. interní číslo faktury.
     parovaci_symbol: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    # Jen u počátečních stavů převzatých z minulého roku: splatnost převedeného dluhu.
+    splatnost: Mapped[date | None] = mapped_column(Date, nullable=True)
     zapis: Mapped[Zapis] = relationship(back_populates="radky")
     __table_args__ = (
         CheckConstraint("strana in ('md', 'd')", name="strana"),

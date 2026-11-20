@@ -223,7 +223,8 @@ def _zbyva(session: Session, symboly: list[str]) -> dict[str, int]:
         .where(
             RadekZapisu.role == "dodavatele",
             RadekZapisu.parovaci_symbol.in_(symboly),
-            denik.platny(),
+            # Přes víc let: uzavření roku a počáteční stav dalšího se navzájem vyruší.
+            denik.nestornovany(),
         )
         .group_by(RadekZapisu.parovaci_symbol)
     )

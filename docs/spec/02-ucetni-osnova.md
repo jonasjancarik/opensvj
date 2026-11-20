@@ -65,6 +65,9 @@ mít jiné analytiky nebo jiný účet ze stejné skupiny.
 | `zalohy_dlouhodobe` | fond oprav | 955100 | |
 | `zalohy_dlouhodobe_mimoradne` | mimořádné zálohy na konkrétní akci | 955200 | |
 | `pocatecni_rozvazny` | otevření roku počátečními stavy | 961000 | |
+| `konecny_rozvazny` | uzavření rozvahových účtů k 31. 12. | 962000 | |
+| `ucet_vysledku` | uzavření nákladů a výnosů k 31. 12. | 963000 | |
+| `vysledek_ve_schvalovani` | výsledek minulého roku po otevření dalšího roku | 931000 | |
 
 Role pro operace, které malé SVJ potřebuje jen někdy (majetek, úvěr, dotace, odměny
 výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu podle vzorového
