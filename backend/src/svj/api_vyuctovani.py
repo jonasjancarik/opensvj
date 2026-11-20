@@ -10,7 +10,7 @@ from . import predpisy, vyuctovani_spravy
 from .db import BankovniUcet, sezeni
 from .domena import profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/vyuctovani-spravy")
 
@@ -113,7 +113,7 @@ def prehled(rok: int, _: Prihlaseny) -> Vyuctovani:
 
 
 @router.post("/{rok}")
-def zauctuj(rok: int, uzivatel: Prihlaseny) -> Vyuctovani:
+def zauctuj(rok: int, uzivatel: Zapisujici) -> Vyuctovani:
     prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         try:

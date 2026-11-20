@@ -9,7 +9,7 @@ from . import predpisy, ulozene, uzaverka
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/uzaverka")
 
@@ -142,7 +142,7 @@ def prehled(rok: int, _: Prihlaseny) -> Uzaverka:
 
 
 @router.post("/{rok}/odskrtnuti")
-def odskrtni(rok: int, zmena: ZmenaOdskrtnuti, uzivatel: Prihlaseny) -> Odskrtnuti | None:
+def odskrtni(rok: int, zmena: ZmenaOdskrtnuti, uzivatel: Zapisujici) -> Odskrtnuti | None:
     """Ručně odškrtne bod uzávěrky (nebo odškrtnutí zruší) pro celý výbor."""
     prof = profil.nacti(nastaveni().profil)
     nast = predpisy.nacti(prof)

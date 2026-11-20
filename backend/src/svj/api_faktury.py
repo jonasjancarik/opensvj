@@ -9,7 +9,7 @@ from . import faktury
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/faktury")
 
@@ -109,7 +109,7 @@ def prehled(rok: int, _: Prihlaseny) -> Faktury:
 
 
 @router.post("")
-def zadej(nova: NovaFaktura, uzivatel: Prihlaseny) -> Faktury:
+def zadej(nova: NovaFaktura, uzivatel: Zapisujici) -> Faktury:
     prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         try:

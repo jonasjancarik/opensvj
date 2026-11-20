@@ -9,7 +9,7 @@ from . import pocatecni, predpisy
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/predpisy")
 
@@ -165,7 +165,7 @@ def prehled(rok: int, _: Prihlaseny) -> Predpisy:
 
 
 @router.post("/{rok}/{mesic}")
-def vygeneruj(rok: int, mesic: int, uzivatel: Prihlaseny) -> Predpisy:
+def vygeneruj(rok: int, mesic: int, uzivatel: Zapisujici) -> Predpisy:
     if not 1 <= mesic <= 12:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Neplatný měsíc.")
     prof = _profil()

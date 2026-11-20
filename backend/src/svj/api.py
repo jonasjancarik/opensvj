@@ -20,9 +20,15 @@ from .api_vyuctovani import router as vyuctovani_router
 from .db import Zapis, sezeni
 from .domena import katalog, profil, vykazy
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, jen_cteni
 
-app = FastAPI(title="SVJ hospodaření", docs_url="/api/docs", openapi_url="/api/openapi.json")
+_docs = nastaveni().api_docs
+app = FastAPI(
+    title="SVJ hospodaření",
+    docs_url="/api/docs" if _docs else None,
+    redoc_url=None,
+    openapi_url="/api/openapi.json" if _docs else None,
+)
 app.include_router(banka_router)
 app.include_router(predpisy_router)
 app.include_router(vyuctovani_router)
@@ -39,6 +45,7 @@ class Ja(BaseModel):
     id: str
     email: str
     jmeno: str
+    jen_cteni: bool
 
 
 class OperaceVKatalogu(BaseModel):
@@ -71,7 +78,12 @@ def health() -> dict[str, bool]:
 
 @app.get("/api/me")
 def ja(uzivatel: Prihlaseny) -> Ja:
-    return Ja(id=uzivatel.id, email=uzivatel.email, jmeno=uzivatel.jmeno)
+    return Ja(
+        id=uzivatel.id,
+        email=uzivatel.email,
+        jmeno=uzivatel.jmeno,
+        jen_cteni=jen_cteni(uzivatel),
+    )
 
 
 @app.get("/api/katalog")

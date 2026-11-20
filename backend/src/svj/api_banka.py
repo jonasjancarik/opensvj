@@ -20,7 +20,7 @@ from .db import (
 )
 from .domena import katalog, profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/banka")
 MAX_VELIKOST = 5 * 1024 * 1024
@@ -260,15 +260,23 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
 @router.post("/vypisy")
 async def nahraj_vypis(
     request: Request,
-    uzivatel: Prihlaseny,
+    uzivatel: Zapisujici,
     nazev: Annotated[str, Query(max_length=255)] = "vypis.gpc",
     ucel: str | None = None,
 ) -> list[Nahrano]:
-    data = await request.body()
+    # Velikost hlídáme už při čtení, aby se velký soubor vůbec nenačetl do paměti.
+    prilis_velky = HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Soubor je příliš velký.")
+    delka = request.headers.get("content-length", "")
+    if delka.isdigit() and int(delka) > MAX_VELIKOST:
+        raise prilis_velky
+    casti = bytearray()
+    async for cast in request.stream():
+        casti += cast
+        if len(casti) > MAX_VELIKOST:
+            raise prilis_velky
+    data = bytes(casti)
     if not data:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Soubor je prázdný.")
-    if len(data) > MAX_VELIKOST:
-        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Soubor je příliš velký.")
     with _session() as s:
         try:
             v = banka.nahraj(
@@ -303,7 +311,7 @@ async def nahraj_vypis(
 
 
 @router.post("/pohyby/{pohyb_id}")
-def zauctuj(pohyb_id: int, pozadavek: Pozadavek, uzivatel: Prihlaseny) -> Pohyb:
+def zauctuj(pohyb_id: int, pozadavek: Pozadavek, uzivatel: Zapisujici) -> Pohyb:
     with _session() as s:
         try:
             banka.zauctuj_pohyb(

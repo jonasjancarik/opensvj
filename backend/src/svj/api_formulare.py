@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from . import ulozene
 from .db import UlozenyFormular, sezeni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/formulare")
 
@@ -45,7 +45,7 @@ def nacti(druh: str, klic: str, _: Prihlaseny) -> Formular:
 
 
 @router.put("/{druh}/{klic}")
-def uloz(druh: str, klic: str, pozadavek: Ulozeni, uzivatel: Prihlaseny) -> Formular:
+def uloz(druh: str, klic: str, pozadavek: Ulozeni, uzivatel: Zapisujici) -> Formular:
     if len(json.dumps(pozadavek.obsah, ensure_ascii=False)) > ulozene.MAX_VELIKOST:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Formulář je příliš velký.")
     with sezeni()() as s:

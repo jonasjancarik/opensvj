@@ -11,7 +11,7 @@ from . import denik
 from .db import Zapis, sezeni
 from .domena import katalog, profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/denik")
 
@@ -106,7 +106,7 @@ def zapisy_roku(rok: int, _: Prihlaseny) -> Denik:
 
 
 @router.post("/zapisy/{zapis_id}/storno")
-def stornuj(zapis_id: int, pozadavek: Storno, uzivatel: Prihlaseny) -> Denik:
+def stornuj(zapis_id: int, pozadavek: Storno, uzivatel: Zapisujici) -> Denik:
     with sezeni()() as s:
         try:
             z = denik.storno(s, zapis_id, duvod=pozadavek.duvod, zauctoval=uzivatel.email)

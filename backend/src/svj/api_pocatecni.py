@@ -9,7 +9,7 @@ from . import pocatecni, ulozene
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
-from .prihlaseni import Prihlaseny
+from .prihlaseni import Prihlaseny, Zapisujici
 
 router = APIRouter(prefix="/api/pocatecni")
 
@@ -117,7 +117,7 @@ def prehled(rok: int, _: Prihlaseny) -> PocatecniStavy:
 
 
 @router.post("/{rok}")
-def zauctuj(rok: int, pozadavek: Pozadavek, uzivatel: Prihlaseny) -> PocatecniStavy:
+def zauctuj(rok: int, pozadavek: Pozadavek, uzivatel: Zapisujici) -> PocatecniStavy:
     zustatky: dict[str, int] = {}
     for z in pozadavek.zustatky:
         zustatky[z.ucet] = zustatky.get(z.ucet, 0) + z.castka

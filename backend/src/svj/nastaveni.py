@@ -18,6 +18,12 @@ class Nastaveni(BaseSettings):
     jwks_url: str = "http://localhost:3010/api/auth/jwks"
     jwt_issuer: str = "http://localhost:5180"
     jwt_audience: str = "http://localhost:5180"
+    # Kdo smí do aplikace (čárkou oddělené e-maily); stejný seznam čte přihlašovací služba.
+    auth_allowed_emails: str = ""
+    # Kdo z nich smí jen nahlížet (např. kontrolní komise nebo účetní).
+    auth_readonly_emails: str = ""
+    # Popis API na /api/docs; zapíná se jen pro vývoj.
+    api_docs: bool = False
 
 
 @lru_cache

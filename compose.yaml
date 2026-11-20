@@ -6,8 +6,9 @@ services:
       POSTGRES_DB: svj
       POSTGRES_USER: svj
       POSTGRES_PASSWORD: svj
+    # Jen pro tento počítač: databáze má vývojové heslo a nesmí být vidět ze sítě.
     ports:
-      - "5440:5432"
+      - "127.0.0.1:5440:5432"
     volumes:
       - db:/var/lib/postgresql/data
       - ./deploy/db-init:/docker-entrypoint-initdb.d:ro

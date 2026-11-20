@@ -24,6 +24,7 @@ Potřebujete Docker (OrbStack), `uv` a `pnpm`.
 
 ```bash
 cp .env.example .env          # a do AUTH_ALLOWED_EMAILS doplňte svůj e-mail
+                              # a do BETTER_AUTH_SECRET výstup `openssl rand -base64 32`
 docker compose up -d          # PostgreSQL na portu 5440
 pnpm install
 (cd backend && uv sync && uv run alembic upgrade head)
@@ -43,8 +44,16 @@ Aplikace běží na <http://localhost:5180>. Vite předává `/api/auth` služb�
 a zbytek `/api` backendu, takže prohlížeč vidí jen jednu adresu.
 
 Ve vývoji se e-maily neposílají: přihlašovací odkaz se vypíše do výstupu služby `auth`
-(řádek `[auth] přihlašovací odkaz pro …`). V produkčním režimu (`NODE_ENV=production`)
-odeslání odkazu zatím skončí chybou, dokud se nenapojí skutečné odesílání pošty.
+(řádek `[auth] přihlašovací odkaz pro …`), pokud je v `.env` `AUTH_LINKS_TO_CONSOLE=1`.
+Bez toho, a vždy v produkčním režimu (`NODE_ENV=production`), odeslání odkazu zatím skončí
+chybou, dokud se nenapojí skutečné odesílání pošty.
+
+Do aplikace smějí jen adresy z `AUTH_ALLOWED_EMAILS`. Kdo ze seznamu vypadne, ztratí přístup
+k datům do pěti minut; po restartu služby `auth` se mu ukončí i přihlášení. Adresy uvedené
+navíc v `AUTH_READONLY_EMAILS` mohou jen nahlížet. Po změně seznamů restartujte `auth`
+i backend.
+
+Databáze z `compose.yaml` má vývojové heslo, proto poslouchá jen na `127.0.0.1`.
 
 Při otevření z jiného počítače (adresa `.local` nebo Tailscale) je potřeba nastavit
 `APP_URL`, `BETTER_AUTH_URL`, `JWT_ISSUER` a `JWT_AUDIENCE` na tu adresu, jinak
