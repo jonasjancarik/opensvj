@@ -436,8 +436,28 @@ zalohy_prijate, klic, rozdeleni[])` a výsledku na jednotku a vlastnické obdob�
 - Stav: `koncept → zkontrolovane → dorucene → (namitky) → vyrovnane`. Oprava po doručení je
   nová verze vyúčtování, ne přepis.
 
-**V aplikaci:** zatím ne. Předkontace jsou v katalogu (`vyuctovani-sluzeb`,
-`preuctovani-mezi-sluzbami`, `vyuctovani-zaokrouhleni`).
+**V aplikaci:** výpočet a zaúčtování jsou hotové, stránka Vyúčtování (záložka Služby)
+a zápis `vyuctovani-sluzeb`. Proti návrhu výše se liší:
+
+- Klíč služby je v profilu (`klic`): `osoby` (výchozí, osobo-měsíce podle počtu osob
+  v předpisu), `jednotka`, `plocha`, `podil`, `meridla` (roční spotřeba z odečtů měřidel
+  druhu `meridlo`) a `zuctovatel` (náklad jednotky opsaný z rozúčtování zúčtovatele, tabulka
+  `vysledek_zuctovatele`). Klíče se dokládají rozhodnutím na stránce Rozhodnutí.
+- Náklady se dělí přesně na haléře metodou největších zbytků, takže součet nákladů jednotek
+  vždy dá náklady služby. Zaokrouhlení na koruny ani operace `vyuctovani-zaokrouhleni`
+  proto nejsou potřeba.
+- Porovnává se s **předepsanými** zálohami, stejně jako u správy. Nezaplacené zálohy
+  zůstávají v saldu jako samostatný dluh a vyúčtování pro vlastníka je uvádí zvlášť.
+  Vlastník tak dluží stejnou částku jako při porovnání s přijatými zálohami, jen se
+  nemíchá dluh na zálohách s výsledkem vyúčtování.
+- Vyúčtování jde jen současnému vlastníkovi jednotky; s předchozím vlastníkem se vyrovná
+  sám (§ 1186 odst. 1 OZ).
+- Zaúčtovat jde od 31. 12., když jsou zaúčtované předpisy všech měsíců a žádná služba nemá
+  problém: chybějící měřidlo nebo odečet, výsledky zúčtovatele, které nesedí na náklady
+  v účetnictví. Nedoplatek i přeplatek jsou splatné 30. 4. dalšího roku.
+- Stav, doručení a námitky aplikace zatím nevede. Lhůty pro doručení a vyrovnání uvádí
+  na stránce a ve vyúčtování pro vlastníka, hlídat je bude až se zásilkami (oddíl 7).
+  Oprava po zaúčtování je storno a nové zaúčtování.
 
 ## 7. Rozesílání a upozornění
 

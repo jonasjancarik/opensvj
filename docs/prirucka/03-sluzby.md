@@ -228,8 +228,19 @@ a jaký účet použije pro pohledávky a zálohy.
   ([`preuctovani-mezi-sluzbami`](../../catalogue/vyuctovani.yaml)) a zaúčtování hotového
   vyúčtování ([`vyuctovani-sluzeb`](../../catalogue/vyuctovani.yaml)) jsou v katalogu.
   Účtují přes vnitřní zúčtování 395; výsledek je stejný jako zápisy 311/315 a 324/311 výše.
-- Samotný výpočet vyúčtování služeb aplikace zatím neumí. Kontrolní seznam uzávěrky ho
-  připomene a ukáže zůstatky záloh a nákladů služeb. Lhůty podle § 7 a 8 zatím nehlídá.
+- Vyúčtování spočítá stránka Vyúčtování, záložka Služby. Klíč každé služby je v profilu
+  (`klic`): `osoby` (výchozí podle § 5 odst. 2, osobo-měsíce z předpisu), `jednotka`,
+  `plocha`, `podil`, `meridla` s druhem měřidla (`meridlo: studena_voda`) a `zuctovatel`.
+  U zúčtovatele se náklady jednotek opíšou z jeho rozúčtování a jejich součet musí přesně
+  sedět na náklady služby v účetnictví.
+- Porovnává se s předepsanými zálohami. Nezaplacené zálohy zůstávají samostatným dluhem
+  a vyúčtování pro vlastníka je uvádí zvlášť. Náklady se dělí přesně na haléře, takže
+  zaokrouhlovací rozdíl nevzniká.
+- Zaúčtované vyúčtování (`vyuctovani-sluzeb`) převede zálohy a náklady služeb na vnitřní
+  zúčtování 395 a výsledky jednotek na 311200. Nedoplatky i přeplatky jsou na stránce
+  Dlužníci se splatností 30. 4. dalšího roku. Uzávěrka hlídá, že je vyúčtování zaúčtované.
+- Doručení vyúčtování a lhůty podle § 7 a 8 aplikace zatím nesleduje; dokument pro
+  vlastníka je jen uvádí.
 - Ukázkové SVJ vede rozúčtování (`ROZUCTOVANI`) mezi službami. Podle § 17 písm. b)
   NV 366/2013 je to náklad vlastní správní činnosti, patřil by tedy mezi příspěvky na správu
   s klíčem na jednotku. Tak to ale v praxi dělá řada SVJ a aplikace to dovolí.

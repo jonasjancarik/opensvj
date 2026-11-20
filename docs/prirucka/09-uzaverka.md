@@ -181,8 +181,8 @@ a ztráty, i když se nezveřejňuje. Zveřejňuje se v rozsahu, v jakém byla s
   Dál inventurní soupisy rozvahových účtů k vytištění a podpisu, posouzení daně
   z příjmů a návrh přílohy ve zkráceném rozsahu. V návrhu přílohy zůstávají místa
   `[doplňte]`, která musí vyplnit výbor nebo účetní.
-- Vyúčtování služeb aplikace zatím neumí. Uzávěrka to hlásí a ukáže zůstatek záloh
-  na služby.
+- Uzávěrka hlídá, že je vyúčtování služeb zaúčtované. Dokud není, ukáže zůstatek záloh
+  a nákladů služeb a odkáže na stránku Vyúčtování.
 - Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků a zprávu o hospodaření
   aplikace zatím nemá. Rok v ní zatím uzavřít nejde, databáze ale už zápisy do
   uzavřeného roku nepustí. První rok se otevírá zadáním počátečních stavů.

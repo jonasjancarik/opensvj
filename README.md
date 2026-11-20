@@ -232,6 +232,20 @@ položce správy nepatří (bankovní poplatky, převod do fondu oprav), stránk
 a kam patří, rozhodne účetní. Výnosy přiřazené k položce správy, třeba pojistné plnění
 na opravu, náklady té položky snižují.
 
+### Vyúčtování služeb
+
+Druhá záložka stránky Vyúčtování rozdělí roční náklady každé služby (teplo, voda, výtah,
+úklid…) na jednotky a porovná je se zálohami na tutéž službu v předpisu. Jak se služba
+dělí, určuje profil SVJ: podle počtu osob (výchozí podle zákona 67/2013), rovným dílem,
+podle plochy nebo podílu, podle spotřeby na měřidlech, nebo podle výsledků od zúčtovatele
+tepla, které výbor opíše do formuláře. Dělí se přesně na haléře.
+
+Když službu rozdělit nejde (jednotce chybí měřidlo nebo odečet, výsledky zúčtovatele
+nesedí na účetnictví), stránka řekne proč a zaúčtovat nedovolí. Nedoplatky a přeplatky
+se zaúčtují k 31. 12. a jsou splatné 30. 4. dalšího roku. Vyúčtování pro vlastníka
+rozepíše služby, u měřidel i spotřebu jednotky, a nezaplacené měsíční zálohy uvede
+zvlášť.
+
 ### Uzávěrka roku
 
 Stránka Uzávěrka má pět částí:
@@ -309,7 +323,7 @@ Hlavní pravidla:
 Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 [Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
 
-- vyúčtování služeb (vyúčtování záloh na správu už aplikace umí),
+- doručení vyúčtování a hlídání lhůt pro vyrovnání a námitky,
 - odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
 - uzávěrkové zápisy, otevření dalšího roku a uzavření roku v aplikaci,
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,
