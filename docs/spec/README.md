@@ -15,6 +15,9 @@ vyrovnanosti v databázi. U každé části je vidět, co aplikace už umí a co
 4. [Testovací scénáře](03-scenare.md): co ověřují testy nad ukázkovým SVJ a které případy
    z provozu ještě testy nemají.
 
+Proč se účtuje tak, jak se účtuje, s odkazy na předpisy a literaturu, vysvětluje
+[příručka](../prirucka/README.md).
+
 ## Rozsah první verze
 
 První verze má zvládnout celý účetní rok malého SVJ bez další účetní aplikace:

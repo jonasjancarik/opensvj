@@ -9,6 +9,7 @@ Aplikace je ve vývoji. Postupy, které ještě musí potvrdit účetní, jsou v
 a v produkčním režimu je nejde zaúčtovat.
 
 Co má aplikace dělat a podle jakých pravidel, popisuje [specifikace](docs/spec/README.md).
+Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/prirucka/README.md).
 
 ## Co umí
 
@@ -234,6 +235,7 @@ odmítne nevyrovnaný zápis, změnu zaúčtovaného zápisu i zápis do uzavře
 | Část | Co dělá |
 | --- | --- |
 | `docs/spec/` | Specifikace: doménový model, účtová osnova a výkazy, testovací scénáře. |
+| `docs/prirucka/` | Příručka: účetní a právní pravidla SVJ s odkazy na předpisy a příklady. |
 | `catalogue/` | Katalog účetních operací v YAML: šablony zápisů podle rolí účtů a spustitelné příklady. |
 | `profiles/` | Profily SVJ: převod rolí na účty, jednotky, služby a předpis záloh. V repozitáři je jen ukázkové SVJ. |
 | `backend/` | Python 3.13, FastAPI, SQLAlchemy, Alembic. Doména (`svj/domena`), deník, výkazy, API. |

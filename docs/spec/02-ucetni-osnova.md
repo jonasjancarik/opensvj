@@ -110,7 +110,9 @@ SVJ, které vede služby rozvahově, účtuje zhruba takhle:
 
 Výsledek hospodaření takového SVJ je nulový. Literatura uvádí i druhou variantu, kdy
 všechny náklady procházejí třídou 5 a jejich krytí zálohami třídou 6. Katalog má obě
-a profil SVJ volí jednu (`varianty` u operace).
+a profil SVJ volí jednu (`varianty` u operace). Proč literatura doporučuje druhou
+variantu a jak se liší zálohové a nezálohové příspěvky, vysvětluje
+[příručka](../prirucka/02-prispevky.md).
 
 ## Převod na zkrácené výkazy
 
@@ -179,9 +181,11 @@ Výkazy aplikace ukazují v tisících i přesně.
 1. **Nevyjasněné položky:** 378 (jiné pohledávky) pro nedoložený výdaj a 379 (jiné
    závazky) pro nespárovaný příjem, nebo 395. Skupina 39 se v rozvaze nevykazuje, takže
    nevyjasněná položka na 395 by k rozvahovému dni z výkazů zmizela. Návrh: 378 a 379.
-2. **Čerpání fondu oprav:** přímo 955/321, nebo 511/321 a 955/64x. Druhá varianta ukáže
-   opravy ve výsledovce, ale výkaz pak obsahuje náklady, které nejsou náklady SVJ
-   v ekonomickém smyslu.
+2. **Čerpání fondu oprav:** přímo 955/321, nebo přes náklady (547/321) a stanovení
+   příspěvků (311/649, 955/311). Podle stanoviska GFŘ z roku 2023 a literatury jsou
+   náklady na správu domu včetně oprav náklady SVJ a patří do výsledovky; přímý zápis
+   955/321 je běžná praxe, ale literatura ho odmítá. Rozbor je v příručce, kapitola
+   [Příspěvky na správu domu](../prirucka/02-prispevky.md).
 3. **Pojistné plnění:** jako výnos na 64x, nebo jako snížení nákladu na pojištění.
    Pojistné plnění z pojistek SVJ za škody na společných částech je příjmem společenství
    (§ 16 odst. 1 písm. f) nařízení vlády 366/2013). Jestli výnos zvýší fond oprav, nebo sníží
