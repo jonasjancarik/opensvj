@@ -1,0 +1,188 @@
+# Majetek, zásoby a hotovostní pokladna podle Durce (Účetnictví SVJ, 3. vyd., kap. 6.1 a 9).
+# Formát viz README.md v této složce.
+
+- id: pokladna-vyber
+  nazev: Výběr hotovosti z účtu do pokladny
+  kdy: Člen výboru vybere z účtu hotovost na drobné výdaje.
+  stav: navrh
+  doklad: PD
+  vstupy: {ucet: bankovní účet SVJ, krok: "vyber | prijem", castka: vybraná částka}
+  zapisy:
+    - krok: vyber
+      md: penize_na_ceste
+      d: "banka.{ucet}"
+      castka: "{castka}"
+    - krok: prijem
+      md: pokladna
+      d: penize_na_ceste
+      castka: "{castka}"
+  pravidla:
+    - Dva doklady: výpis z účtu (výběr) a příjmový pokladní doklad. Mezi nimi peníze leží na 261.
+    - Pokladní kniha a podpisy dokladů jsou povinné; zůstatek pokladny se inventarizuje k 31. 12.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 36 (pokladna 211) a s. 65 (peníze na cestě 261 u splátky úvěru)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Výběr 3 000 Kč z provozního účtu
+      krok: vyber
+      vstupy: {ucet: provozni, castka: "3000.00"}
+      ocekavane:
+        - [md, penize_na_ceste, "3000.00", {}]
+        - [d, banka.provozni, "3000.00", {}]
+    - nazev: Příjem hotovosti do pokladny
+      krok: prijem
+      vstupy: {ucet: provozni, castka: "3000.00"}
+      ocekavane:
+        - [md, pokladna, "3000.00", {}]
+        - [d, penize_na_ceste, "3000.00", {}]
+
+- id: pokladna-vydaj
+  nazev: Drobný výdaj z pokladny
+  kdy: Nákup kancelářských potřeb, kolků a podobně v hotovosti.
+  stav: navrh
+  doklad: PD
+  vstupy: {castka: částka výdaje, sluzba: "položka správy, ze které se výdaj platí (nepovinné)"}
+  zapisy:
+    - md: naklady.spotreba
+      d: pokladna
+      castka: "{castka}"
+  pravidla:
+    - Kolky a jiné poplatky patří na 538, ostatní drobný materiál na 501 (kniha s. 36).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 36 (kap. 6.1)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Kancelářské potřeby
+      vstupy: {castka: "420.00"}
+      ocekavane:
+        - [md, naklady.spotreba, "420.00", {}]
+        - [d, pokladna, "420.00", {}]
+
+- id: pokladna-platba-vlastnika
+  nazev: Platba vlastníka v hotovosti
+  kdy: Vlastník zaplatí zálohy nebo nedoplatek hotově do pokladny.
+  stav: navrh
+  doklad: PD
+  vstupy: {jednotka: označení jednotky, castka: přijatá částka}
+  zapisy:
+    - md: pokladna
+      d: pohledavky_vlastnici
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 28 a 41 (221, 211/311)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Hotovostní úhrada zálohy
+      vstupy: {jednotka: "1001/5", castka: "4800.00"}
+      ocekavane:
+        - [md, pokladna, "4800.00", {}]
+        - [d, pohledavky_vlastnici, "4800.00", {jednotka: "1001/5"}]
+
+- id: majetek-porizeni
+  nazev: Pořízení dlouhodobého hmotného majetku
+  kdy: SVJ kupuje věc pro správu domu nad hranici dlouhodobého majetku ze svého vnitřního předpisu (nebo pozemek či jednotku, ty vždy).
+  stav: navrh
+  doklad: FP
+  vstupy: {protistrana: dodavatel, castka: pořizovací cena včetně souvisejících nákladů}
+  zapisy:
+    - md: majetek_porizovani
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Majetek pod hranicí je drobný a účtuje se jako zásoby nebo rovnou do spotřeby.
+    - Po dokončení se zařadí (majetek-zarazeni) a od dalšího měsíce účetně odpisuje.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 69–71 (kap. 9.1)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Sekačka na trávu do společné zahrady
+      vstupy: {protistrana: prodejce, castka: "64000.00"}
+      ocekavane:
+        - [md, majetek_porizovani, "64000.00", {protistrana: prodejce}]
+        - [d, dodavatele, "64000.00", {protistrana: prodejce}]
+
+- id: majetek-zarazeni
+  nazev: Zařazení majetku do užívání a určení zdroje krytí
+  kdy: Majetek je připravený k užívání.
+  stav: navrh
+  doklad: ID
+  vstupy: {castka: pořizovací cena, zdroj: "zalohy_sprava.POLOZKA | zalohy_dlouhodobe"}
+  zapisy:
+    - md: majetek
+      d: majetek_porizovani
+      castka: "{castka}"
+    - md: "{zdroj}"
+      d: zdroj_majetku
+      castka: "{castka}"
+  pravidla:
+    - Kniha uvádí dvě možnosti krytí; tady je ta, kdy se pořízení uhradí přímo ze záloh vlastníků (324 nebo 955) proti 901.
+    - Zdroj krytí se pak postupně vrací do záloh ve výši účetních odpisů (majetek-odpisy), aby odpisy záloh podruhé nezatížily.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 70–71 (kap. 9.1)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Sekačka placená z fondu oprav
+      vstupy: {castka: "64000.00", zdroj: zalohy_dlouhodobe}
+      ocekavane:
+        - [md, majetek, "64000.00", {}]
+        - [d, majetek_porizovani, "64000.00", {}]
+        - [md, zalohy_dlouhodobe, "64000.00", {}]
+        - [d, zdroj_majetku, "64000.00", {}]
+
+- id: majetek-odpisy
+  nazev: Roční účetní odpisy majetku a proúčtování zdroje krytí
+  kdy: Nejpozději k rozvahovému dni (ČUS 409 odst. 4.3).
+  stav: navrh
+  doklad: ID
+  vstupy: {castka: odpis za rok, zdroj: "role záloh, ze kterých byl majetek pořízen"}
+  zapisy:
+    - md: naklady.odpisy
+      d: opravky_majetku
+      castka: "{castka}"
+    - md: zdroj_majetku
+      d: "{zdroj}"
+      castka: "{castka}"
+  pravidla:
+    - Odpisy jsou náklad na správu, ale vlastníci majetek zaplatili už při pořízení; proto se ve stejné výši vrací zdroj krytí z 901 do záloh.
+    - Po úplném odepsání je 901 nulový.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 71 (kap. 9.1)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Roční odpis sekačky
+      vstupy: {castka: "8000.00", zdroj: zalohy_dlouhodobe}
+      ocekavane:
+        - [md, naklady.odpisy, "8000.00", {}]
+        - [d, opravky_majetku, "8000.00", {}]
+        - [md, zdroj_majetku, "8000.00", {}]
+        - [d, zalohy_dlouhodobe, "8000.00", {}]
+
+- id: zasoby-konec-roku
+  nazev: Nespotřebované zásoby na konci roku (způsob B)
+  kdy: K 31. 12. podle inventury, když SVJ účtuje zásoby rovnou do spotřeby a na konci roku je převede na sklad.
+  stav: navrh
+  doklad: ID
+  vstupy: {castka: "hodnota zásob podle inventury; v novém roce stejná částka záporně"}
+  zapisy:
+    - md: zasoby
+      d: naklady.spotreba
+      castka: "{castka}"
+  pravidla:
+    - Na začátku dalšího roku se zápis obrátí (záporná částka): zásoby jdou zpět do spotřeby.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 72 (kap. 9.2)"}
+    - {typ: vyhlaska, odkaz: "ČUS 410 (způsob A a B)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Toner nespotřebovaný k 31. 12.
+      vstupy: {castka: "450.00"}
+      ocekavane:
+        - [md, zasoby, "450.00", {}]
+        - [d, naklady.spotreba, "450.00", {}]
+    - nazev: Zpět do spotřeby v dalším roce
+      vstupy: {castka: "-450.00"}
+      ocekavane:
+        - [md, naklady.spotreba, "450.00", {}]
+        - [d, zasoby, "450.00", {}]

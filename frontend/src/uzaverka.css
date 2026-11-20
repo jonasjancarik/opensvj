@@ -1,0 +1,54 @@
+/* Uzávěrka roku */
+.zalozky { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.25rem; }
+.zalozky button {
+  background: var(--plocha); color: var(--text); border-color: var(--okraj-silny);
+  font-size: 0.9rem; padding: 0.5rem 0.95rem;
+}
+.zalozky button:hover:not(:disabled) { background: var(--plocha-2); box-shadow: none; }
+.zalozky button.aktivni, .zalozky button.aktivni:hover:not(:disabled) { background: var(--akcent); color: var(--na-akcentu); border-color: var(--akcent); }
+
+.kontroly-uzaverky { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; max-width: 72ch; }
+.kontrola {
+  display: grid; grid-template-columns: 8.5rem 1fr; gap: 0.9rem; align-items: start;
+  padding: 0.75rem 0.95rem; border: 1px solid var(--okraj); border-radius: var(--radius-maly);
+  background: var(--plocha);
+}
+.kontrola p { margin: 0.25rem 0 0; color: var(--tlumeny); font-size: 0.92rem; }
+.kontrola .radek { margin-top: 0.4rem; gap: 1rem; }
+.kontrola-stav {
+  font-size: 0.8rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px;
+  text-align: center; background: var(--plocha-2); color: var(--tlumeny);
+}
+.kontrola-hotovo .kontrola-stav { background: var(--uspech-mekka); color: var(--uspech); }
+.kontrola-chybi { border-color: var(--chyba); }
+.kontrola-chybi .kontrola-stav { background: var(--chyba-mekka); color: var(--chyba); }
+.kontrola-rucne .kontrola-stav { background: var(--varovani-mekka); color: var(--varovani); }
+.odskrtnout { font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+@media (max-width: 560px) {
+  .kontrola { grid-template-columns: 1fr; gap: 0.4rem; }
+  .kontrola-stav { justify-self: start; }
+}
+
+tr.soucet-vykazu td { font-weight: 600; background: var(--plocha-2); }
+.zdaneni-predmetne, .zdaneni-nezname { color: var(--chyba); font-weight: 600; }
+.zdaneni-srazkova, .zdaneni-nepredmetne { color: var(--tlumeny); }
+
+.karta-prilohy {
+  max-width: 72ch; padding: 1rem 1.25rem; border: 1px solid var(--okraj);
+  border-radius: var(--radius-maly); background: var(--plocha);
+}
+.karta-prilohy h3:first-child { margin-top: 0; }
+mark.doplnit { background: var(--varovani-mekka); color: var(--text); padding: 0 0.2rem; border-radius: 3px; }
+
+.soupis + .soupis { margin-top: 1.5rem; }
+.udaje-soupisu { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 0.75rem 0; }
+.udaje-soupisu dt { font-weight: 600; }
+.udaje-soupisu dd { margin: 0; }
+td.vyplnit { min-width: 8rem; border-bottom: 1px dotted var(--okraj-silny); }
+
+@media print {
+  .soupis { break-after: page; }
+  .soupis:last-child { break-after: auto; }
+  .soupis + .soupis { margin-top: 0; }
+  mark.doplnit { background: none; }
+}

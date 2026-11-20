@@ -1,0 +1,14 @@
+/* Oznámení o výši záloh */
+.oduvodneni { display: grid; gap: 0.35rem; max-width: 68ch; margin: 1rem 0; }
+.oduvodneni textarea { font: inherit; padding: 0.6rem 0.75rem; border: 1px solid var(--okraj-silny); border-radius: var(--radius-maly); background: var(--plocha); color: var(--text); resize: vertical; }
+.oznameni + .oznameni { margin-top: 1.5rem; }
+tr.skupina-oznameni th { text-align: left; font-size: 0.82rem; color: var(--tlumeny); font-weight: 600; padding-top: 0.6rem; }
+tr.zmena td { font-weight: 600; }
+.oznameni h3 { font-size: 1rem; margin: 1rem 0 0.25rem; }
+
+@media print {
+  .oznameni { break-after: page; }
+  .oznameni:last-child { break-after: auto; }
+  .oznameni + .oznameni { margin-top: 0; }
+  tr.skupina-oznameni th { color: #000; }
+}

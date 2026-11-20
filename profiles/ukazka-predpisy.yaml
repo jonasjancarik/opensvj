@@ -1,0 +1,46 @@
+# Předpis záloh ukázkového fiktivního SVJ. Částky jsou vymyšlené.
+
+poznamka: >-
+  Ukázkový předpis: pevné částky jsou u všech jednotek stejné, jen jednotka 1001/11
+  (nebytový prostor) má vlastní zálohu na teplo a vodu.
+
+splatnost_den: 15
+
+verze:
+  - plati_od: 2026-03-01
+    zdroj: Ukázkový předpis od 03/2026
+    # klic: plocha (sazba za m²), osoby (sazba za osobu), pevna (částka podle jednotky),
+    #       podil (měsíční částka domu podle podílů), jednotka (měsíční částka domu rovným dílem)
+    slozky:
+      - {kod: FOND_OPRAV, nazev: Fond oprav, role: zalohy_dlouhodobe, klic: plocha, sazba: "45.00"}
+      - {kod: DROBNE_OPRAVY, nazev: Drobné opravy a provozní náklady, role: zalohy_sprava.DROBNE_OPRAVY, klic: plocha, sazba: "1.00"}
+      - {kod: ELEKTRINA, nazev: Elektřina, role: zalohy_sluzby.ELEKTRINA, klic: pevna}
+      - {kod: ELEKTRINA_VYTAH, nazev: Elektřina výtah, role: zalohy_sluzby.ELEKTRINA_VYTAH, klic: pevna}
+      - {kod: ROZUCTOVANI, nazev: Náklady na rozúčtování, role: zalohy_sluzby.ROZUCTOVANI, klic: pevna}
+      - {kod: OHREV_TUV, nazev: Ohřev teplé vody, role: zalohy_sluzby.OHREV_TUV, klic: pevna}
+      - {kod: TEPLO, nazev: Teplo, role: zalohy_sluzby.TEPLO, klic: pevna}
+      - {kod: ODPAD, nazev: Odpad, role: zalohy_sluzby.ODPAD, klic: pevna}
+      - {kod: OSTATNI, nazev: Ostatní náklady, role: zalohy_sprava.OSTATNI, klic: pevna}
+      - {kod: POJISTENI, nazev: Pojištění domu, role: zalohy_sprava.POJISTENI, klic: pevna}
+      - {kod: SPRAVA, nazev: Správa nemovitosti, role: zalohy_sprava.SPRAVA, klic: pevna}
+      - {kod: SV_TUV, nazev: Studená voda pro teplou vodu, role: zalohy_sluzby.SV_TUV, klic: pevna}
+      - {kod: UKLID, nazev: Úklid, role: zalohy_sluzby.UKLID, klic: pevna}
+      - {kod: VODA, nazev: Vodné a stočné, role: zalohy_sluzby.VODA, klic: pevna}
+      - {kod: VYTAH, nazev: Výtah, role: zalohy_sluzby.VYTAH, klic: osoby, sazba: "120.00"}
+    pevne:
+      vychozi: {ELEKTRINA: "80.00", ELEKTRINA_VYTAH: "120.00", ODPAD: "600.00", ROZUCTOVANI: "250.00", OHREV_TUV: "2200.00", TEPLO: "2600.00", OSTATNI: "300.00", POJISTENI: "400.00", SPRAVA: "850.00", SV_TUV: "650.00", UKLID: "300.00", VODA: "1400.00"}
+      1001/11: {TEPLO: "1500.00", VODA: "500.00", OHREV_TUV: "0", SV_TUV: "0"}
+    osoby:
+      # Podle počtu osob se počítá jen výtah.
+      1001/1: 2
+      1001/2: 3
+      1001/3: 1
+      1001/4: 2
+      1001/5: 4
+      1001/6: 1
+      1001/7: 2
+      1001/8: 3
+      1001/9: 4
+      1001/10: 1
+      1001/11: 2
+      1001/12: 1

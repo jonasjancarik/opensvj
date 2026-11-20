@@ -1,0 +1,197 @@
+# Faktury a ostatní doklady od dodavatelů. Formát viz README.md v této složce.
+
+- id: faktura-sluzba
+  nazev: Přijatá faktura za službu (rozvahový způsob)
+  kdy: Faktura za službu, která se vyúčtuje vlastníkům (teplo, voda, odpad, elektřina společných prostor, výtah, úklid).
+  stav: praxe
+  doklad: FP
+  vstupy: {sluzba: kód služby, protistrana: dodavatel, castka: částka}
+  zapisy:
+    - md: "naklady_sluzeb.{sluzba}"
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}", protistrana: "{protistrana}"}
+  pravidla:
+    - Fakturu lze zaúčtovat až ve stavu `schvaleny`.
+    - Náklad patří do zúčtovacího období, se kterým věcně souvisí; faktura za část jiného období se rozdělí.
+    - Složka musí být druhu `sluzba` nebo `sprava_vyuctovana`. Revize zařízení a součástí domu nejsou nákladem na služby.
+    - Dobropis je stejná operace se zápornou částkou, s vazbou na původní fakturu.
+  varianty:
+    - id: vysledkovy-zpusob
+      kdy: Profil SVJ chce mít náklady služeb ve výsledovce.
+      zmena: "MD naklady.<sluzba> / D dodavatele; na konci roku `prevod-spravnich-nakladu`."
+  zdroje:
+    - {typ: zakon, odkaz: "zákon 67/2013 § 2 odst. 1 písm. d), § 3"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: náklady služeb se účtují rozvahově proti dodavatelům, aby je šlo na konci roku vyúčtovat vlastníkům"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Roční faktura za teplo
+      vstupy: {castka: "480000.00", sluzba: TEPLO, protistrana: teplarna}
+      ocekavane:
+        - [md, naklady_sluzeb.TEPLO, "480000.00", {sluzba: TEPLO, protistrana: teplarna}]
+        - [d, dodavatele, "480000.00", {protistrana: teplarna}]
+
+- id: faktura-spravni-naklad
+  nazev: Přijatá faktura za správu, pojištění nebo jiný správní náklad
+  kdy: Odměna správce, vedení účetnictví, software, právní služby, pojištění domu, drobné opravy.
+  stav: praxe
+  doklad: FP
+  vstupy: {kategorie: "opravy | sprava | pojisteni | ostatni", sluzba: kód složky vyúčtování, protistrana: dodavatel, castka: částka}
+  zapisy:
+    - md: "naklady.{kategorie}"
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}", protistrana: "{protistrana}"}
+  pravidla:
+    - Náklady vlastní správní činnosti se vlastníkům rozvrhují na jednotku stejně.
+    - Pojištění na období přesahující rozvahový den se časově rozliší (`casove-rozliseni`).
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1180 odst. 2; NV 366/2013 § 17"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: drobné opravy, správa, pojištění a ostatní správní náklady se účtují do třídy 5"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Měsíční odměna správce
+      vstupy: {castka: "4500.00", kategorie: sprava, sluzba: SPRAVA, protistrana: spravce}
+      ocekavane:
+        - [md, naklady.sprava, "4500.00", {sluzba: SPRAVA, protistrana: spravce}]
+        - [d, dodavatele, "4500.00", {protistrana: spravce}]
+
+- id: zaloha-dodavateli
+  nazev: Záloha placená dodavateli energie nebo vody
+  kdy: Pravidelná záloha na elektřinu, vodu nebo teplo placená přímo z účtu.
+  stav: praxe
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, sluzba: kód služby, protistrana: dodavatel, castka: částka}
+  zapisy:
+    - md: "zalohy_dodavatelum.{sluzba}"
+      d: "banka.{ucet}"
+      castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}", protistrana: "{protistrana}"}
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: zálohy placené dodavatelům energií a vody se vedou jako poskytnuté zálohy po službách"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Záloha na vodu
+      vstupy: {castka: "5000.00", sluzba: VODA, ucet: provozni, protistrana: vodarna}
+      ocekavane:
+        - [md, zalohy_dodavatelum.VODA, "5000.00", {sluzba: VODA, protistrana: vodarna}]
+        - [d, banka.provozni, "5000.00", {}]
+
+- id: vyuctovani-dodavatele
+  nazev: Vyúčtovací faktura dodavatele se započtením záloh
+  kdy: Dodavatel vyúčtuje období; faktura uvádí celkový náklad a odečítá zaplacené zálohy.
+  stav: praxe
+  doklad: FP
+  vstupy: {sluzba: kód služby, protistrana: dodavatel, naklad_celkem: náklad za období, zapoctene_zalohy: odečtené zálohy}
+  zapisy:
+    - md: "naklady_sluzeb.{sluzba}"
+      d: dodavatele
+      castka: "{naklad_celkem}"
+      dimenze: {sluzba: "{sluzba}", protistrana: "{protistrana}"}
+    - md: dodavatele
+      d: "zalohy_dodavatelum.{sluzba}"
+      castka: "{zapoctene_zalohy}"
+      dimenze: {sluzba: "{sluzba}", protistrana: "{protistrana}"}
+  pravidla:
+    - Zůstatek na 321 je nedoplatek k úhradě, záporný zůstatek je přeplatek k vrácení dodavatelem.
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: po vyúčtování energií a vody mají někteří dodavatelé k 31. 12. záporné saldo, tedy přeplatek k vrácení"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Vyúčtování vody s přeplatkem (ilustrativní čísla)
+      vstupy: {naklad_celkem: "61944.00", zapoctene_zalohy: "67690.00", sluzba: VODA, protistrana: vodarna}
+      ocekavane:
+        - [md, naklady_sluzeb.VODA, "61944.00", {sluzba: VODA, protistrana: vodarna}]
+        - [d, dodavatele, "61944.00", {protistrana: vodarna}]
+        - [md, dodavatele, "67690.00", {protistrana: vodarna}]
+        - [d, zalohy_dodavatelum.VODA, "67690.00", {sluzba: VODA, protistrana: vodarna}]
+
+- id: casove-rozliseni
+  nazev: Náklad příštích období
+  kdy: Faktura (typicky pojištění) pokrývá období přesahující rozvahový den.
+  stav: praxe
+  doklad: ID
+  vstupy: {kategorie: kategorie nákladu, castka: část nákladu patřící do příštího roku}
+  zapisy:
+    - krok: k_rozvahovemu_dni
+      md: naklady_pristich_obdobi
+      d: "naklady.{kategorie}"
+      castka: "{castka}"
+    - krok: rozpusteni
+      md: "naklady.{kategorie}"
+      d: naklady_pristich_obdobi
+      castka: "{castka}"
+  pravidla:
+    - Rozpuštění je zápis s datem 1. 1. následujícího roku a odkazem na původní.
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 3 odst. 1 (věcná a časová souvislost)"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: roční pojištění domu placené od poloviny roku zčásti patří do příštího roku"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Pojištění placené od 1. 7., polovina patří do příštího roku
+      krok: k_rozvahovemu_dni
+      vstupy: {castka: "18500.00", kategorie: pojisteni}
+      ocekavane:
+        - [md, naklady_pristich_obdobi, "18500.00", {}]
+        - [d, naklady.pojisteni, "18500.00", {}]
+
+- id: dohadna-polozka
+  nazev: Dohadná položka pasivní
+  kdy: Náklad roku je známý, ale faktura k rozvahovému dni nepřišla.
+  stav: praxe
+  doklad: ID
+  vstupy: {sluzba: kód služby, castka: odhad}
+  zapisy:
+    - krok: k_rozvahovemu_dni
+      md: "naklady_sluzeb.{sluzba}"
+      d: dohadne_pasivni
+      castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
+    - krok: po_doruceni_faktury
+      md: dohadne_pasivni
+      d: dodavatele
+      castka: "{castka}"
+  pravidla:
+    - Rozdíl mezi odhadem a fakturou se účtuje v roce doručení faktury.
+    - Odhad musí mít podklad (smlouva, odečet, předchozí faktura).
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: odhad nevyfakturované spotřeby energií k 31. 12. se rozpustí, až přijde faktura"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Odhad vyúčtování elektřiny
+      krok: k_rozvahovemu_dni
+      vstupy: {castka: "3000.00", sluzba: ELEKTRINA}
+      ocekavane:
+        - [md, naklady_sluzeb.ELEKTRINA, "3000.00", {sluzba: ELEKTRINA}]
+        - [d, dohadne_pasivni, "3000.00", {}]
+
+- id: vydaj-bez-faktury
+  nazev: Výdaj, ke kterému chybí doklad od dodavatele
+  kdy: Odchozí platba nebo proplacení výdaje člena výboru, ke kterému nemáme fakturu ani účtenku.
+  stav: overit
+  doklad: ID
+  vstupy: {ucet: bankovní účet SVJ, zarazeni: role nákladu nebo fondu, castka: částka}
+  zapisy:
+    - krok: platba
+      md: nevyjasnene_vydaje
+      d: "banka.{ucet}"
+      castka: "{castka}"
+    - krok: nahradni_doklad
+      md: "{zarazeni}"
+      d: nevyjasnene_vydaje
+      castka: "{castka}"
+  pravidla:
+    - Do vyřešení zůstává částka na `nevyjasnene_vydaje`, ne v nákladech.
+    - Náhradní vnitřní doklad obsahuje náležitosti § 11, odkaz na bankovní pohyb, prohlášení a podpisové záznamy. Žadatel o proplacení ho nesmí jako jediný schválit.
+    - Limit, nad kterým náhradní doklad nestačí, si SVJ stanoví vnitřním předpisem; zákon žádný limit nemá.
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 11, § 33a odst. 1 a 4, § 33a odst. 10"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Žárovka do společných prostor
+      vstupy: {castka: "150.00", ucet: provozni, zarazeni: naklady.opravy}
+      ocekavane:
+        - [md, nevyjasnene_vydaje, "150.00", {}]
+        - [d, banka.provozni, "150.00", {}]
+        - [md, naklady.opravy, "150.00", {}]
+        - [d, nevyjasnene_vydaje, "150.00", {}]

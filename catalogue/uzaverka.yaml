@@ -1,0 +1,63 @@
+# Uzávěrka, otevření roku a opravy. Formát viz README.md v této složce.
+# Uzavírací operace pracují se zůstatky všech účtů, proto je provádí kód (zpusob: kod), ne šablona.
+
+- id: uzavreni-vysledkovych
+  nazev: Uzavření nákladů a výnosů
+  kdy: 31. 12. po všech ostatních zápisech roku a kontrolách uzávěrky.
+  stav: navrh
+  doklad: UZ
+  zpusob: kod
+  postup:
+    - Každý zůstatek třídy 5 proti `ucet_vysledku` (MD ucet_vysledku / D náklad).
+    - Každý zůstatek třídy 6 proti `ucet_vysledku` (MD výnos / D ucet_vysledku).
+    - Rozdíl na `vysledek`. U SVJ má vyjít nula; nenulový výsledek uzávěrku zastaví s rozpisem.
+  zdroje:
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, skupiny 93 a 96"}
+  platnost: {od: 2014-01-01}
+  priklady: []
+
+- id: uzavreni-rozvahovych
+  nazev: Uzavření rozvahových účtů a otevření dalšího roku
+  kdy: Po `uzavreni-vysledkovych`; otevření k 1. 1. dalšího roku.
+  stav: navrh
+  doklad: UZ
+  zpusob: kod
+  postup:
+    - Každý rozvahový zůstatek včetně dimenzí proti `konecny_rozvazny`.
+    - Zrcadlově proti `pocatecni_rozvazny` k 1. 1.; součet otevření musí přesně odpovídat uzavření.
+    - Po otevření je předchozí rok uzavřený a export do Beancountu se uloží s hashem.
+  zdroje:
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, skupina 96"}
+  platnost: {od: 2014-01-01}
+  priklady: []
+
+- id: otevreni-pocatecnimi-stavy
+  nazev: Počáteční stavy převzaté z dřívějšího účetnictví
+  kdy: 1. 1. prvního roku vedeného v aplikaci; konečné zůstatky předchozího roku jsou ze sestav dřívějšího správce.
+  stav: navrh
+  doklad: PS
+  zpusob: kod
+  postup:
+    - Každý nenulový rozvahový zůstatek proti `pocatecni_rozvazny` (aktiva MD, pasiva D).
+    - Pohledávky za vlastníky se rozepíšou po jednotkách (a u dřívějších vlastníků i jménem); součet rozpisu musí sedět na zůstatek účtu.
+    - Součet aktiv a pasiv se musí rovnat, `pocatecni_rozvazny` po zápisu nemá zůstatek.
+    - V roce jde jen jednou; oprava stornem.
+  zdroje:
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, skupina 96"}
+  platnost: {od: 2014-01-01}
+  priklady: []
+
+- id: storno
+  nazev: Storno zaúčtovaného zápisu
+  kdy: Zjistí se chyba v zaúčtovaném zápisu otevřeného roku, nebo se doklad stane neprůkazným.
+  stav: navrh
+  doklad: ID
+  zpusob: kod
+  postup:
+    - Kopie původního zápisu s prohozenými stranami a stejnými dimenzemi; `opravuje_zapis` ukazuje na původní.
+    - Původní zápis se nemaže ani nemění. V uzavřeném roce storno nejde; oprava se účtuje v běžném roce.
+    - Storno potřebuje důvod a podpisový záznam osoby odpovědné za zaúčtování (ZoÚ § 11 odst. 1 písm. f), § 12 odst. 2).
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 33a odst. 2, § 35"}
+  platnost: {od: 2014-01-01}
+  priklady: []

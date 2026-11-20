@@ -1,0 +1,75 @@
+# Předpisy záloh. Formát viz README.md v této složce.
+
+- id: predpis-mesicni
+  nazev: Měsíční předpis záloh
+  kdy: Na začátku každého měsíce pro každou jednotku a vlastnické období.
+  stav: praxe
+  doklad: PR
+  vstupy:
+    jednotka: označení jednotky
+    slozky: "seznam {slozka, ucet_zavazku, castka}"
+  zapisy:
+    - pro_kazde: slozky
+      md: pohledavky_vlastnici
+      d: "{ucet_zavazku}"
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}", sluzba: "{slozka}"}
+  pravidla:
+    - Datum zápisu i uskutečnění je první den měsíce; splatnost podle rozhodnutí SVJ (obvykle 20. den měsíce).
+    - Částka složky na jednotku se počítá jednou ročně nebo při změně a uloží se; měsíční generování ji jen kopíruje.
+    - Klíč `podil` dělí měsíční částku domu metodou největšího zbytku na celé koruny; rozdíl dostanou jednotky s největším zbytkem, při shodě podle pořadí jednotek.
+    - Jeden souhrnný vnitřní doklad za měsíc, řádky po jednotkách a složkách. Idempotenční klíč `predpis:{mesic}`.
+    - Převod jednotky v průběhu měsíce řeší volba `predpis_mesice_prevodu` v profilu SVJ.
+  varianty:
+    - id: ucet-pohledavek-315
+      kdy: Profil SVJ vede předpisy na 315 (Ostatní pohledávky) místo 311.
+      zmena: Role `pohledavky_vlastnici` ukazuje na 315; předkontace se nemění.
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1180 (příspěvky na správu), § 1181 (zálohy na služby)"}
+    - {typ: zakon, odkaz: "zákon 67/2013 § 4 (zálohy na služby)"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: každý měsíc jeden předpis pro všechny jednotky; fond oprav, zálohy na služby a paušální výnosy jdou na své účty"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Jednotka s fondem oprav, dvěma zálohami a paušálem
+      vstupy:
+        jednotka: "1001/8"
+        slozky:
+          - {slozka: PSDP, ucet_zavazku: zalohy_dlouhodobe, castka: "2400.00"}
+          - {slozka: TEPLO, ucet_zavazku: zalohy_sluzby.TEPLO, castka: "1800.00"}
+          - {slozka: VODA, ucet_zavazku: zalohy_sluzby.VODA, castka: "900.00"}
+          - {slozka: PAUSAL, ucet_zavazku: vynosy.pausal, castka: "50.00"}
+      ocekavane:
+        - [md, pohledavky_vlastnici, "2400.00", {jednotka: "1001/8", sluzba: PSDP}]
+        - [d, zalohy_dlouhodobe, "2400.00", {jednotka: "1001/8", sluzba: PSDP}]
+        - [md, pohledavky_vlastnici, "1800.00", {jednotka: "1001/8", sluzba: TEPLO}]
+        - [d, zalohy_sluzby.TEPLO, "1800.00", {jednotka: "1001/8", sluzba: TEPLO}]
+        - [md, pohledavky_vlastnici, "900.00", {jednotka: "1001/8", sluzba: VODA}]
+        - [d, zalohy_sluzby.VODA, "900.00", {jednotka: "1001/8", sluzba: VODA}]
+        - [md, pohledavky_vlastnici, "50.00", {jednotka: "1001/8", sluzba: PAUSAL}]
+        - [d, vynosy.pausal, "50.00", {jednotka: "1001/8", sluzba: PAUSAL}]
+      poznamka: Částky jsou ilustrativní.
+
+- id: mimoradna-zaloha
+  nazev: Předpis mimořádné dlouhodobé zálohy
+  kdy: Shromáždění rozhodne o jednorázovém nebo dočasném příspěvku na konkrétní opravu nebo investici.
+  stav: praxe
+  doklad: PR
+  vstupy: {jednotka: označení jednotky, castka: částka, rozhodnuti: odkaz na usnesení}
+  zapisy:
+    - md: pohledavky_vlastnici
+      d: zalohy_dlouhodobe_mimoradne
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Bez odkazu na rozhodnutí shromáždění operaci nelze zaúčtovat.
+    - Účel mimořádné zálohy se eviduje; její čerpání se sleduje zvlášť od běžného fondu oprav.
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1180 odst. 1"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: mimořádná záloha na konkrétní akci se vede na samostatném analytickém účtu fondu oprav"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Mimořádná záloha jednotky
+      vstupy: {jednotka: "1001/2", castka: "1500.00", rozhodnuti: "shromáždění 2024, bod 5"}
+      ocekavane:
+        - [md, pohledavky_vlastnici, "1500.00", {jednotka: "1001/2"}]
+        - [d, zalohy_dlouhodobe_mimoradne, "1500.00", {jednotka: "1001/2"}]

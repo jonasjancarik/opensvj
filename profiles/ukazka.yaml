@@ -1,0 +1,145 @@
+# Ukázkové fiktivní SVJ pro testy a vyzkoušení aplikace. Jména, čísla i částky jsou
+# vymyšlené; žádné skutečné SVJ to není.
+#
+# Role s hvězdičkou platí pro všechny služby: účet = syntetický účet + analytika služby.
+# Konkrétní role (bez hvězdičky) má přednost před hvězdičkou.
+
+id: ukazka
+nazev: Společenství vlastníků Ukázková 12
+ico: "12345678"
+sidlo: Ukázková 1001/12, 120 00 Praha 2
+statutarni_organ: výbor společenství (3 členové)
+prispevky: zalohove
+
+# Jednotky: označení (číslo popisné/číslo jednotky), podlahová plocha v m² a podíl na
+# společných částech (tady podle plochy, jmenovatel 8600).
+jednotky:
+  - {oznaceni: "1001/1", plocha: "54.30", podil: "543/8600"}
+  - {oznaceni: "1001/2", plocha: "71.80", podil: "718/8600"}
+  - {oznaceni: "1001/3", plocha: "71.80", podil: "718/8600"}
+  - {oznaceni: "1001/4", plocha: "54.30", podil: "543/8600"}
+  - {oznaceni: "1001/5", plocha: "88.20", podil: "882/8600"}
+  - {oznaceni: "1001/6", plocha: "62.40", podil: "624/8600"}
+  - {oznaceni: "1001/7", plocha: "62.40", podil: "624/8600"}
+  - {oznaceni: "1001/8", plocha: "88.20", podil: "882/8600"}
+  - {oznaceni: "1001/9", plocha: "105.60", podil: "1056/8600"}
+  - {oznaceni: "1001/10", plocha: "47.50", podil: "475/8600"}
+  - {oznaceni: "1001/11", plocha: "120.00", podil: "1200/8600"}
+  - {oznaceni: "1001/12", plocha: "33.50", podil: "335/8600"}
+
+# Variabilní symbol plateb vlastníků: 1001 + číslo jednotky (3 číslice) + pořadí vlastníka
+# (2 číslice), např. 100100601 pro 1001/6.
+vs_predpona: "1001"
+
+sluzby:
+  ELEKTRINA: {analytika: "002", nazev: Elektřina}
+  ELEKTRINA_VYTAH: {analytika: "003", nazev: Elektřina výtah}
+  OHREV_TUV: {analytika: "004", nazev: Náklady na ohřev}
+  ROZUCTOVANI: {analytika: "005", nazev: Náklady na rozúčtování}
+  TEPLO: {analytika: "006", nazev: Náklady na teplo}
+  ODPAD: {analytika: "007", nazev: Odpad}
+  SV_TUV: {analytika: "011", nazev: SV pro TV}
+  UKLID: {analytika: "012", nazev: Úklid}
+  VODA: {analytika: "013", nazev: Vodné a stočné}
+  VYTAH: {analytika: "014", nazev: Výtah}
+
+# Krátkodobé zálohy na správu domu. Nejsou to služby podle § 2 zákona 67/2013, takže do
+# vyúčtování služeb nepatří; vyúčtují se jako správa. Klíč pro roční vyúčtování: podíl na
+# společných částech, nebo rovným dílem na jednotku u odměny správce a vlastní správní
+# činnosti (§ 1180 odst. 2 OZ).
+sprava:
+  DROBNE_OPRAVY: {analytika: "001", nazev: Drobné opravy, klic: podil}
+  OSTATNI: {analytika: "008", nazev: Ostatní náklady (revize), klic: podil}
+  POJISTENI: {analytika: "009", nazev: Pojištění domu, klic: podil}
+  SPRAVA: {analytika: "010", nazev: Správa nemovitosti, klic: jednotka}
+
+role:
+  banka.provozni: "221100"
+  banka.fond_oprav: "221200"
+  penize_na_ceste: "261100"
+  pohledavky_vlastnici: "311100"
+  pohledavky_vyuctovani: "311200"
+  pohledavky_vyuctovani_minule: "311300"
+  zalohy_dodavatelum.ELEKTRINA: "314100"
+  zalohy_dodavatelum.VODA: "314200"
+  zalohy_dodavatelum.TEPLO: "314300"
+  zalohy_dodavatelum.ELEKTRINA_VYTAH: "314400"
+  zalohy_dodavatelum.*: "314999"
+  naklady_sluzeb.*: "315{analytika}"
+  naklady_spravy.*: "315{analytika}"
+  dodavatele: "321100"
+  zalohy_sluzby.*: "324{analytika}"
+  zalohy_sprava.*: "324{analytika}"
+  nevyjasnene_vydaje: "378900"   # ověřit s účetní
+  nevyjasnene_prijmy: "379900"   # ověřit s účetní
+  naklady_pristich_obdobi: "381100"
+  dohadne_pasivni: "389100"
+  vnitrni_zuctovani: "395100"
+  naklady.opravy: "511100"
+  naklady.sprava: "518100"
+  naklady.pojisteni: "518200"
+  naklady.ostatni: "518300"
+  naklady.banka: "549100"
+  naklady.dan_srazkova: "591100"
+  naklady.prevod_do_fo: "549300"
+  vynosy.predpis: "602000"
+  vynosy.pacht: "602100"
+  vynosy.pausal: "602200"
+  vynosy.uroky: "644100"
+  vynosy.pojistne_plneni: "648100"
+  vynosy.prevod_do_vyuctovani: "649100"
+  zalohy_dlouhodobe: "955100"
+  zalohy_dlouhodobe_mimoradne: "955200"
+  pocatecni_rozvazny: "961000"
+  # Obecné role pro operace z knihy (Durec, Účetnictví SVJ, 3. vyd.: úvěry kap. 7, dotace 6.3.4,
+  # majetek 9, dluhy vlastníků 10, odměny orgánů 15; syntetické účty podle vzorového rozvrhu
+  # s. 111–114). Analytiky jsou návrh k ověření s účetní.
+  majetek: "022100"
+  majetek_porizovani: "042100"
+  opravky_majetku: "082100"
+  zasoby: "112100"
+  pokladna: "211100"
+  pohledavky_vlastnici_sankce: "311400"
+  zavazky_odmeny: "379100"
+  zavazky_pojistne: "336100"
+  zavazky_dan_odmeny: "342100"
+  narok_dotace: "346100"
+  pohledavky_uver: "378100"
+  pohledavky_dotace: "378200"
+  opravne_polozky: "391100"
+  naklady.spotreba: "501100"
+  naklady.odmeny: "523100"
+  naklady.odvody: "524100"
+  naklady.odpis_pohledavky: "543100"
+  naklady.uroky_uver: "544100"
+  naklady.odpisy: "551100"
+  naklady.opravne_polozky: "559100"
+  vynosy.urok_z_prodleni: "641100"
+  vynosy.dotace: "691100"
+  zdroj_majetku: "901100"
+  uvery: "951100"
+  zalohy_dlouhodobe_uver: "955300"
+  zalohy_dlouhodobe_pochybne: "955900"
+
+# Názvy rozvahových účtů, jak je uvádí analytická rozvaha.
+nazvy_uctu:
+  "221100": Provozní účet
+  "221200": Účet fondu oprav
+  "261100": Peníze na cestě
+  "311100": Pohledávky za vlastníky (předpisy)
+  "311200": Pohledávky z vyúčtování 2025
+  "311300": Pohledávky z vyúčtování minulých let
+  "314100": Záloha na elektřinu společných prostor
+  "314200": Záloha na vodu
+  "314300": Záloha na elektřinu kotelny
+  "314400": Záloha na elektřinu výtahu
+  "314999": Ostatní poskytnuté zálohy
+  "321100": Dodavatelé
+  "378900": Nevyjasněné výdaje
+  "379900": Nevyjasněné příjmy
+  "381100": Náklady příštích období
+  "389100": Dohadné účty pasivní
+  "955100": Fond oprav (dlouhodobé zálohy)
+  "955200": Mimořádné zálohy do fondu oprav
+  "961000": Počáteční účet rozvažný
+  zalohy_dlouhodobe_mimoradne: "955200"

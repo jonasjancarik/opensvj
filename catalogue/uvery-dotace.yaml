@@ -1,0 +1,212 @@
+# Úvěry a dotace podle Durce (Účetnictví SVJ, 3. vyd.). Operace jsou obecné
+# a zatím je nikdo v praxi nepoužil. Formát viz README.md v této složce.
+
+- id: uver-uhrada-faktury
+  nazev: Úhrada faktury z úvěru
+  kdy: Banka zaplatí fakturu (obvykle za opravu nebo rekonstrukci) přímo z úvěrového účtu SVJ.
+  stav: navrh
+  doklad: BV
+  vstupy: {protistrana: dodavatel, castka: částka faktury hrazená z úvěru}
+  zapisy:
+    - md: dodavatele
+      d: uvery
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Doklad je výpis z úvěrového účtu. Samotná faktura se účtuje běžně (oprava 511 nebo z fondu oprav podle rozhodnutí).
+    - Dlouhodobý úvěr je v rozvaze mezi dlouhodobými závazky (B.II).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, př. bod 2)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Oprava fasády placená z úvěru na deset let
+      vstupy: {protistrana: stavebni_firma, castka: "1200000.00"}
+      ocekavane:
+        - [md, dodavatele, "1200000.00", {protistrana: stavebni_firma}]
+        - [d, uvery, "1200000.00", {}]
+
+- id: uver-predpis-mimoradnych-zaloh
+  nazev: Předpis mimořádných záloh na splácení úvěru
+  kdy: Shromáždění rozhodne, že vlastníci splatí jistinu (případně i úroky) mimořádnými zálohami; předepíše se podíl každé jednotky najednou.
+  stav: navrh
+  doklad: ID
+  vstupy: {podily: "seznam {jednotka, castka}: podíl jednotky na splácení úvěru"}
+  zapisy:
+    - pro_kazde: podily
+      md: pohledavky_uver
+      d: zalohy_dlouhodobe_uver
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Podíly se obvykle dělí podle podílů na společných částech, stejně jako náklad, na který se úvěr čerpal.
+    - Do měsíčních předpisů se pak vkládají splátky operací uver-splatka-do-predpisu, dokud podíl jednotky na 378 není vyrovnaný.
+    - Jednorázové doplacení podílu vlastníkem neomezuje jeho ručení vůči bance (§ 1194 odst. 2 OZ).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–65 (kap. 7.1, př. bod 3)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Dvě jednotky, jistina 1 200 000 Kč (zkráceno)
+      vstupy:
+        podily:
+          - {jednotka: "1001/1", castka: "90000.00"}
+          - {jednotka: "1001/2", castka: "110000.00"}
+      ocekavane:
+        - [md, pohledavky_uver, "90000.00", {jednotka: "1001/1"}]
+        - [d, zalohy_dlouhodobe_uver, "90000.00", {jednotka: "1001/1"}]
+        - [md, pohledavky_uver, "110000.00", {jednotka: "1001/2"}]
+        - [d, zalohy_dlouhodobe_uver, "110000.00", {jednotka: "1001/2"}]
+
+- id: uver-splatka-do-predpisu
+  nazev: Měsíční splátka mimořádné zálohy v předpisu jednotky
+  kdy: Každý měsíc, dokud jednotka nesplatí svůj podíl na úvěru.
+  stav: navrh
+  doklad: PR
+  vstupy: {jednotka: označení jednotky, castka: měsíční splátka podílu}
+  zapisy:
+    - md: pohledavky_vlastnici
+      d: pohledavky_uver
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Splátka se přidává k běžnému měsíčnímu předpisu; vlastník ji platí spolu se zálohami.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 65 (kap. 7.1, př. bod 4)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Měsíční splátka 10 000 Kč
+      vstupy: {jednotka: "1001/1", castka: "10000.00"}
+      ocekavane:
+        - [md, pohledavky_vlastnici, "10000.00", {jednotka: "1001/1"}]
+        - [d, pohledavky_uver, "10000.00", {jednotka: "1001/1"}]
+
+- id: uver-urok
+  nazev: Úroky a poplatky z úvěru podle výpisu z úvěrového účtu
+  kdy: Banka předepíše úroky nebo poplatky na úvěrový účet.
+  stav: navrh
+  doklad: BV
+  vstupy: {uroky: úroky za období, poplatky: poplatky za vedení úvěru}
+  zapisy:
+    - md: naklady.uroky_uver
+      d: uvery
+      castka: "{uroky}"
+    - md: naklady.banka
+      d: uvery
+      castka: "{poplatky}"
+  pravidla:
+    - Úroky nesou vlastníci obvykle podle podílů, poplatky za vedení úvěru jako vlastní správní činnost rovným dílem (kniha s. 64, pozn. 78).
+    - U zálohových příspěvků se náklady na konci roku vyúčtují ze záloh na správu nebo z fondu oprav podle rozhodnutí.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, př. body 5 a 6)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Roční úroky a poplatky
+      vstupy: {uroky: "31000.00", poplatky: "1500.00"}
+      ocekavane:
+        - [md, naklady.uroky_uver, "31000.00", {}]
+        - [d, uvery, "31000.00", {}]
+        - [md, naklady.banka, "1500.00", {}]
+        - [d, uvery, "1500.00", {}]
+
+- id: uver-splatka
+  nazev: Splátka úvěru z provozního účtu
+  kdy: Měsíční splátka odejde z běžného účtu SVJ na úvěrový účet.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, krok: "odchod | prichod", castka: splátka}
+  zapisy:
+    - krok: odchod
+      md: penize_na_ceste
+      d: "banka.{ucet}"
+      castka: "{castka}"
+    - krok: prichod
+      md: uvery
+      d: penize_na_ceste
+      castka: "{castka}"
+  pravidla:
+    - Dva doklady: výpis z běžného účtu (odchod) a výpis z úvěrového účtu (příchod). Mezi nimi peníze leží na 261.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 65 (kap. 7.1, př. body 7 a 8)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Odchod splátky z běžného účtu
+      krok: odchod
+      vstupy: {ucet: provozni, castka: "10000.00"}
+      ocekavane:
+        - [md, penize_na_ceste, "10000.00", {}]
+        - [d, banka.provozni, "10000.00", {}]
+    - nazev: Připsání splátky na úvěrový účet
+      krok: prichod
+      vstupy: {ucet: provozni, castka: "10000.00"}
+      ocekavane:
+        - [md, uvery, "10000.00", {}]
+        - [d, penize_na_ceste, "10000.00", {}]
+
+- id: dotace-rozhodnuti
+  nazev: Rozhodnutí o poskytnutí dotace
+  kdy: Dotační orgán vydal rozhodnutí; vzniká nepochybný nárok na dotaci.
+  stav: navrh
+  doklad: ID
+  vstupy: {poskytovatel: dotační orgán, castka: přiznaná dotace}
+  zapisy:
+    - md: pohledavky_dotace
+      d: narok_dotace
+      castka: "{castka}"
+      dimenze: {protistrana: "{poskytovatel}"}
+  pravidla:
+    - Účtuje se dnem vydání rozhodnutí, ne dnem připsání peněz (ČUS 411 odst. 4.4.1 písm. f)). Na dotaci není právní nárok, dokud rozhodnutí není.
+    - Dotace od obce nebo kraje patří na 348 místo 346; profil to řeší rolí narok_dotace.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 52–53 (kap. 6.3.4, př. bod 3)"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002 § 27 odst. 1; ČUS 411 odst. 4.4.1 písm. f)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Dotace na výměnu oken
+      vstupy: {poskytovatel: mesto, castka: "450000.00"}
+      ocekavane:
+        - [md, pohledavky_dotace, "450000.00", {protistrana: mesto}]
+        - [d, narok_dotace, "450000.00", {protistrana: mesto}]
+
+- id: dotace-pouziti
+  nazev: Použití dotace na dotované náklady
+  kdy: V roce, kdy vznikly dotované náklady (a rozhodnutí o dotaci už je).
+  stav: navrh
+  doklad: ID
+  vstupy: {poskytovatel: dotační orgán, castka: část dotace na náklady tohoto roku}
+  zapisy:
+    - md: narok_dotace
+      d: vynosy.dotace
+      castka: "{castka}"
+      dimenze: {protistrana: "{poskytovatel}"}
+  pravidla:
+    - Výnos z dotace se účtuje ve věcné a časové souvislosti s dotovanými náklady; dotace na víc let se rozpustí postupně.
+    - Dotace nejsou předmětem daně z příjmů SVJ.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 52–54 (kap. 6.3.4, př. bod 4)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Použití dotace na výměnu oken
+      vstupy: {poskytovatel: mesto, castka: "450000.00"}
+      ocekavane:
+        - [md, narok_dotace, "450000.00", {protistrana: mesto}]
+        - [d, vynosy.dotace, "450000.00", {}]
+
+- id: dotace-prijeti
+  nazev: Přijetí dotace na účet
+  kdy: Poskytovatel dotaci vyplatí.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, poskytovatel: dotační orgán, castka: připsaná částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_dotace
+      castka: "{castka}"
+      dimenze: {protistrana: "{poskytovatel}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 53 (kap. 6.3.4, př. bod 5)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Dotace přijatá v dalším roce
+      vstupy: {ucet: provozni, poskytovatel: mesto, castka: "450000.00"}
+      ocekavane:
+        - [md, banka.provozni, "450000.00", {}]
+        - [d, pohledavky_dotace, "450000.00", {protistrana: mesto}]

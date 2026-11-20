@@ -1,0 +1,133 @@
+# Dluhy vlastníků: úrok z prodlení, pochybné a nedobytné pohledávky (Durec, Účetnictví SVJ,
+# 3. vyd., kap. 6.3 a 10). Formát viz README.md v této složce.
+
+- id: urok-z-prodleni
+  nazev: Předpis úroku z prodlení vlastníkovi
+  kdy: Společenství úrok skutečně uplatní (upomínka s úrokem, výzva, žaloba nebo rozhodnutí shromáždění) a dá se čekat, že ho vlastník zaplatí.
+  stav: navrh
+  doklad: ID
+  vstupy: {jednotka: označení jednotky, castka: úrok z prodlení}
+  zapisy:
+    - md: pohledavky_vlastnici_sankce
+      d: vynosy.urok_z_prodleni
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Dokud SVJ úrok nepožaduje, neúčtuje se; aplikace ho jen ukazuje u dlužníka (NV 351/2013 Sb.).
+    - Výše se počítá ze zákonné sazby; pohledávka i s úrokem nesmí převýšit částku, kterou lze od dlužníka reálně získat (interpretace NÚR I-10).
+    - Úrok z prodlení od vlastníka je výnos SVJ a daní se v roce, kdy ho vlastník zaplatí (§ 23 odst. 3 ZDP).
+    - Vedený zvlášť od předpisů (311400), takže se nepočítá do dluhů, které přecházejí při prodeji jednotky; na stránce Dlužníci se zatím neukazuje.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 48–49 (kap. 6.3)"}
+    - {typ: zakon, odkaz: "OZ § 1970; nařízení vlády 351/2013 Sb. § 2"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úrok předepsaný podle rozhodnutí shromáždění
+      vstupy: {jednotka: "1001/3", castka: "1250.00"}
+      ocekavane:
+        - [md, pohledavky_vlastnici_sankce, "1250.00", {jednotka: "1001/3"}]
+        - [d, vynosy.urok_z_prodleni, "1250.00", {jednotka: "1001/3"}]
+
+- id: uhrada-uroku-z-prodleni
+  nazev: Úhrada úroku z prodlení vlastníkem
+  kdy: Vlastník zaplatí předepsaný úrok z prodlení.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, castka: zaplacený úrok}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_vlastnici_sankce
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 49 (kap. 6.3)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úhrada části úroku
+      vstupy: {ucet: provozni, jednotka: "1001/3", castka: "1000.00"}
+      ocekavane:
+        - [md, banka.provozni, "1000.00", {}]
+        - [d, pohledavky_vlastnici_sankce, "1000.00", {jednotka: "1001/3"}]
+
+- id: pochybne-pohledavky-vycleneni
+  nazev: Vyčlenění zdroje krytí pochybných pohledávek ve fondu oprav
+  kdy: Ke konci roku, když dluhy některých vlastníků jsou tak vysoké nebo staré, že by zůstatek fondu oprav klamal (fond je vyšší, než kolik má SVJ skutečně peněz).
+  stav: navrh
+  doklad: ID
+  vstupy: {castka: výše pochybných pohledávek}
+  zapisy:
+    - md: zalohy_dlouhodobe
+      d: zalohy_dlouhodobe_pochybne
+      castka: "{castka}"
+  pravidla:
+    - Jde jen o přesun mezi analytikami fondu oprav; celková výše dlouhodobých záloh vlastníků se nemění.
+    - Výši pochybných pohledávek a způsob jejich krytí je nutné uvést v příloze k účetní závěrce.
+    - Kniha uvádí dva postupy; tento je bez odchylky od předpisů. Druhý (opravná položka 559/391) je varianta níže.
+    - Když dlužník zaplatí nebo se pohledávka odepíše, zápis se obrátí (záporná částka).
+  varianty:
+    - id: opravna-polozka
+      kdy: SVJ se rozhodne pro odchylný postup podle § 7 odst. 2 zákona o účetnictví (vyhláška 504 § 37 jinak připouští jen zákonné opravné položky).
+      stav: overit
+      zmena: "MD naklady.opravne_polozky / D opravne_polozky; zrušení MD opravne_polozky / D naklady.opravne_polozky. Odchylku popsat v příloze (§ 7 odst. 5 ZoÚ)."
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 73–75 (kap. 10.1)"}
+    - {typ: zakon, odkaz: "zákon o účetnictví § 7 odst. 2 a 5; vyhláška 504/2002 § 37 odst. 1"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Pochybné dluhy 180 000 Kč
+      vstupy: {castka: "180000.00"}
+      ocekavane:
+        - [md, zalohy_dlouhodobe, "180000.00", {}]
+        - [d, zalohy_dlouhodobe_pochybne, "180000.00", {}]
+    - nazev: Dlužník zaplatil, vyčlenění se ruší
+      vstupy: {castka: "-180000.00"}
+      ocekavane:
+        - [md, zalohy_dlouhodobe_pochybne, "180000.00", {}]
+        - [d, zalohy_dlouhodobe, "180000.00", {}]
+
+- id: opravna-polozka-tvorba
+  nazev: Tvorba opravné položky k pochybné pohledávce za vlastníkem
+  kdy: Jen pokud SVJ zvolí odchylný postup podle § 7 odst. 2 zákona o účetnictví a popíše ho v příloze.
+  stav: overit
+  doklad: ID
+  vstupy: {castka: výše opravné položky}
+  zapisy:
+    - md: naklady.opravne_polozky
+      d: opravne_polozky
+      castka: "{castka}"
+  pravidla:
+    - Zrušení opravné položky (po úhradě nebo odpisu) je stejný zápis se zápornou částkou.
+    - Před použitím ověřit s účetní; běžnější je vyčlenění ve fondu oprav (pochybne-pohledavky-vycleneni).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 74 (kap. 10.1, postup 1)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Tvorba opravné položky
+      vstupy: {castka: "180000.00"}
+      ocekavane:
+        - [md, naklady.opravne_polozky, "180000.00", {}]
+        - [d, opravne_polozky, "180000.00", {}]
+
+- id: odpis-nedobytne-pohledavky
+  nazev: Odpis nedobytné pohledávky za vlastníkem
+  kdy: Pohledávka je nedobytná (typicky skončené insolvenční řízení) a SVJ rozhodlo o odpisu.
+  stav: navrh
+  doklad: ID
+  vstupy: {jednotka: označení jednotky, castka: odepisovaná částka, rozhodnuti: odkaz na rozhodnutí}
+  zapisy:
+    - md: naklady.odpis_pohledavky
+      d: pohledavky_vlastnici
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Pokud byla vytvořena opravná položka nebo vyčleněn zdroj krytí, ruší se současně (opravna-polozka-tvorba nebo pochybne-pohledavky-vycleneni se zápornou částkou).
+    - Odpisem dluh nezaniká; jen se přestane vykazovat. Náklad je třeba rozpočítat vlastníkům jako ostatní náklady na správu.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 75 (kap. 10.1, odpis)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Odpis po skončení insolvence
+      vstupy: {jednotka: "1001/3", castka: "42000.00", rozhodnuti: "shromáždění 2026"}
+      ocekavane:
+        - [md, naklady.odpis_pohledavky, "42000.00", {jednotka: "1001/3"}]
+        - [d, pohledavky_vlastnici, "42000.00", {jednotka: "1001/3"}]

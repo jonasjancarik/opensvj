@@ -1,0 +1,202 @@
+# Bankovní operace. Formát viz README.md v této složce.
+
+- id: uhrada-predpisu
+  nazev: Úhrada předpisu vlastníkem
+  kdy: Příchozí platba spárovaná s jednotkou (podle VS, protiúčtu nebo ručně).
+  stav: praxe
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, castka: částka platby}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_vlastnici
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Datum zápisu je datum zaúčtování na výpisu.
+    - Párování na konkrétní předpisy (kvůli upomínkám a úrokům) je doménová tabulka; deník nese jen jednotku.
+    - Přeplatek nad otevřené předpisy zůstává jako záporné saldo jednotky.
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: platba vlastníka se přiřadí k jednotce podle variabilního symbolu a sníží její pohledávku"}
+    - {typ: zakon, odkaz: "OZ § 1932, § 1933 (započtení plnění)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Platba s VS jednotky
+      vstupy: {castka: "10000.00", ucet: provozni, jednotka: "1001/8"}
+      ocekavane:
+        - [md, banka.provozni, "10000.00", {}]
+        - [d, pohledavky_vlastnici, "10000.00", {jednotka: "1001/8"}]
+
+- id: prijem-nesparovany
+  nazev: Nespárovaný příchozí pohyb
+  kdy: Příchozí platbu se nepodařilo přiřadit a je třeba ji zaúčtovat (měsíční kontrola nebo uzávěrka).
+  stav: overit
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, castka: částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: nevyjasnene_prijmy
+      castka: "{castka}"
+  pravidla:
+    - Pohyb přejde do stavu `nevyjasneny`. Nevyjasněný zůstatek blokuje uzávěrku, dokud ho osoba s oprávněním nerozhodne nebo vědomě nepřenese s komentářem do přílohy.
+    - Účet pro roli `nevyjasnene_prijmy` musí potvrdit účetní.
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 8 odst. 3 (úplnost)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Neznámá platba bez VS
+      vstupy: {castka: "1500.00", ucet: provozni}
+      ocekavane:
+        - [md, banka.provozni, "1500.00", {}]
+        - [d, nevyjasnene_prijmy, "1500.00", {}]
+
+- id: prijem-vyjasneni
+  nazev: Vyjasnění dříve nespárovaného příjmu
+  kdy: Dodatečně se zjistí, komu nebo k čemu nespárovaný příjem patří.
+  stav: overit
+  doklad: ID
+  vstupy: {castka: částka, jednotka: označení jednotky}
+  zapisy:
+    - md: nevyjasnene_prijmy
+      d: pohledavky_vlastnici
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Vnitřní doklad odkazuje na původní pohyb a nese podpisový záznam toho, kdo rozhodl.
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 11, § 33a odst. 1 písm. c)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Platba patřila jednotce 1001/2
+      vstupy: {castka: "1500.00", jednotka: "1001/2"}
+      ocekavane:
+        - [md, nevyjasnene_prijmy, "1500.00", {}]
+        - [d, pohledavky_vlastnici, "1500.00", {jednotka: "1001/2"}]
+
+- id: prevod-mezi-ucty
+  nazev: Převod mezi vlastními bankovními účty
+  kdy: Odchozí pohyb z jednoho účtu SVJ a příchozí na druhý.
+  stav: praxe
+  doklad: BV
+  vstupy: {z: zdrojový účet, na: cílový účet, castka: částka}
+  zapisy:
+    - krok: odchod
+      md: penize_na_ceste
+      d: "banka.{z}"
+      castka: "{castka}"
+    - krok: prichod
+      md: "banka.{na}"
+      d: penize_na_ceste
+      castka: "{castka}"
+  pravidla:
+    - Každý krok se účtuje z vlastního výpisu a vlastním datem.
+    - Zůstatek 261 k rozvahovému dni musí být vysvětlen, jinak blokuje uzávěrku.
+  zdroje:
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, skupina 26"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ s provozním účtem a účtem fondu oprav: převod jde přes peníze na cestě a k 31. 12. tam nic nezůstane"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Převod z provozního účtu na účet fondu oprav
+      vstupy: {castka: "50000.00", z: provozni, na: fond_oprav}
+      ocekavane:
+        - [md, penize_na_ceste, "50000.00", {}]
+        - [d, banka.provozni, "50000.00", {}]
+        - [md, banka.fond_oprav, "50000.00", {}]
+        - [d, penize_na_ceste, "50000.00", {}]
+
+- id: uhrada-faktury
+  nazev: Úhrada přijaté faktury
+  kdy: Odchozí platba spárovaná s fakturou dodavatele.
+  stav: praxe
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, protistrana: dodavatel, castka: částka}
+  zapisy:
+    - md: dodavatele
+      d: "banka.{ucet}"
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Platba bez schválené faktury se neúčtuje na 321; jde přes `vydaj-bez-faktury`.
+    - Částečná úhrada nechá zbytek na saldu dodavatele.
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: schválená faktura je závazek na 321 a úhrada z výpisu ho vyrovná"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úklid 12/2025
+      vstupy: {castka: "4200.00", ucet: provozni, protistrana: uklid}
+      ocekavane:
+        - [md, dodavatele, "4200.00", {protistrana: uklid}]
+        - [d, banka.provozni, "4200.00", {}]
+
+- id: poplatek-banky
+  nazev: Bankovní poplatek
+  kdy: Banka strhne poplatek za vedení účtu nebo transakci.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, castka: částka}
+  zapisy:
+    - md: naklady.banka
+      d: "banka.{ucet}"
+      castka: "{castka}"
+  pravidla:
+    - Náklady na bankovní účty jsou náklady vlastní správní činnosti; do vyúčtování jdou s klíčem `jednotka`.
+  zdroje:
+    - {typ: zakon, odkaz: "NV 366/2013 § 17 písm. a); OZ § 1180 odst. 2"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Poplatek 50 Kč
+      vstupy: {castka: "50.00", ucet: provozni}
+      ocekavane:
+        - [md, naklady.banka, "50.00", {}]
+        - [d, banka.provozni, "50.00", {}]
+
+- id: urok-a-srazkova-dan
+  nazev: Připsaný úrok a srážková daň
+  kdy: Banka připíše úrok a sama srazí daň.
+  stav: overit
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, urok_hruby: hrubý úrok, dan: sražená daň}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: vynosy.uroky
+      castka: "{urok_hruby}"
+    - md: naklady.dan_srazkova
+      d: "banka.{ucet}"
+      castka: "{dan}"
+  pravidla:
+    - Hrubý úrok a daň se berou z výpisu nebo potvrzení banky.
+    - Úroky z vkladů jsou příjmem SVJ; po zdanění srážkou SVJ s jen takovými příjmy nepodává přiznání k DPPO (podle odpovědi Finanční správy).
+  zdroje:
+    - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. d); zákon 586/1992 § 36"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úrok 100 Kč, daň 15 %
+      vstupy: {urok_hruby: "100.00", dan: "15.00", ucet: fond_oprav}
+      ocekavane:
+        - [md, banka.fond_oprav, "100.00", {}]
+        - [d, vynosy.uroky, "100.00", {}]
+        - [md, naklady.dan_srazkova, "15.00", {}]
+        - [d, banka.fond_oprav, "15.00", {}]
+
+- id: vraceni-preplatku
+  nazev: Vrácení přeplatku vlastníkovi
+  kdy: Vyplacení přeplatku z vyúčtování nebo přeplatku na saldu.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, zdroj: role pohledávky, castka: částka}
+  zapisy:
+    - md: "{zdroj}"
+      d: "banka.{ucet}"
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Výplata jen na účet ověřený u vlastníka a se schválením podle podpisového řádu.
+    - Přeplatek z vyúčtování je splatný do 4 měsíců od doručení vyúčtování (zákon 67/2013 § 7 odst. 2).
+  zdroje:
+    - {typ: zakon, odkaz: "zákon 67/2013 § 7 odst. 2"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Přeplatek 4 649 Kč
+      vstupy: {castka: "4649.00", ucet: provozni, jednotka: "1001/4", zdroj: pohledavky_vyuctovani}
+      ocekavane:
+        - [md, pohledavky_vyuctovani, "4649.00", {jednotka: "1001/4"}]
+        - [d, banka.provozni, "4649.00", {}]

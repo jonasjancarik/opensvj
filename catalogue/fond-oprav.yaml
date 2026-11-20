@@ -1,0 +1,82 @@
+# Fond oprav (dlouhodobé zálohy na správu domu, účet 955). Formát viz README.md v této složce.
+
+- id: cerpani-fo
+  nazev: Oprava nebo údržba hrazená z fondu oprav
+  kdy: Faktura za opravu, údržbu, revizi nebo technický dozor, o jejímž hrazení z fondu rozhodl výbor nebo shromáždění.
+  stav: praxe
+  doklad: FP
+  vstupy: {protistrana: dodavatel, castka: částka, rozhodnuti: odkaz na rozhodnutí}
+  zapisy:
+    - md: zalohy_dlouhodobe
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Faktura musí být schválená podle podpisového řádu; nad limit je potřeba odkaz na rozhodnutí.
+    - Fond nesmí jít do záporu bez výslovného rozhodnutí (aplikace varuje).
+    - Revize zařízení a součástí domu patří sem nebo do vyúčtované správy, ne do služeb (zákon 67/2013 § 2 odst. 1 písm. d)).
+  varianty:
+    - id: pres-naklady
+      kdy: Profil SVJ chce mít opravy z fondu ve výsledovce.
+      stav: overit
+      zmena: "MD naklady.opravy_fo / D dodavatele a MD zalohy_dlouhodobe / D vynosy.zuctovani_fo."
+  zdroje:
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 1, B.II.4 Přijaté dlouhodobé zálohy"}
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: opravy hrazené z fondu snižují přímo fond oprav a ve výsledovce nejsou"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Oprava výtahu schválená výborem
+      vstupy: {castka: "120000.00", protistrana: vytahy, rozhodnuti: "usnesení výboru 3/2026"}
+      ocekavane:
+        - [md, zalohy_dlouhodobe, "120000.00", {protistrana: vytahy}]
+        - [d, dodavatele, "120000.00", {protistrana: vytahy}]
+
+- id: prevod-vynosu-do-fo
+  nazev: Převod výnosů SVJ do fondu oprav
+  kdy: Pokud SVJ rozhodlo, že jeho výnosy (paušální složky předpisu, úroky, pacht) zvyšují fond oprav.
+  stav: praxe
+  doklad: ID
+  vstupy: {castka: součet převáděných výnosů}
+  zapisy:
+    - md: naklady.prevod_do_fo
+      d: zalohy_dlouhodobe
+      castka: "{castka}"
+  pravidla:
+    - Seznam převáděných výnosů je v profilu SVJ s odkazem na rozhodnutí.
+    - Převádí se jednou ročně, nebo každý měsíc spolu s předpisem; četnost určuje profil SVJ.
+  zdroje:
+    - {typ: praxe, odkaz: "Běžná praxe SVJ: výnosy z paušálních složek předpisu, pachtu a úroků se převedou do fondu oprav vnitřním dokladem"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Roční převod výnosů
+      vstupy: {castka: "12000.00"}
+      ocekavane:
+        - [md, naklady.prevod_do_fo, "12000.00", {}]
+        - [d, zalohy_dlouhodobe, "12000.00", {}]
+
+- id: pojistne-plneni
+  nazev: Pojistné plnění za škodu na společných částech
+  kdy: Pojišťovna uhradí škodu.
+  stav: overit
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, castka: částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: vynosy.pojistne_plneni
+      castka: "{castka}"
+  pravidla:
+    - Pojistné plnění je příjmem SVJ (NV 366/2013 § 16 odst. 1 písm. f)).
+  varianty:
+    - id: snizeni-nakladu
+      kdy: SVJ účtuje pojistné plnění jako snížení nákladů na pojištění.
+      stav: praxe
+      zmena: "MD banka / D naklady.pojisteni."
+  zdroje:
+    - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. f)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úhrada škody
+      vstupy: {castka: "7000.00", ucet: provozni}
+      ocekavane:
+        - [md, banka.provozni, "7000.00", {}]
+        - [d, vynosy.pojistne_plneni, "7000.00", {}]

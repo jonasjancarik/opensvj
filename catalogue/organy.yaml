@@ -1,0 +1,61 @@
+# Odměny členů výboru a dalších orgánů (Durec, Účetnictví SVJ, 3. vyd., kap. 15).
+# Formát viz README.md v této složce.
+
+- id: odmena-vyboru
+  nazev: Zúčtování odměny člena výboru
+  kdy: Měsíčně nebo jednou za čas podle rozhodnutí shromáždění o odměnách.
+  stav: overit
+  doklad: ID
+  vstupy:
+    clen: označení člena orgánu (bez osobních údajů v deníku)
+    hruba: hrubá odměna
+    dan: srážková daň nebo záloha na daň (15 %)
+    pojistne_clen: zdravotní a sociální pojištění sražené členovi (0, když se neodvádí)
+    pojistne_svj: zdravotní a sociální pojištění placené za člena společenstvím (0, když se neodvádí)
+  zapisy:
+    - md: naklady.odmeny
+      d: zavazky_odmeny
+      castka: "{hruba}"
+      dimenze: {protistrana: "{clen}"}
+    - md: zavazky_odmeny
+      d: zavazky_dan_odmeny
+      castka: "{dan}"
+      dimenze: {protistrana: "{clen}"}
+    - md: zavazky_odmeny
+      d: zavazky_pojistne
+      castka: "{pojistne_clen}"
+      dimenze: {protistrana: "{clen}"}
+    - md: naklady.odvody
+      d: zavazky_pojistne
+      castka: "{pojistne_svj}"
+  pravidla:
+    - Odměna člena orgánu je příjem ze závislé činnosti (§ 6 odst. 1 písm. c) ZDP); SVJ je pro daň „zaměstnavatelem“.
+    - Pod rozhodným příjmem (4 500 Kč měsíčně v roce 2026) se u člena SVJ bez prohlášení k dani strhne jen 15% srážková daň; pojistné se neodvádí. Od rozhodného příjmu záloha na daň 15 %, zdravotní 4,5 % + 9 % a sociální 7,1 % + 24,8 %.
+    - Nečlen SVJ platí zdravotní pojištění vždy, i pod rozhodným příjmem.
+    - Srážková daň u závislé činnosti se má od roku 2027 rušit; sazby i hranici ověřit před každým rokem.
+    - Výplata odměny je bankovní pohyb MD zavazky_odmeny / D banka; odvody MD zavazky_dan_odmeny nebo zavazky_pojistne / D banka.
+    - Před první odměnou je potřeba registrace u finančního úřadu, ČSSZ a zdravotní pojišťovny (kniha s. 103–104).
+    - Dohoda o provedení práce (např. úklid) se účtuje jinak: mzda 521/331, srážková daň 331/342 (kniha s. 26).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 35–36 (předpis odměn 523/379, pojistné 524/336) a s. 100–104 (kap. 15.3 a 15.4)"}
+    - {typ: zakon, odkaz: "ZDP § 6 odst. 1 písm. c), § 36 odst. 2 písm. m), § 38h; zákon 589/1992 § 7–8; zákon 592/1992 § 5"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Člen SVJ, odměna 3 000 Kč měsíčně (jen srážková daň)
+      vstupy: {clen: predseda, hruba: "3000.00", dan: "450.00", pojistne_clen: "0", pojistne_svj: "0"}
+      ocekavane:
+        - [md, naklady.odmeny, "3000.00", {protistrana: predseda}]
+        - [d, zavazky_odmeny, "3000.00", {protistrana: predseda}]
+        - [md, zavazky_odmeny, "450.00", {protistrana: predseda}]
+        - [d, zavazky_dan_odmeny, "450.00", {protistrana: predseda}]
+    - nazev: Člen SVJ, odměna 5 000 Kč měsíčně (daň i pojistné)
+      vstupy: {clen: predseda, hruba: "5000.00", dan: "750.00", pojistne_clen: "580.00", pojistne_svj: "1690.00"}
+      ocekavane:
+        - [md, naklady.odmeny, "5000.00", {protistrana: predseda}]
+        - [d, zavazky_odmeny, "5000.00", {protistrana: predseda}]
+        - [md, zavazky_odmeny, "750.00", {protistrana: predseda}]
+        - [d, zavazky_dan_odmeny, "750.00", {protistrana: predseda}]
+        - [md, zavazky_odmeny, "580.00", {protistrana: predseda}]
+        - [d, zavazky_pojistne, "580.00", {protistrana: predseda}]
+        - [md, naklady.odvody, "1690.00", {}]
+        - [d, zavazky_pojistne, "1690.00", {}]
