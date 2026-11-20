@@ -121,6 +121,9 @@ Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
 2. **Export hlavní knihy.** Deník v databázi aplikace je zdroj pravdy. Návrh je přidat
    deterministický export do Beancountu: nezávislá kontrola zůstatků (`bean-check`,
    kontrola proti výpisům) a prohlížeč Fava pro výbor.
+   Vedle toho export pro programy účetních (CSV a XLSX, Pohoda XML, Money S3 XML), import
+   počátečních zůstatků a příjem faktur v ISDOC. Otevřené je, jestli knihy vede OpenSVJ,
+   nebo účetní ve svém programu (viz [Výměna dat s programy účetních](01-domena.md#výměna-dat-s-programy-účetních)).
 3. **Postupy, které musí potvrdit účetní.** Čerpání fondu oprav (přímo 955/321, nebo přes
    náklady), pojistné plnění, účty pro nevyjasněné položky a zaokrouhlovací rozdíl
    z vyúčtování. V katalogu mají stav `overit`. Aplikace je zaúčtuje a uzávěrka je
@@ -128,3 +131,6 @@ Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
 4. **Volby SVJ dané rozhodnutím orgánů.** Klíče rozúčtování služeb, význam paušálních
    složek předpisu, zařazení revizí a kdo platí předpis za měsíc převodu jednotky. Profil
    SVJ je má mít s odkazem na rozhodnutí.
+5. **Příjem pohybů z banky.** Návrh je přijímat výpisy e-mailem, číst pohyby přes API Fio
+   a avíza o platbách brát jen jako předběžné pohyby, které potvrdí až výpis (viz
+   [Odkud pohyby přicházejí](01-domena.md#odkud-pohyby-přicházejí)).

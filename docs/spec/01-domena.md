@@ -157,6 +157,31 @@ převede na účet ve skupině 22. Účel se bere z nastavení, ne z názvu úč
 - Formát výpisu je výměnný. Přehled pohybů bez zůstatků slouží k průběžnému zaúčtování,
   navázání zůstatků ověří až výpis.
 
+### Odkud pohyby přicházejí
+
+Návrh. Dnes se výpis nahrává ručně. Další zdroje podle spolehlivosti:
+
+1. **Výpis e-mailem.** Banka posílá denní nebo měsíční výpis ve zvoleném formátu (GPC/ABO,
+   CAMT.053) na adresu SVJ v aplikaci. Výpis má zůstatky i čísla transakcí a projde stejným
+   importem jako nahraný soubor. Které banky to umějí a v jakém formátu, je potřeba ověřit.
+2. **API banky.** Fio dává klientům token k API zdarma a vrací plnohodnotné pohyby se
+   zůstatky. Firemní API dalších bank a agregátory PSD2 mají jiné podmínky a obvykle stojí
+   peníze.
+3. **Avízo o platbě e-mailem.** Banka pošle upozornění na každou příchozí platbu a aplikace
+   z něj přečte částku, datum, VS, protiúčet a zprávu. Přehled o platbách je tak skoro
+   okamžitý, ale avízo nemá zůstatek, často ani číslo transakce, může se ztratit a jeho
+   podobu banka mění bez ohlášení. Čtení se proto píše pro každou banku zvlášť.
+
+Avízo vytvoří **předběžný pohyb**, ne `BankovniPohyb`. Předběžný pohyb jde spárovat
+a ukázat v saldu vlastníka jako přijatou platbu, ale nezaúčtuje se. Po importu výpisu se
+připojí k odpovídajícímu pohybu (účet, datum, částka, VS, protiúčet) a návrh párování
+přejde na něj. Předběžný pohyb, ke kterému se do konce měsíce nenajde pohyb ve výpisu,
+uzávěrka měsíce připomene.
+
+E-mail na adresu SVJ může poslat kdokoli. Aplikace přijme výpis i avízo jen od domény
+banky s platným SPF, DKIM a DMARC a adresa má nehádatelnou část. Přijatý e-mail se uloží
+jako neměnný podklad se SHA-256 stejně jako nahraný výpis.
+
 ### Stav pohybu
 
 `nezpracovany → sparovany` (předpis, faktura, převod mezi účty, poplatek, úrok), nebo
@@ -284,6 +309,39 @@ Zdrojem pravdy je deník v databázi aplikace. Zůstatky a obraty se z něj poč
 Návrh do budoucna: každý zaúčtovaný zápis exportovat i do Beancountu s metadaty (doklad,
 jednotka) a uzavřený rok uložit s hashem. Beancount pak poslouží jako nezávislá kontrola
 a Fava jako prohlížeč.
+
+### Výměna dat s programy účetních
+
+Návrh. Účetní, kteří SVJ vedou, mají většinou vlastní program (Pohoda, Money S3, ABRA
+Flexi a jiné). Jednotný český standard pro předání účetního deníku neexistuje, každý
+program má vlastní formát. Export proto vychází z rolí účtů: profil SVJ určí účtový
+rozvrh účetní a analytiky se složí z dimenzí řádků.
+
+Rozhodnout je potřeba, kde se knihy vedou:
+
+1. **Knihy vede OpenSVJ.** Účetní deník kontroluje a dělá závěrku. Stačí čitelný export
+   deníku, hlavní knihy, předvahy a saldokonta vlastníků a dodavatelů (CSV a XLSX).
+2. **Knihy vede účetní ve svém programu.** OpenSVJ připraví předpisy, párování plateb
+   a vyúčtování a předá je jako doklady. Export pak musí:
+   - jít opakovat bez zdvojení: doklad má stálé číslo a exportuje se po dávkách od
+     poslední předané,
+   - opravu předat jako storno a nový doklad, nikdy jako změnu už předaného dokladu,
+   - počítat s tím, že změny udělané v programu účetní se do OpenSVJ nevrátí. Uzavřený
+     rok se proto porovná podle předvahy z obou stran.
+
+Formáty podle pořadí užitku:
+
+| Formát | Směr | Obsah |
+| --- | --- | --- |
+| CSV a XLSX | export | deník, hlavní kniha, předvaha, saldokonto |
+| CSV předvahy a saldokonta | import | počáteční zůstatky a otevřené pohledávky a závazky při přechodu z jiného programu |
+| Pohoda XML | export | interní doklady s rozúčtováním MD/D, bankovní doklady, přijaté faktury, adresář |
+| ISDOC | import | přijaté faktury z PDF s vloženým ISDOC nebo ze samostatného souboru jako strukturovaný podklad |
+| Money S3 XML | export | stejné typy dokladů jako u Pohody |
+
+Bankovní doklad se v programu účetní dá spárovat s výpisem, který si účetní naimportuje
+z banky. Export proto nese číslo výpisu a klíč pohybu. Před prací na formátech pro konkrétní
+programy je potřeba ověřit s několika účetními SVJ, co opravdu používají.
 
 ### Uzávěrka
 
