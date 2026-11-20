@@ -6,6 +6,7 @@ při commitu transakce, takže ji nejde obejít ani přímým SQL.
 """
 
 from datetime import date, datetime
+from decimal import Decimal
 from functools import lru_cache
 
 from sqlalchemy import (
@@ -17,6 +18,7 @@ from sqlalchemy import (
     ForeignKey,
     Identity,
     Integer,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -302,3 +304,42 @@ class UlozenyFormular(Zaklad):
     upravil: Mapped[str] = mapped_column(String(128))
     jmeno: Mapped[str] = mapped_column(String(128), default="")
     upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Meridlo(Zaklad):
+    """Měřidlo jednotky, nebo domu (jednotka None), osazené od–do."""
+
+    __tablename__ = "meridlo"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    jednotka: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    druh: Mapped[str] = mapped_column(String(32))
+    vyrobni_cislo: Mapped[str] = mapped_column(String(64))
+    umisteni: Mapped[str] = mapped_column(String(200), default="")
+    osazeno_od: Mapped[date] = mapped_column(Date)
+    odstraneno_do: Mapped[date | None] = mapped_column(Date, nullable=True)
+    nahrazuje_id: Mapped[int | None] = mapped_column(ForeignKey("meridlo.id"), nullable=True)
+    poznamka: Mapped[str] = mapped_column(Text, default="")
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    odecty: Mapped[list["Odecet"]] = relationship(
+        back_populates="meridlo", order_by="Odecet.datum", cascade="all, delete-orphan"
+    )
+
+
+class Odecet(Zaklad):
+    """Stav měřidla k datu."""
+
+    __tablename__ = "odecet"
+    __table_args__ = (UniqueConstraint("meridlo_id", "datum", name="odecet_jeden_za_den"),)
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    meridlo_id: Mapped[int] = mapped_column(ForeignKey("meridlo.id", ondelete="CASCADE"))
+    datum: Mapped[date] = mapped_column(Date)
+    stav: Mapped[Decimal] = mapped_column(Numeric(14, 3))
+    zdroj: Mapped[str] = mapped_column(String(200), default="")
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    meridlo: Mapped[Meridlo] = relationship(back_populates="odecty")

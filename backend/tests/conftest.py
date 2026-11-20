@@ -35,7 +35,7 @@ def session(db_url):
     with eng.begin() as c:
         c.execute(
             text(
-                "TRUNCATE vlastnictvi_osoba, vlastnictvi, osoba,"
+                "TRUNCATE odecet, meridlo, vlastnictvi_osoba, vlastnictvi, osoba,"
                 " odskrtnuti_uzaverky, ulozeny_formular, faktura, pravidlo_parovani,"
                 " parovani_pohybu, bankovni_pohyb,"
                 " bankovni_vypis, bankovni_ucet, radek_zapisu, zapis, obdobi"
