@@ -23,6 +23,8 @@ Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/pri
 - vést vlastníky jednotek s historií převodů a jejich kontakty a při prodeji jednotky
   ponechat prodávajícímu dluhy, které na kupujícího nepřešly,
 - vést měřidla a odečty a spočítat z nich roční spotřebu jednotek,
+- vést rozhodnutí shromáždění a výboru a u výše záloh, klíčů a voleb ukázat, o které
+  rozhodnutí se opírají,
 - vytisknout upomínku, potvrzení o dluzích pro prodej jednotky a oznámení o nové výši záloh
   se jménem a adresou vlastníka,
 - vyúčtovat zálohy na správu domu,
@@ -199,6 +201,14 @@ měřidla součet obou. Kde odečet chybí, spotřebu aplikace nespočítá a ř
 doplnit. Rozúčtování tepla a vody podle vyhlášky 269/2015 Sb. nedělá; odečty jsou
 podklad pro zúčtovatele a kontrolu jeho výsledků.
 
+### Rozhodnutí
+
+Stránka Rozhodnutí vede usnesení shromáždění, výboru a předsedy: kdo a kdy rozhodl, bod
+programu, znění, hlasování a kde je zápis uložený. U každé verze předpisu záloh, splatnosti,
+klíče vyúčtování správy a voleb z profilu (kdo platí měsíc převodu, zálohové příspěvky)
+jde vybrat rozhodnutí, o které se opírá. Co doložené není, ukáže stránka i kontrolní
+seznam uzávěrky. Když se v profilu klíč nebo volba změní, položka čeká na nové rozhodnutí.
+
 ### Oznámení o výši záloh
 
 Stránka Oznámení o zálohách (odkaz je na stránce Předpisy) porovná novou verzi předpisu s předchozí
@@ -228,7 +238,7 @@ Stránka Uzávěrka má pět částí:
 
 - co zbývá udělat: kontroly, které aplikace ověří sama z účetnictví (počáteční stavy,
   předpisy, nezaúčtované pohyby, zůstatky proti výpisům, vyrovnané pomocné účty,
-  vyúčtování), a body, které se odškrtávají ručně,
+  vyúčtování, doložená rozhodnutí), a body, které se odškrtávají ručně,
 - rozvaha a výsledovka ve zkráceném rozsahu, v tisících Kč i přesně,
 - inventura: zůstatky rozvahových účtů s rozpisem po jednotkách nebo fakturách a tisk
   inventurních soupisů se zákonnými náležitostmi,

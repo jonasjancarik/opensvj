@@ -75,13 +75,16 @@ testy a data jsou mimo veřejný repozitář.
   se navrhnou převodci; po přesunu je saldo současného vlastníka bez nich a přesun se
   nepočítá jako platba.
 
-### Vlastníci a měřidla
+### Vlastníci, měřidla a rozhodnutí
 
 - Období vlastnictví jedné jednotky na sebe navazují a nepřekrývají se.
 - Odečet nesmí klesnout pod předchozí ani přesáhnout pozdější stav a musí být v době, kdy
   bylo měřidlo osazené.
 - Spotřeba s výměnou vodoměru během roku je součet obou měřidel; když chybí odečet na
   začátku nebo konci roku, spotřeba se nespočítá a aplikace řekne, který odečet chybí.
+- Rozhodnutí přiřazené k verzi předpisu nebo volbě ji dokládá; po změně volby v profilu
+  položka čeká na nové rozhodnutí a smazané rozhodnutí přestane cokoli dokládat.
+  Uzávěrka hlásí verze předpisu platné v roce bez doloženého rozhodnutí.
 
 ### Výkazy a uzávěrka
 

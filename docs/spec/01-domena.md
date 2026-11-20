@@ -86,6 +86,18 @@ rozúčtování podle vyhlášky 269/2015 Sb.
 na něj každá složka předpisu, klíč vyúčtování a volba v profilu. Bez odkazu se uloží jako
 „bez doloženého rozhodnutí“ a ukáže se mezi upozorněními.
 
+**V aplikaci:** stránka Rozhodnutí, tabulky `rozhodnuti` a `rozhodnuti_pro`. Orgánem je
+shromáždění, shromáždění per rollam, výbor nebo předseda společenství. Přílohu (zápis)
+aplikace zatím neukládá, jen text, kde je uložený. Rozhodnutí se přiřazuje k **verzi
+předpisu** jako celku, ne ke každé složce zvlášť, protože shromáždění obvykle schvaluje
+celý předpis najednou. Dál se přiřazuje ke splatnosti záloh, ke klíči každé položky
+vyúčtování správy a k volbám `predpis_mesice_prevodu` a `prispevky` z profilu. Přiřazení
+je v databázi, ne v profilu, takže ho jde měnit v rozhraní. Klíč položky obsahuje
+zvolenou hodnotu (`klic-spravy:SPRAVA:jednotka`); po změně profilu proto položka čeká na
+nové rozhodnutí. Kontrolní seznam uzávěrky má bod „Výše záloh, klíče a volby mají
+doložené rozhodnutí“ s verzemi předpisu, které v roce platily. Klíče vyúčtování služeb
+přibudou s vyúčtováním služeb.
+
 **V aplikaci:** SVJ, jednotky (označení, plocha, podíl) a služby jsou v profilu SVJ
 (`profiles/<id>.yaml`); podíl zatím nemá platnost v čase. Počty osob jsou u verze předpisu.
 Osoby a vlastnictví jsou v databázi (stránka Vlastníci). Nové vlastnictví po posledním
@@ -95,8 +107,7 @@ jsou nepovinné a musí dát celek. Souhlas s doručováním e-mailem se uklád�
 o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Dluhy, které při
 převodu zůstávají prodávajícímu, se zapisují u záznamu kupujícího v historii vlastnictví
 (tlačítko Dluhy při převodu); jeden převod jde zaúčtovat jednou, oprava je storno
-v deníku. Rozhodnutí v aplikaci
-zatím nejsou; jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
+v deníku. Jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
 
 ## 2. Předpisy
 
