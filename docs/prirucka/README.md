@@ -13,7 +13,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 | 2 | [Příspěvky na správu domu](02-prispevky.md) | hotovo |
 | 3 | [Služby a jejich vyúčtování](03-sluzby.md) | hotovo |
 | 4 | [Ostatní výnosy: úroky, sankce, pojistné plnění, dotace, pronájem, fotovoltaika](04-vynosy.md) | hotovo |
-| 5 | Úvěry | připravuje se |
+| 5 | [Úvěry](05-uvery.md) | hotovo |
 | 6 | Majetek a zásoby | připravuje se |
 | 7 | Dluhy vlastníků | připravuje se |
 | 8 | Doklady a průkaznost | připravuje se |

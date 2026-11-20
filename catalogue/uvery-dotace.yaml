@@ -13,7 +13,7 @@
       castka: "{castka}"
       dimenze: {protistrana: "{protistrana}"}
   pravidla:
-    - Doklad je výpis z úvěrového účtu. Samotná faktura se účtuje běžně (oprava 511 nebo z fondu oprav podle rozhodnutí).
+    - Doklad je výpis z úvěrového účtu. Samotná faktura se účtuje běžně do nákladů: oprava společných částí 547, technické zhodnocení 546 (příručka, kapitola 2).
     - Dlouhodobý úvěr je v rozvaze mezi dlouhodobými závazky (B.II).
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, př. bod 2)"}
