@@ -220,29 +220,32 @@ S účetní je potřeba potvrdit účtový rozvrh: 311, nebo 315 pro pohledávky
 ## Příklad
 
 Ukázková 12 má 860 m² a do fondu oprav vybírá 45 Kč za m² měsíčně, ročně tedy 464 400 Kč.
-Na běžnou správu předepisuje zálohy 180 000 Kč ročně. V roce 2026 zaplatí:
+Na běžnou správu předepisuje zálohy 19 460 Kč měsíčně: drobné opravy 1 Kč za m² a pojištění,
+revize a správu pevnou částkou 1 550 Kč na jednotku. Ročně je to 233 520 Kč. V roce 2026
+zaplatí:
 
 | Náklad | Kč |
 | --- | ---: |
-| pojištění domu | 48 000 |
-| odměna správce a vedení účetnictví | 96 000 |
-| revize | 18 000 |
-| bankovní poplatky | 10 000 |
+| pojištění domu | 54 000 |
+| odměna správce a vedení účetnictví | 120 000 |
+| revize | 30 000 |
+| drobné opravy | 9 000 |
+| bankovní poplatky | 6 000 |
 | oprava střechy | 260 000 |
-| celkem | 432 000 |
+| celkem | 479 000 |
 
-**Zálohově.** K 31. 12. SVJ stanoví příspěvky ve výši nákladů, 432 000 Kč (311/649).
-Z krátkodobých záloh uhradí 172 000 Kč (324/311) a z fondu oprav 260 000 Kč (955/311).
-Na krátkodobých zálohách zbude 8 000 Kč přeplatku, který se vlastníkům vyúčtuje po
+**Zálohově.** K 31. 12. SVJ stanoví příspěvky ve výši nákladů, 479 000 Kč (311/649).
+Z krátkodobých záloh uhradí 219 000 Kč (324/311) a z fondu oprav 260 000 Kč (955/311).
+Na krátkodobých zálohách zbude 14 520 Kč přeplatku, který se vlastníkům vyúčtuje po
 jednotkách a vypořádá podle stanov. Fond oprav vzroste o 204 400 Kč. Výsledovka má náklady
-i výnosy 432 000 Kč a výsledek nula.
+i výnosy 479 000 Kč a výsledek nula.
 
-**Nezálohově.** Vlastníci zaplatí příspěvky 644 400 Kč (464 400 + 180 000) přímo jako
+**Nezálohově.** Vlastníci zaplatí příspěvky 697 920 Kč (464 400 + 233 520) přímo jako
 výnos (311/649). Střecha se zaplatí z fondu ze zisku, ve kterém má SVJ z minulých let
-dost peněz: 260 000 Kč se rozpustí do výnosů (911/648). Výnosy jsou 904 400 Kč, náklady
-432 000 Kč, zisk 472 400 Kč. Shromáždění ho v příštím roce převede zpět do fondu
-(931/911). Fond ze zisku tak za rok vzroste o 212 400 Kč.
+dost peněz: 260 000 Kč se rozpustí do výnosů (911/648). Výnosy jsou 957 920 Kč, náklady
+479 000 Kč, zisk 478 920 Kč. Shromáždění ho v příštím roce převede zpět do fondu
+(931/911). Fond ze zisku tak za rok vzroste o 218 920 Kč.
 
-Peněz je v obou případech stejně: 204 400 Kč ve fondu oprav a 8 000 Kč přeplatku proti
-212 400 Kč ve fondu ze zisku. Liší se, komu patří. Zálohy jsou závazkem vůči jednotlivým
+Peněz je v obou případech stejně: 204 400 Kč ve fondu oprav a 14 520 Kč přeplatku proti
+218 920 Kč ve fondu ze zisku. Liší se, komu patří. Zálohy jsou závazkem vůči jednotlivým
 vlastníkům a každý vidí svůj podíl. Fond ze zisku je vlastním zdrojem SVJ.

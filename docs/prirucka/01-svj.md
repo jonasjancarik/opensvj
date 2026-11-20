@@ -129,7 +129,7 @@ zaměstnanců (§ 1b odst. 2). Většina SVJ je mikro, větší domy s velkým f
 | audit účetní závěrky | ne; povinný je až u střední a velké účetní jednotky | § 20 odst. 1 ZoÚ |
 | součásti závěrky | rozvaha, výkaz zisku a ztráty, příloha | § 18 ZoÚ, vyhláška 504 |
 | schválení | shromáždění | § 1208 písm. c) OZ |
-| zveřejnění | uložením do sbírky listin rejstříku SVJ, nejpozději do 12 měsíců od rozvahového dne | § 21a odst. 1, 2 a 4 ZoÚ |
+| zveřejnění | uložením do sbírky listin rejstříku SVJ do 30 dnů od schválení, nejpozději do 12 měsíců od rozvahového dne | § 21a odst. 1, 2 a 4 ZoÚ |
 | výkaz zisku a ztráty ve sbírce listin | nemusí se zveřejňovat | § 21a odst. 9 ZoÚ |
 
 Povinnost zveřejnit závěrku platí okamžikem předání rejstříkovému soudu (§ 21a odst. 4).
@@ -188,14 +188,16 @@ odst. 2). Projednává je finanční úřad.
 
 Ukázková 12 je dům s dvanácti jednotkami, takže SVJ v něm muselo vzniknout. Statutárním
 orgánem je tříčlenný výbor, účetnictví vede správce. Ke 31. 12. 2026 má SVJ aktiva
-asi 1,9 mil. Kč, hlavně peníze fondu oprav, a obrat pod 1 mil. Kč, zaměstnance nemá.
-Je tedy mikro účetní jednotkou a audit nepotřebuje.
+kolem 3 mil. Kč, hlavně peníze fondu oprav a nesplacené podíly vlastníků na úvěru
+(kapitola 5), a roční obrat kolem 1,6 mil. Kč, zaměstnance nemá. Hranice mikro účetní
+jednotky jsou daleko, audit SVJ nepotřebuje.
 
 | Kdy | Co | Podle čeho |
 | --- | --- | --- |
-| březen 2027 | správce sestaví účetní závěrku za rok 2026 | § 18 ZoÚ |
-| duben 2027 | shromáždění závěrku schválí | § 1208 písm. c) OZ |
-| nejpozději 31. 12. 2027 | závěrka je ve sbírce listin; výkaz zisku a ztráty tam být nemusí | § 21a odst. 2, 4 a 9 ZoÚ |
+| 20. 3. 2027 | správce sestaví účetní závěrku za rok 2026 a výbor ji podepíše | § 18 ZoÚ |
+| 25. 5. 2027 | shromáždění závěrku schválí | § 1208 písm. c) OZ |
+| do 24. 6. 2027 | závěrka je ve sbírce listin, 30 dnů od schválení; výkaz zisku a ztráty tam být nemusí | § 21a odst. 2, 4 a 9 ZoÚ |
+| 31. 12. 2027 | nejzazší termín zveřejnění, i kdyby shromáždění závěrku neschválilo | § 21a odst. 4 ZoÚ |
 | do 31. 12. 2031 | uchovat doklady, knihy a inventurní soupisy za rok 2026 | § 31 odst. 2 písm. b) ZoÚ |
 | do 31. 12. 2036 | uchovat účetní závěrku za rok 2026 | § 31 odst. 2 písm. a) ZoÚ |
 

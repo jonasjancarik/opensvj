@@ -181,8 +181,8 @@ plnění a úrok ze spořicího účtu.
 
 **Rok 2026.** Úrok z prodlení zaplacený v roce 2026 se daní, pokuta zatím ne. Ve výnosech
 je, ale nebyla zaplacená, a proto se základ o ni na řádku 111 sníží. Základ daně je 950 Kč
-a po zaokrouhlení na celé tisíce dolů 0 Kč. Daň je nula, ale SVJ mělo zdanitelný příjem,
-takže výjimka podle § 38mb písm. b) ZDP neplatí. Ukázková 12 se zaregistruje k dani
+a po zaokrouhlení na celé tisíce dolů 0 Kč. Daň je nula, ale úrok i pokuta jsou předmětem
+daně, takže výjimka podle § 38mb písm. b) ZDP neplatí. Ukázková 12 se zaregistruje k dani
 z příjmů a přiznání za rok 2026 podá do 1. 4. 2027, elektronicky do 3. 5. 2027
 (1. 5. 2027 je sobota).
 

@@ -234,8 +234,9 @@ najednou, až je jasné, kolik zůstane nezaplaceno.
 zaplatil ještě v roce 2026. Odpis 78 000 Kč je náklad na správu za rok 2029 a SVJ ho při
 vyúčtování rozpočítá vlastníkům jako ostatní náklady.
 
-**Prodej jednotky.** Vlastník jednotky 1001/6 prodává jednotku a 2. 9. 2026 požádá
-o potvrzení o dluzích. Nezaplatil zálohy za srpen, 12 740,40 Kč splatných 15. 8. Výbor
+**Prodej jednotky.** Vlastník jednotky 1001/7 se dvěma osobami prodává jednotku
+a 2. 9. 2026 požádá o potvrzení o dluzích. Nezaplatil zálohy za srpen, 12 860,40 Kč
+splatných 15. 8. Výbor
 nahraje aktuální výpis a vytiskne potvrzení. V něm je srpnová záloha jako splatný dluh
 a zářijová záloha, splatná 15. 9., jako ještě nesplatná. Prodávající zářijovou zálohu
 zaplatí včas, srpnovou ne. Kupující se stane vlastníkem 1. 10. Srpnová záloha na něj

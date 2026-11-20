@@ -308,10 +308,11 @@ Výnosy SVJ za rok 2026 jsou 54 027 Kč (1 027 + 12 000 + 41 000). U zálohovýc
 o ně SVJ k 31. 12. sníží příspěvky stanovené na krytí nákladů, takže výsledek zůstane
 nulový. Nájemné výsledek neovlivní, je to závazek vůči vlastníkům.
 
-Daň z příjmů: úrok je zdaněný srážkou a pojistné plnění není předmětem daně. Pokutu SVJ
-za rok 2026 nedostalo, takže o 12 000 Kč sníží základ daně. V roce 2027 ji dostane
-zápočtem a o stejnou částku základ zvýší. SVJ má v tom roce zdanitelný příjem, a výjimka
-z povinnosti podat přiznání podle § 38mb písm. b) ZDP se na něj proto nevztahuje.
+Daň z příjmů: úrok je zdaněný srážkou a pojistné plnění není předmětem daně. Pokuta je
+ve výnosech roku 2026 a předmětem daně je. SVJ ji ale za rok 2026 nedostalo, takže o ni
+základ daně sníží. V roce 2027 ji dostane zápočtem a o stejnou částku základ zvýší. Výjimka
+z povinnosti podat přiznání podle § 38mb písm. b) ZDP se proto na SVJ nevztahuje ani za
+jeden z obou roků. Výpočet je v kapitole 10.
 
 Nájemné se rozdělí podle podílů na společných částech. Jmenovatel podílů je 8 600, takže
 na každou 1/8 600 připadají 3 Kč. Jednotka 1001/6 s podílem 624/8 600 dostane 1 872 Kč.

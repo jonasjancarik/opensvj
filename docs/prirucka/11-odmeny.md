@@ -155,7 +155,7 @@ písm. q) a odst. 6 vyhlášky 504; kapitola 9).
 Kdyby shromáždění Ukázkové 12 v roce 2026 schválilo odměny, vypadaly by podle pravidel
 pro rok 2026 takto. Nikdo z členů nepodepsal u SVJ prohlášení k dani.
 
-| | Předseda, vlastník jednotky | Člen výboru, vlastník jednotky | Předseda zvenku, fakturuje |
+| | Předseda, vlastník jednotky | Člen výboru, vlastník jednotky | Člen výboru zvenku, fakturuje |
 | --- | ---: | ---: | ---: |
 | hrubá odměna měsíčně | 5 000 | 1 500 | 3 000 |
 | daň | záloha 750 | srážková 225 | srážková 450 |
@@ -166,8 +166,9 @@ pro rok 2026 takto. Nikdo z členů nepodepsal u SVJ prohlášení k dani.
 | sociální pojištění SVJ | 1 240 | 0 | 0 |
 | náklad SVJ celkem | 6 690 | 1 500 | 3 270 |
 
-Předseda zvenku vystaví fakturu na 3 000 Kč. SVJ ji přesto zaúčtuje jako odměnu,
-srazí daň a jeho zdravotní pojištění a vyplatí 2 415 Kč. Kdyby předseda, který je
+Třetí člen tříčlenného výboru v domě jednotku nemá, shromáždění ho zvolilo kvůli
+zkušenostem se správou domů. Za výkon funkce vystaví fakturu na 3 000 Kč. SVJ ji přesto zaúčtuje jako odměnu, srazí daň a jeho
+zdravotní pojištění a vyplatí 2 415 Kč. Kdyby předseda, který je
 vlastníkem jednotky, podepsal u SVJ prohlášení k dani, záloha 750 Kč by se snížila
 o slevu 2 570 Kč na nulu a vyplatilo by se 4 420 Kč.
 

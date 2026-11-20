@@ -38,6 +38,33 @@ U každého tvrzení je vidět, odkud pochází:
 Kde se výklad a běžná praxe rozcházejí, kapitola to řekne a nechá rozhodnutí na SVJ
 a jeho účetní.
 
+## Ukázková 12 v příkladech
+
+Ukázková 12 je dům s dvanácti jednotkami o celkové ploše 860 m². Podíl jednotky na
+společných částech je její plocha v desetinách m² na 8 600, takže jednotka 1001/6
+s plochou 62,40 m² má podíl 624/8 600. V domě je 26 osob rozhodných pro rozúčtování.
+SVJ má zálohové příspěvky, statutárním orgánem je tříčlenný výbor a účetnictví vede
+správce.
+
+Měsíční předpis jednotky ([`ukazka-predpisy.yaml`](../../profiles/ukazka-predpisy.yaml))
+je splatný 15. dne v měsíci a skládá se z těchto částí:
+
+| Složka | Výše |
+| --- | --- |
+| fond oprav | 45 Kč za m² |
+| drobné opravy | 1 Kč za m² |
+| pojištění, revize a správa | 1 550 Kč za jednotku |
+| služby (teplo, voda, elektřina, odpad, úklid, rozúčtování) | 8 200 Kč za jednotku, nebytový prostor 1001/11 méně |
+| výtah | 120 Kč za osobu |
+
+Jednotka 1001/3 (71,80 m², jedna osoba) tak platí 13 172,80 Kč měsíčně a jednotka 1001/6
+(62,40 m², jedna osoba) 12 740,40 Kč.
+
+Příklady se odehrávají hlavně v roce 2026 a jednotky, podíly, osoby i předpis mají všude
+stejné. Každá kapitola ale ukazuje jen své operace a čísla z různých kapitol se nesčítají.
+Splátky úvěru z kapitoly 5 tak například nejsou v předpisech v kapitole 7 a odměny výboru
+z kapitoly 11 jsou jen modelové.
+
 ## Zdroje
 
 Předpisy jsou citované v aktuálním znění, ověřeném na [Zákonech pro lidi](https://www.zakonyprolidi.cz).

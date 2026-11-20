@@ -193,14 +193,16 @@ Ukázková 12 sestavuje závěrku za rok 2026 ve zkráceném rozsahu. Inventariz
 dva členové výboru jako inventarizační komise. Inventura začne 1. 12. 2026 a skončí
 15. 2. 2027, tedy v zákonných mezích od 31. 8. 2026 do 28. 2. 2027.
 
-**Dohadná položka.** Správce vyfakturuje odměnu za prosinec 2026, 8 000 Kč, až
+**Dohadná položka.** Správce vyfakturuje odměnu za prosinec 2026, 10 000 Kč, až
 12. 1. 2027. K 31. 12. 2026 ji SVJ zaúčtuje odhadem do nákladů roku 2026 (518/389).
 V lednu se po příchodu faktury zápis vyrovná (389/321).
 
-**Událost po rozvahovém dni.** V prosinci 2026 poškodí vichřice oplechování střechy
-a oprava za 28 000 Kč je zaúčtovaná na 547. Pojišťovna 10. 2. 2027 písemně potvrdí, že
-plnění uzná po odečtení spoluúčasti 3 000 Kč. SVJ zaúčtuje odhad plnění 25 000 Kč do
-roku 2026 (388/649), protože škoda nastala do 31. 12. 2026 (kapitola 4).
+**Pojistné plnění oznámené po 31. 12.** V prosinci 2026 poškodí vichřice oplechování
+střechy a oprava za 28 000 Kč je zaúčtovaná na 547. Pojišťovna 10. 2. 2027 písemně
+oznámí plnění 23 000 Kč, tedy cenu opravy po odečtení spoluúčasti 5 000 Kč. Škoda
+nastala do 31. 12. 2026 a výše plnění je známá před sestavením závěrky, takže SVJ
+zaúčtuje do roku 2026 rovnou pohledávku a výnos (378/649). Odhad přes 388 by
+potřebovalo, jen kdyby pojišťovna výši do sestavení závěrky nesdělila (kapitola 4).
 
 **Inventura.** Komise ověří zůstatky obou bankovních účtů s výpisy k 31. 12. 2026,
 nezaplacené faktury se seznamem faktur a saldo každé jednotky. U jednotky 1001/5 vyjde

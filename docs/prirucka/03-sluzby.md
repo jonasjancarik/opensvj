@@ -239,17 +239,17 @@ a jaký účet použije pro pohledávky a zálohy.
 Ukázková 12 má výtah a 26 osob rozhodných pro rozúčtování. Shromáždění nic jiného
 nerozhodlo, takže se výtah rozúčtuje podle osob. Záloha je 120 Kč na osobu měsíčně.
 
-Za rok 2026 stál provoz výtahu 39 000 Kč, tedy 1 500 Kč na osobu. Jednotka 1001/6 má dvě
-osoby a po celý rok platila zálohu 240 Kč měsíčně, celkem 2 880 Kč. Připadá na ni
-3 000 Kč, nedoplatek je 120 Kč.
+Za rok 2026 stál provoz výtahu 39 000 Kč, tedy 1 500 Kč na osobu. V jednotce 1001/6 bydlí
+jedna osoba a po celý rok se za ni platila záloha 120 Kč měsíčně, celkem 1 440 Kč.
+Připadá na ni 1 500 Kč, nedoplatek je 60 Kč.
 
 | Kdy | Co | MD | D | Kč |
 | --- | --- | --- | --- | ---: |
-| každý měsíc | předpis zálohy 1001/6 | 311 | 324 výtah | 240 |
+| každý měsíc | předpis zálohy 1001/6 | 311 | 324 výtah | 120 |
 | během roku | faktury za servis a elektřinu výtahu | 315 výtah | 321 | 39 000 celkem |
-| vyúčtování | náklad 1001/6 | 311 | 315 výtah | 3 000 |
-| vyúčtování | zálohy 1001/6 | 324 výtah | 311 | 2 880 |
-| po doručení | vlastník doplatí | 221 | 311 | 120 |
+| vyúčtování | náklad 1001/6 | 311 | 315 výtah | 1 500 |
+| vyúčtování | zálohy 1001/6 | 324 výtah | 311 | 1 440 |
+| po doručení | vlastník doplatí | 221 | 311 | 60 |
 
 Termíny: období končí 31. 12. 2026, vyúčtování musí dojít do 30. 4. 2027. Dojde-li
 15. 4. 2027, může vlastník do 15. 5. 2027 požádat o podklady nebo podat námitky a nedoplatek
