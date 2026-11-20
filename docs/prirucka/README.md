@@ -9,7 +9,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 
 | | Kapitola | Stav |
 | --- | --- | --- |
-| 1 | SVJ jako účetní jednotka | připravuje se |
+| 1 | [SVJ jako účetní jednotka](01-svj.md) | hotovo |
 | 2 | [Příspěvky na správu domu](02-prispevky.md) | hotovo |
 | 3 | [Služby a jejich vyúčtování](03-sluzby.md) | hotovo |
 | 4 | [Ostatní výnosy: úroky, sankce, pojistné plnění, dotace, pronájem, fotovoltaika](04-vynosy.md) | hotovo |
