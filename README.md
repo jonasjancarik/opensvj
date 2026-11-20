@@ -20,7 +20,9 @@ Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/pri
 - převzít počáteční stavy k 1. 1. od dřívějšího správce, včetně dluhů vlastníků po jednotkách,
 - spočítat a zaúčtovat měsíční předpis záloh a ukázat, kolik která jednotka dluží, včetně
   zákonného úroku z prodlení,
-- vést vlastníky jednotek s historií převodů a jejich kontakty,
+- vést vlastníky jednotek s historií převodů a jejich kontakty a při prodeji jednotky
+  ponechat prodávajícímu dluhy, které na kupujícího nepřešly,
+- vést měřidla a odečty a spočítat z nich roční spotřebu jednotek,
 - vytisknout upomínku, potvrzení o dluzích pro prodej jednotky a oznámení o nové výši záloh
   se jménem a adresou vlastníka,
 - vyúčtovat zálohy na správu domu,
@@ -185,6 +187,17 @@ V upomínce ho jde zapnout. Do účetnictví se zapíše, až ho SVJ skutečně 
 Ke každé jednotce jde vytisknout potvrzení o dluzích pro prodej (§ 1186 odst. 3 OZ). Na
 kupujícího přejdou jen dluhy uvedené v potvrzení, proto stránka varuje, když nejsou
 zaúčtované všechny bankovní pohyby nebo je poslední výpis starší než týden.
+
+### Měřidla
+
+Stránka Měřidla vede vodoměry, měřiče tepla a indikátory topných nákladů v jednotkách
+i společná měřidla domu. Odečty se zapisují hromadně k jednomu dni; stav, který je menší
+než předchozí odečet, aplikace nepřijme a nabídne zapsat výměnu. Výměna uzavře staré
+měřidlo s konečným stavem a osadí nové s počátečním stavem. Spotřeba za rok je rozdíl
+odečtů kolem 31. 12. předchozího a 31. 12. daného roku (nejvýš měsíc vedle), u vyměněného
+měřidla součet obou. Kde odečet chybí, spotřebu aplikace nespočítá a řekne, který odečet
+doplnit. Rozúčtování tepla a vody podle vyhlášky 269/2015 Sb. nedělá; odečty jsou
+podklad pro zúčtovatele a kontrolu jeho výsledků.
 
 ### Oznámení o výši záloh
 

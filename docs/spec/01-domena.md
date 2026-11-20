@@ -68,6 +68,14 @@ osobo-měsíce; jak zaokrouhlit načaté měsíce, je volba SVJ.
 `Odecet(meridlo, datum, stav, zdroj)`. Výměna měřidla jedno uzavře a druhé otevře;
 spotřeba v roce je součet obou.
 
+**V aplikaci:** stránka Měřidla, tabulky `meridlo` a `odecet` (osobní údaje ani deník se
+jich netýkají). Druhy jsou studená a teplá voda, teplo, indikátor topných nákladů,
+elektřina a plyn. Stav s časem neklesá a jeden den má nejvýš jeden odečet. Výměna zapíše
+konečný stav starého měřidla a počáteční stav nového ve stejný den; nové si pamatuje,
+které nahradilo. Roční spotřeba bere odečet nejblíž 31. 12. předchozího roku (nebo dni
+osazení) a nejblíž 31. 12. roku (nebo dni odstranění), oba nejvýš 31 dní vedle; bez nich
+spotřebu nespočítá. Spotřeba zatím nevstupuje do žádného vyúčtování.
+
 Pro teplo a teplou vodu v první verzi stačí **převzít výsledky zúčtovatele po
 jednotkách** (`VysledekZuctovatele(rok, sluzba, jednotka, castka, zdroj)`), ne počítat
 rozúčtování podle vyhlášky 269/2015 Sb.
@@ -87,8 +95,8 @@ jsou nepovinné a musí dát celek. Souhlas s doručováním e-mailem se uklád�
 o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Dluhy, které při
 převodu zůstávají prodávajícímu, se zapisují u záznamu kupujícího v historii vlastnictví
 (tlačítko Dluhy při převodu); jeden převod jde zaúčtovat jednou, oprava je storno
-v deníku. Měřidla a rozhodnutí
-v aplikaci zatím nejsou; jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
+v deníku. Rozhodnutí v aplikaci
+zatím nejsou; jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
 
 ## 2. Předpisy
 
