@@ -3,6 +3,7 @@ import { api } from './auth'
 import { kc } from './penize'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
+import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import './vyuctovani.css'
 
 type Polozka = {
@@ -22,6 +23,7 @@ type Jednotka = {
   naklady: number
   rozdil: number
   polozky: PolozkaJednotky[]
+  vlastnici: Adresat[]
 }
 type Data = {
   rok: number
@@ -243,14 +245,15 @@ function ProVlastnika({ data, j, zpet }: { data: Data; j: Jednotka; zpet: () => 
       </div>
       <p className="tlumene neni-v-tisku">
         {data.zapis
-          ? 'Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu. Jméno a adresu vlastníka aplikace zatím nezná.'
+          ? 'Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu.'
           : 'Vyúčtování ještě není zaúčtované, čísla se do konce roku můžou změnit. Vlastníkům ho posílejte až po zaúčtování.'}
       </p>
+      <ChybiVlastnici jednotky={[j]} />
       <article className="upominka">
         <p>
           <strong>{data.svj}</strong>
         </p>
-        <p>Vlastník jednotky {j.jednotka}</p>
+        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} />
         <p className="vpravo">Dne {datum(data.dnes)}</p>
         <h2>Vyúčtování záloh na správu domu a pozemku za rok {data.rok}</h2>
         <p>

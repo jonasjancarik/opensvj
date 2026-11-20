@@ -4,6 +4,7 @@ import { StavFormulare, useSdilenyFormular } from './sdilenyFormular'
 import { kc } from './penize'
 import { SKUPINY } from './Predpisy'
 import { Chyba, Nacitani } from './ui'
+import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import './oznameni.css'
 
 type Slozka = {
@@ -13,7 +14,14 @@ type Slozka = {
   puvodne: number | null
   nove: number | null
 }
-type Jednotka = { jednotka: string; puvodne: number; nove: number; zmenena: boolean; slozky: Slozka[] }
+type Jednotka = {
+  jednotka: string
+  puvodne: number
+  nove: number
+  zmenena: boolean
+  slozky: Slozka[]
+  vlastnici: Adresat[]
+}
 type Data = {
   svj: string
   ico: string | null
@@ -193,9 +201,8 @@ function Tisk({
           Chybí odůvodnění změny. Doplňte ho na předchozí stránce.
         </p>
       )}
-      <p className="tlumene neni-v-tisku">
-        Každá jednotka je na samostatné stránce. Jméno a adresu vlastníka aplikace zatím nezná.
-      </p>
+      <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>
+      <ChybiVlastnici jednotky={jednotky} />
       {jednotky.map((j) => (
         <article key={j.jednotka} className="upominka oznameni">
           <p>
@@ -208,7 +215,7 @@ function Tisk({
               </>
             )}
           </p>
-          <p>Vlastník jednotky {j.jednotka}</p>
+          <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} />
           <p className="vpravo">Dne {datum(data.dnes)}</p>
           <h2>
             {prvni ? 'Oznámení o výši měsíčních záloh' : 'Oznámení o nové výši měsíčních záloh'} od{' '}

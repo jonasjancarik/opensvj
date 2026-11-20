@@ -66,6 +66,11 @@ export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednot
         </p>
         <h2>Potvrzení o dluzích vlastníka jednotky {j.jednotka}</h2>
         <p className="tlumene">podle § 1186 odst. 3 občanského zákoníku</p>
+        {j.vlastnici.length > 0 && (
+          <p>
+            Vlastník jednotky: {j.vlastnici.map((v) => v.jmeno).join(', ')}
+          </p>
+        )}
         {splatne.length === 0 ? (
           <p>
             Společenství potvrzuje, že k {datum(data.dnes)} u jednotky č. {j.jednotka} neeviduje

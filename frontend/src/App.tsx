@@ -12,12 +12,14 @@ import { Predpisy } from './Predpisy'
 import { Prehled } from './Prehled'
 import { Prihlaseni } from './Prihlaseni'
 import { Uzaverka } from './Uzaverka'
+import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
 
 const STRANKY = {
   prehled: 'Přehled',
   predpisy: 'Předpisy',
   dluznici: 'Dlužníci',
+  vlastnici: 'Vlastníci',
   faktury: 'Faktury',
   banka: 'Banka',
   vyuctovani: 'Vyúčtování',
@@ -97,6 +99,8 @@ export default function App() {
           <Oznameni />
         ) : stranka === 'dluznici' ? (
           <Dluznici />
+        ) : stranka === 'vlastnici' ? (
+          <Vlastnici />
         ) : stranka === 'faktury' ? (
           <Faktury />
         ) : stranka === 'denik' ? (

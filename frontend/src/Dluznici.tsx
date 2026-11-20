@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { api } from './auth'
 import { Chyba, Nacitani } from './ui'
+import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import { kc } from './penize'
 import { PotvrzeniDluhu } from './PotvrzeniDluhu'
 
@@ -23,6 +24,7 @@ export type Jednotka = {
   urok: number
   urok_neuplny: boolean
   polozky: Polozka[]
+  vlastnici: Adresat[]
 }
 export type Data = {
   rok: number
@@ -239,9 +241,9 @@ function Upominka({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka;
         <button onClick={() => window.print()}>Vytisknout</button>
       </div>
       <p className="tlumene neni-v-tisku">
-        Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu. Jméno a adresu vlastníka
-        aplikace zatím nezná.
+        Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu.
       </p>
+      <ChybiVlastnici jednotky={[j]} />
       {j.urok > 0 && (
         <label className="neni-v-tisku">
           <input type="checkbox" checked={sUrokem} onChange={(e) => setSUrokem(e.target.checked)} />{' '}
@@ -252,7 +254,7 @@ function Upominka({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka;
         <p>
           <strong>{data.svj}</strong>
         </p>
-        <p>Vlastník jednotky {j.jednotka}</p>
+        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} />
         <p className="vpravo">Dne {datum(data.dnes)}</p>
         <h2>Upozornění na nezaplacené platby</h2>
         <p>Vážená paní, vážený pane,</p>

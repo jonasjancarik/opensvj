@@ -1,0 +1,39 @@
+/* ---------- Vlastníci ---------- */
+table.vlastnici td { vertical-align: top; }
+table.vlastnici .kontakt { overflow-wrap: anywhere; }
+
+.osoby { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); margin: 0.5rem 0 1.25rem; }
+.osoba {
+  background: var(--plocha); border: 1px solid var(--okraj); border-radius: var(--radius);
+  box-shadow: var(--stin); padding: 1.1rem 1.25rem; display: grid; gap: 0.6rem; align-content: start;
+}
+.osoba h3 { margin: 0; font-size: 1.15rem; }
+.osoba dl { display: grid; grid-template-columns: minmax(7rem, auto) 1fr; gap: 0.35rem 0.9rem; margin: 0; }
+.osoba dt { color: var(--tlumeny); font-size: 0.9rem; }
+.osoba dd { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.osoba > button.vedlejsi { justify-self: start; }
+.osoba form { display: grid; gap: 0.75rem; }
+.osoba form h3 + .faktura-formular { margin-top: 0; }
+
+.faktura-formular label.zaskrtavatko { display: flex; align-items: flex-start; }
+.faktura-formular label.zaskrtavatko input { margin-top: 0.2rem; flex: none; }
+
+.vlastnictvi-formular { display: grid; gap: 0.9rem; }
+.vlastnictvi-formular > .faktura-formular { margin-top: 0; }
+.vlastnictvi-formular > button.vedlejsi { justify-self: start; }
+fieldset.clen {
+  border: 1px solid var(--okraj); border-radius: var(--radius-maly); padding: 0.75rem 1rem 1rem;
+  margin: 0; display: grid; gap: 0.75rem;
+}
+fieldset.clen legend { font-weight: 600; padding: 0 0.35rem; }
+fieldset.clen .faktura-formular { margin-top: 0; }
+fieldset.clen > button.vedlejsi { justify-self: start; }
+
+ul.historie { list-style: none; padding: 0; margin: 0.5rem 0 0; display: grid; gap: 0.6rem; }
+ul.historie > li {
+  display: flex; gap: 1rem; justify-content: space-between; align-items: center; flex-wrap: wrap;
+  padding: 0.75rem 1rem; border: 1px solid var(--okraj); border-radius: var(--radius-maly); background: var(--plocha);
+}
+ul.historie > li > form { flex: 1 1 100%; }
+
+.upominka .adresat { margin-bottom: 1rem; }
