@@ -14,7 +14,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 | 3 | [Služby a jejich vyúčtování](03-sluzby.md) | hotovo |
 | 4 | [Ostatní výnosy: úroky, sankce, pojistné plnění, dotace, pronájem, fotovoltaika](04-vynosy.md) | hotovo |
 | 5 | [Úvěry](05-uvery.md) | hotovo |
-| 6 | Majetek a zásoby | připravuje se |
+| 6 | [Majetek a zásoby](06-majetek.md) | hotovo |
 | 7 | Dluhy vlastníků | připravuje se |
 | 8 | Doklady a průkaznost | připravuje se |
 | 9 | Uzávěrka a účetní závěrka | připravuje se |
