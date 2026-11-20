@@ -61,8 +61,10 @@ Každý soubor pokrývá jednu oblast:
 
 - `praxe`: takhle SVJ běžně účtují. Neznamená to, že je to jediný správný postup.
 - `navrh`: odvozeno ze zákona a z obecné účetní logiky, v praxi zatím neověřeno.
-- `overit`: předkontaci musí před ostrým použitím potvrdit účetní. V produkčním režimu ji
-  aplikace bez potvrzení nezaúčtuje.
+- `overit`: předkontaci by měla potvrdit účetní. Aplikace ji zaúčtuje, ale připomene ji
+  v kontrolním seznamu uzávěrky.
+
+Stav říká, jak dobře je postup podložený. O tom, jestli se smí použít, nerozhoduje.
 
 ### Zdroje
 

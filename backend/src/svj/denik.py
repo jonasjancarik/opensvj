@@ -74,23 +74,19 @@ def zauctuj(
     zauctoval: str,
     krok: str | None = None,
     idempotencni_klic: str | None = None,
-    produkcni: bool = True,
     radky: list[katalog.Radek] | None = None,
 ) -> Zapis:
     """Sestaví řádky podle katalogu, převede role na účty a zapíše je.
 
     Opakované volání se stejným idempotenčním klíčem vrátí už existující zápis.
-    Operace ve stavu `overit` jdou v produkčním režimu zaúčtovat jen po potvrzení
-    (zatím nepodporováno, proto je odmítne).
+    Stav operace v katalogu zaúčtování neomezuje: postup, který ještě nepotvrdila
+    účetní, se jen ukáže v kontrolním seznamu uzávěrky.
     """
     if idempotencni_klic:
         existujici = aktivni(session, idempotencni_klic)
         if existujici is not None:
             return existujici
         idempotencni_klic = _volny_klic(session, idempotencni_klic)
-    if produkcni and operace.stav == "overit":
-        raise ChybaUctovani(f"operace {operace.id} čeká na potvrzení účetní a nejde ji zaúčtovat")
-
     # Víc sad vstupů = jeden zápis s řádky za všechny (např. předpis měsíce za všechny jednotky).
     # Operace se způsobem `kod` (otevření roku, uzávěrka) sestaví řádky samy.
     if radky is None:

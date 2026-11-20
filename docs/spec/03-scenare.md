@@ -59,7 +59,8 @@ testy a data jsou mimo veřejný repozitář.
 - Pořadová čísla jsou bez mezer, idempotenční klíč brání dvojímu zaúčtování.
 - Storno jde jen jednou a s důvodem; po stornu jde předpis, platbu, počáteční stavy
   i fakturu zaúčtovat znovu. Stejnou fakturu jde zadat podruhé až po stornu první.
-- Operace se stavem `overit` se v produkčním režimu nezaúčtuje.
+- Operace se stavem `overit` jde zaúčtovat; uzávěrka ji připomene k posouzení
+  a stornované zápisy nepočítá.
 
 ### Počáteční stavy, dlužníci, vyúčtování
 

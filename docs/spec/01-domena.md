@@ -183,7 +183,7 @@ cestě (261), protože odchod a příchod můžou být v různých dnech a na r�
 převod mezi účty SVJ, bankovní poplatek, faktura podle VS nebo účtu dodavatele a částky,
 jednotka podle VS nebo částky předpisu a naučené zaúčtování podle dřívější platby ze
 stejného protiúčtu nebo se stejným VS. Zaúčtovaná platba jde stornovat a pohyb se vrátí
-k zaúčtování. Operace k ověření (nespárovaný příjem) v produkčním režimu nejdou.
+k zaúčtování. Operace k ověření (nespárovaný příjem) jde zaúčtovat; uzávěrka ji připomene.
 
 ## 4. Doklady
 

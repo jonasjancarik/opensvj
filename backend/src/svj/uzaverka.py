@@ -9,11 +9,11 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from sqlalchemy import case, exists, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from . import banka, denik, dluznici, pocatecni, predpisy, vyuctovani_spravy
 from .db import BankovniPohyb, BankovniUcet, BankovniVypis, Faktura, RadekZapisu, Zapis
-from .domena import vykazy
+from .domena import katalog, vykazy
 from .domena.profil import Profil
 
 # Názvy řádků zkrácené rozvahy a výkazu zisku a ztráty pro nevýdělečné organizace
@@ -205,6 +205,20 @@ def kontroly(
             )
         )
 
+    k_overeni = _postupy_k_overeni(session, rok, k_datu)
+    if k_overeni:
+        seznam = "; ".join(f"{nazev} ({pocet}×)" for nazev, pocet in k_overeni)
+        vysledek.append(
+            Kontrola(
+                "postupy-k-overeni",
+                "Postupy, které nepotvrdila účetní, jsou posouzené",
+                "rucne",
+                f"Letos se účtovalo i podle postupů, které účetní zatím nepotvrdila: {seznam}. "
+                "Zápisy platí. Účetní by měla postup potvrdit, nebo navrhnout jiný pro další rok.",
+                "denik",
+            )
+        )
+
     dluhy = [
         d for d in dluznici.prehled(session, profil, nastaveni, rok, k_datu) if d.z_minulych_let
     ]
@@ -243,6 +257,26 @@ def kontroly(
         )
     )
     return vysledek
+
+
+def _postupy_k_overeni(session: Session, rok: int, k_datu: date) -> list[tuple[str, int]]:
+    """Operace ve stavu `overit`, podle kterých se v roce účtovalo (bez stornovaných zápisů)."""
+    operace = {o.id: o.nazev for o in katalog.nacti().values() if o.stav == "overit"}
+    if not operace:
+        return []
+    oprava = aliased(Zapis)
+    pocty = session.execute(
+        select(Zapis.operace, func.count())
+        .where(
+            Zapis.rok == rok,
+            Zapis.datum <= k_datu,
+            Zapis.operace.in_(operace),
+            ~exists().where(oprava.opravuje_zapis == Zapis.id, oprava.operace == "storno"),
+        )
+        .group_by(Zapis.operace)
+        .order_by(Zapis.operace)
+    )
+    return [(operace[o], int(n)) for o, n in pocty]
 
 
 def _kontrola_vypisu(

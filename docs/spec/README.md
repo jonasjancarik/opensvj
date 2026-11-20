@@ -64,6 +64,13 @@ nesmí znemožnit, ale nemusí je řešit.
 - **Každé pravidlo má zdroj.** U předpisu je to paragraf, u volby SVJ rozhodnutí orgánu
   (datum, bod zápisu), u postupu z literatury titul a strana. Pravidlo bez zdroje je jen
   návrh.
+- **Blokuje se jen to, co by zkreslilo čísla.** Nevyrovnaný zápis, změnu zaúčtovaného
+  zápisu, zápis do uzavřeného období, výpis, který nenavazuje na předchozí, nebo dvojí
+  zaúčtování aplikace nepustí. Metodické volby, ve kterých se praxe a literatura
+  rozcházejí, nechá na SVJ: postup, podle kterého dům účtuje, jde zadat, i když ho
+  literatura nedoporučuje nebo ho ještě nepotvrdila účetní. Odchylku aplikace ukáže
+  jednou, v kontrolním seznamu uzávěrky, s odkazem do příručky. Kdo ji posoudí, zůstane
+  o tom záznam.
 - **Nic nezmizí.** Nespárovaná platba, chybějící doklad nebo nevysvětlený rozdíl má vlastní
   účet a stav a blokuje uzávěrku, dokud o něm někdo nerozhodne.
 - **Výstupy jde porovnat se správcem.** Salda, přehled fondu oprav a výkazy mají tvar,
@@ -115,7 +122,8 @@ Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
    kontrola proti výpisům) a prohlížeč Fava pro výbor.
 3. **Postupy, které musí potvrdit účetní.** Čerpání fondu oprav (přímo 955/321, nebo přes
    náklady), pojistné plnění, účty pro nevyjasněné položky a zaokrouhlovací rozdíl
-   z vyúčtování. V katalogu mají stav `overit` a v produkčním režimu je nejde zaúčtovat.
+   z vyúčtování. V katalogu mají stav `overit`. Aplikace je zaúčtuje a uzávěrka je
+   připomene k posouzení.
 4. **Volby SVJ dané rozhodnutím orgánů.** Klíče rozúčtování služeb, význam paušálních
    složek předpisu, zařazení revizí a kdo platí předpis za měsíc převodu jednotky. Profil
    SVJ je má mít s odkazem na rozhodnutí.

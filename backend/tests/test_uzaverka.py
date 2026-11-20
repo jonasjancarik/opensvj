@@ -38,6 +38,31 @@ def test_kontrolni_seznam(session):
     assert k["Nezaplacené faktury odpovídají závazkům"] == "info"
 
 
+def test_nepotvrzeny_postup_je_v_kontrolnim_seznamu(session):
+    """Postup ve stavu `overit` se zaúčtuje a uzávěrka ho jen připomene k posouzení."""
+    _otevri_2026(session)
+    op = katalog.nacti()["urok-a-srazkova-dan"]
+    zapis = denik.zauctuj(
+        session,
+        PROFIL,
+        op,
+        {"ucet": "provozni", "urok_hruby": "100.00", "dan": "15.00"},
+        datum=date(2026, 6, 30),
+        popis="úrok",
+        doklad="BV",
+        zauctoval="x",
+    )
+    session.commit()
+    k = {x.kod: x for x in uzaverka.kontroly(session, PROFIL, NAST, 2026, KONEC)}
+    assert k["postupy-k-overeni"].stav == "rucne"
+    assert f"{op.nazev} (1×)" in k["postupy-k-overeni"].detail
+
+    denik.storno(session, zapis.id, duvod="omyl", zauctoval="x")
+    session.commit()
+    k = {x.kod: x for x in uzaverka.kontroly(session, PROFIL, NAST, 2026, KONEC)}
+    assert "postupy-k-overeni" not in k
+
+
 def test_soupisy_a_vykazy(session):
     _otevri_2026(session)
     pocatecni.zauctuj(session, PROFIL, _stav(), zauctoval="x")
@@ -76,7 +101,6 @@ def test_dan_z_prijmu(session):
         popis="úrok",
         doklad="BV",
         zauctoval="x",
-        produkcni=False,
     )
     session.commit()
     d = uzaverka.dan(session, PROFIL, 2026)
@@ -91,7 +115,6 @@ def test_dan_z_prijmu(session):
         popis="pacht",
         doklad="BV",
         zauctoval="x",
-        produkcni=False,
         radky=[
             katalog.Radek("md", "banka.provozni", 120_000, {}),
             katalog.Radek("d", "vynosy.pacht", 120_000, {}),

@@ -355,9 +355,9 @@ function PolozkaPohybu({
             <select value={operace} onChange={(e) => setOperace(e.target.value)}>
               <option value="">Vyberte…</option>
               {moznosti.map((m) => (
-                <option key={m.id} value={m.id} disabled={m.stav === 'overit'}>
+                <option key={m.id} value={m.id}>
                   {m.nazev}
-                  {m.stav === 'overit' ? ' (zatím nejde, čeká na potvrzení účetní)' : ''}
+                  {m.stav === 'overit' ? ' (postup zatím nepotvrdila účetní)' : ''}
                 </option>
               ))}
             </select>

@@ -212,8 +212,6 @@ def test_zauctovani_jen_jednou_a_s_kontrolou(session):
         )
     with pytest.raises(banka.ChybaBanky, match="nejde použít"):
         banka.zauctuj_pohyb(session, PROFIL, p["101"].id, "poplatek-banky", {}, zauctoval="x")
-    with pytest.raises(banka.ChybaBanky, match="potvrzení účetní"):
-        banka.zauctuj_pohyb(session, PROFIL, p["101"].id, "prijem-nesparovany", {}, zauctoval="x")
     banka.zauctuj_pohyb(
         session, PROFIL, p["101"].id, "uhrada-predpisu", {"jednotka": "1001/5"}, zauctoval="x"
     )

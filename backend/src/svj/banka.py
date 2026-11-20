@@ -512,7 +512,6 @@ def zauctuj_pohyb(
     *,
     zauctoval: str,
     zapamatovat: bool = False,
-    produkcni: bool = True,
 ) -> ParovaniPohybu:
     pohyb = session.scalar(
         select(BankovniPohyb).where(BankovniPohyb.id == pohyb_id).with_for_update()
@@ -554,7 +553,6 @@ def zauctuj_pohyb(
             zauctoval=zauctoval,
             krok=krok,
             idempotencni_klic=f"bankovni-pohyb:{pohyb.id}",
-            produkcni=produkcni,
             radky=radky,
         )
     except denik.ChybaUctovani as e:

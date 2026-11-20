@@ -5,8 +5,8 @@ Je určená výboru a účetní: z bankovních výpisů a faktur vede podvojné 
 předpisy záloh, hlídá dlužníky, vyúčtovává zálohy na správu domu a připravuje roční
 uzávěrku.
 
-Aplikace je ve vývoji. Postupy, které ještě musí potvrdit účetní, jsou v ní tak označené
-a v produkčním režimu je nejde zaúčtovat.
+Aplikace je ve vývoji. Postupy, které ještě musí potvrdit účetní, jsou v ní tak označené.
+Zaúčtovat je jde a kontrolní seznam uzávěrky je připomene k posouzení.
 
 Co má aplikace dělat a podle jakých pravidel, popisuje [specifikace](docs/spec/README.md).
 Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/prirucka/README.md).
@@ -251,8 +251,8 @@ Hlavní pravidla:
   zbytku, takže součet vždy sedí na haléř.
 - Do deníku se jen připisuje. Opravy se dělají stornem; vyrovnanost a uzavřená období
   hlídají triggery v databázi.
-- Operace, které ještě musí potvrdit účetní (stav `overit`), nejdou v produkčním režimu
-  zaúčtovat.
+- Aplikace blokuje jen to, co by zkreslilo čísla. Postupy, které ještě musí potvrdit
+  účetní (stav `overit`), jde zaúčtovat; uzávěrka je připomene k posouzení.
 - Co uživatelé rozpracují (odškrtnuté body uzávěrky, rozepsané formuláře), se ukládá do
   databáze, ne do prohlížeče. Rozepsaný formulář má číslo verze: uložení projde, jen když
   od načtení nikdo jiný neuložil novější verzi, jinak stránka nabídne načíst uloženou

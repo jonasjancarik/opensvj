@@ -57,10 +57,10 @@ def test_idempotence(session):
     assert session.scalar(text("select count(*) from zapis")) == 1
 
 
-def test_operace_k_overeni_se_v_produkci_neuctuje(session):
-    with pytest.raises(denik.ChybaUctovani, match="potvrzení"):
-        zauctuj(session, "prijem-nesparovany", {"ucet": "provozni", "castka": "1.00"})
-    zauctuj(session, "prijem-nesparovany", {"ucet": "provozni", "castka": "1.00"}, produkcni=False)
+def test_operace_k_overeni_jde_zauctovat(session):
+    """Nepotvrzený postup aplikace nezablokuje, jen ho ukáže v uzávěrce."""
+    zapis = zauctuj(session, "prijem-nesparovany", {"ucet": "provozni", "castka": "1.00"})
+    assert zapis.operace == "prijem-nesparovany"
 
 
 def test_uzavrene_obdobi(session):

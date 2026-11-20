@@ -40,7 +40,6 @@ def _rok(session, mesice=range(3, 13)):
         popis="poplatek",
         doklad="BV",
         zauctoval="x",
-        produkcni=False,
     )
     session.commit()
 
