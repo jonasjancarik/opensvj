@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
-from . import banka, faktury, predpisy
+from . import banka, faktury, lide, predpisy
 from .db import (
     BankovniPohyb,
     BankovniUcet,
@@ -191,6 +191,7 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
             profil=prof,
             mesicni=predpisy.mesicni_celkem(prof, predpisy.nacti(prof), dnes.year, dnes.month),
             otevrene_faktury=otevrene,
+            ucty_vlastniku=lide.jednotky_podle_uctu(s, dnes),
         )
         nezauctovane = ~exists().where(banka.zauctovano(BankovniPohyb.id))
         pocet = len(s.scalars(select(BankovniPohyb.id).where(nezauctovane)).all())

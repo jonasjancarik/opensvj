@@ -239,6 +239,58 @@ class OdskrtnutiUzaverky(Zaklad):
     kdy: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class Osoba(Zaklad):
+    """Vlastník nebo spoluvlastník. Osobní údaje jdou opravit i smazat, deníku se netýkají."""
+
+    __tablename__ = "osoba"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    jmeno: Mapped[str] = mapped_column(String(200))
+    ico: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    adresa: Mapped[str] = mapped_column(Text, default="")  # adresa pro doručování
+    email: Mapped[str | None] = mapped_column(String(254), nullable=True)
+    telefon: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    ucet: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    # Od kdy souhlasí s doručováním e-mailem; None = jen poštou.
+    souhlas_email: Mapped[date | None] = mapped_column(Date, nullable=True)
+    poznamka: Mapped[str] = mapped_column(Text, default="")
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class Vlastnictvi(Zaklad):
+    """Kdo jednotku vlastnil od–do. Spoluvlastníci a manželé jsou jedno vlastnictví."""
+
+    __tablename__ = "vlastnictvi"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    jednotka: Mapped[str] = mapped_column(String(32))
+    plati_od: Mapped[date] = mapped_column(Date)
+    plati_do: Mapped[date | None] = mapped_column(Date, nullable=True)
+    zdroj: Mapped[str] = mapped_column(Text, default="")
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    vlastnici: Mapped[list["VlastnikJednotky"]] = relationship(
+        back_populates="vlastnictvi",
+        order_by="VlastnikJednotky.poradi",
+        cascade="all, delete-orphan",
+    )
+
+
+class VlastnikJednotky(Zaklad):
+    __tablename__ = "vlastnictvi_osoba"
+    vlastnictvi_id: Mapped[int] = mapped_column(
+        ForeignKey("vlastnictvi.id", ondelete="CASCADE"), primary_key=True
+    )
+    osoba_id: Mapped[int] = mapped_column(ForeignKey("osoba.id"), primary_key=True)
+    poradi: Mapped[int] = mapped_column(Integer)
+    podil: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    vlastnictvi: Mapped[Vlastnictvi] = relationship(back_populates="vlastnici")
+    osoba: Mapped[Osoba] = relationship()
+
+
 class UlozenyFormular(Zaklad):
     """Rozepsaný formulář sdílený mezi uživateli; verze brání přepsání cizí změny."""
 

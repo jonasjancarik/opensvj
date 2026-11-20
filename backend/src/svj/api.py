@@ -12,6 +12,7 @@ from .api_denik import router as denik_router
 from .api_dluznici import router as dluznici_router
 from .api_faktury import router as faktury_router
 from .api_formulare import router as formulare_router
+from .api_lide import router as lide_router
 from .api_oznameni import router as oznameni_router
 from .api_pocatecni import router as pocatecni_router
 from .api_predpisy import router as predpisy_router
@@ -39,6 +40,7 @@ app.include_router(faktury_router)
 app.include_router(dluznici_router)
 app.include_router(oznameni_router)
 app.include_router(formulare_router)
+app.include_router(lide_router)
 
 
 class Ja(BaseModel):

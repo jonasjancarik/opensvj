@@ -354,6 +354,8 @@ class KontextNavrhu:
     profil: Profil | None = None
     mesicni: dict[str, int] = field(default_factory=dict)  # jednotka → měsíční předpis
     otevrene_faktury: list[faktury.StavFaktury] = field(default_factory=list)
+    # Účet vlastníka ("19-123456789/0800") → jednotky, které vlastní.
+    ucty_vlastniku: dict[str, list[str]] = field(default_factory=dict)
 
 
 def navrhni(
@@ -445,6 +447,16 @@ def _navrh_platby_vlastnika(pohyb: BankovniPohyb, k: KontextNavrhu) -> Navrh | N
             f"VS patří jednotce {jednotka}"
             + (" a částka odpovídá jejímu měsíčnímu předpisu." if sedi else "."),
         )
+    if pohyb.protiucet and pohyb.kod_banky:
+        jednotky = k.ucty_vlastniku.get(f"{pohyb.protiucet}/{pohyb.kod_banky}", [])
+        if len(jednotky) == 1:
+            sedi = k.mesicni.get(jednotky[0]) == pohyb.castka
+            return Navrh(
+                "uhrada-predpisu",
+                {"jednotka": jednotky[0]},
+                f"Platba přišla z účtu vlastníka jednotky {jednotky[0]}"
+                + (" a částka odpovídá jejímu měsíčnímu předpisu." if sedi else "."),
+            )
     shodne = [j for j, c in k.mesicni.items() if c == pohyb.castka]
     if len(shodne) == 1:
         return Navrh(

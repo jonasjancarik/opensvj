@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import exists, func, select
 
 from . import banka, dluznici, predpisy
+from .api_lide import Adresat, adresati
 from .db import BankovniPohyb, BankovniUcet, sezeni
 from .domena import profil
 from .domena import urok as urok_z_prodleni
@@ -36,6 +37,7 @@ class Jednotka(BaseModel):
     urok: int
     urok_neuplny: bool
     polozky: list[Polozka]
+    vlastnici: list[Adresat]  # k dnešku; prázdné, když je aplikace nezná
 
 
 class Dluznici(BaseModel):
@@ -62,6 +64,7 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
         vse = dluznici.prehled(s, prof, nast, rok, dnes)
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         posledni = s.scalar(select(func.max(BankovniPohyb.datum)))
+        kdo = adresati(s, dnes)
         nezauctovane = s.scalar(
             select(func.count())
             .select_from(BankovniPohyb)
@@ -89,6 +92,7 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
                 )
                 for p in d.polozky
             ],
+            vlastnici=kdo.get(d.jednotka, []),
         )
         for d in vse
     ]

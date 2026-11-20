@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from . import predpisy, vyuctovani_spravy
+from .api_lide import Adresat, adresati
 from .db import BankovniUcet, sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -38,6 +39,7 @@ class Jednotka(BaseModel):
     naklady: int
     rozdil: int  # kladný = nedoplatek
     polozky: list[PolozkaJednotky]
+    vlastnici: list[Adresat]  # k dnešku
 
 
 class Nezahrnuto(BaseModel):
@@ -67,6 +69,7 @@ def _prehled(rok: int) -> Vyuctovani:
         duvod = vyuctovani_spravy.proc_nejde(s, nast, v, dnes)
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
+        kdo = adresati(s, dnes)
     return Vyuctovani(
         rok=rok,
         dnes=dnes,
@@ -98,6 +101,7 @@ def _prehled(rok: int) -> Vyuctovani:
                     )
                     for p in v.polozky
                 ],
+                vlastnici=kdo.get(j.jednotka, []),
             )
             for j in v.jednotky
         ],

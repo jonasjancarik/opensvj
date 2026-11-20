@@ -6,7 +6,9 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from . import oznameni, predpisy
+from .api_lide import Adresat, adresati
 from .api_predpisy import _skupina
+from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
 from .prihlaseni import Prihlaseny
@@ -28,6 +30,7 @@ class Jednotka(BaseModel):
     nove: int
     zmenena: bool
     slozky: list[Slozka]
+    vlastnici: list[Adresat]  # k dnešku
 
 
 class Oznameni(BaseModel):
@@ -68,6 +71,8 @@ def _oznameni(plati_od: date) -> Oznameni:
         o = oznameni.oznameni(prof, nast, plati_od)
     except oznameni.ChybaOznameni as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
+    with sezeni()() as s:
+        kdo = adresati(s, date.today())
     return Oznameni(
         svj=prof.nazev,
         ico=prof.ico,
@@ -95,6 +100,7 @@ def _oznameni(plati_od: date) -> Oznameni:
                     )
                     for s in j.slozky
                 ],
+                vlastnici=kdo.get(j.jednotka, []),
             )
             for j in o.jednotky
         ],
