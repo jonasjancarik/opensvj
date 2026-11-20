@@ -19,7 +19,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 | 8 | [Doklady a průkaznost](08-doklady.md) | hotovo |
 | 9 | [Uzávěrka a účetní závěrka](09-uzaverka.md) | hotovo |
 | 10 | [Daně](10-dane.md) | hotovo |
-| 11 | Odměny členů orgánů | připravuje se |
+| 11 | [Odměny členů orgánů](11-odmeny.md) | hotovo |
 
 ## Jak jsou kapitoly napsané
 
@@ -52,6 +52,8 @@ Ověřeno 20. 11. 2026.
 | ZDP | [zákon č. 586/1992 Sb., o daních z příjmů](https://www.zakonyprolidi.cz/cs/1992-586) |
 | ZDPH | [zákon č. 235/2004 Sb., o dani z přidané hodnoty](https://www.zakonyprolidi.cz/cs/2004-235) |
 | daňový řád | [zákon č. 280/2009 Sb., daňový řád](https://www.zakonyprolidi.cz/cs/2009-280) |
+| pojistné | [zákon č. 589/1992 Sb.](https://www.zakonyprolidi.cz/cs/1992-589), o pojistném na sociální zabezpečení; [zákon č. 592/1992 Sb.](https://www.zakonyprolidi.cz/cs/1992-592), o pojistném na veřejné zdravotní pojištění; [zákon č. 48/1997 Sb.](https://www.zakonyprolidi.cz/cs/1997-48), o veřejném zdravotním pojištění; [zákon č. 187/2006 Sb.](https://www.zakonyprolidi.cz/cs/2006-187), o nemocenském pojištění |
+| zákon 323/2025 | [zákon č. 323/2025 Sb.](https://www.zakonyprolidi.cz/cs/2025-323), o jednotném měsíčním hlášení zaměstnavatele |
 | vyhláška 504 | [vyhláška č. 504/2002 Sb.](https://www.zakonyprolidi.cz/cs/2002-504) pro nevýdělečné účetní jednotky, mezi které patří SVJ (§ 1 odst. 1 písm. g)) |
 | ČÚS 4xx | České účetní standardy pro účetní jednotky podle vyhlášky 504 |
 
