@@ -20,7 +20,9 @@ Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/pri
 - převzít počáteční stavy k 1. 1. od dřívějšího správce, včetně dluhů vlastníků po jednotkách,
 - spočítat a zaúčtovat měsíční předpis záloh a ukázat, kolik která jednotka dluží, včetně
   zákonného úroku z prodlení,
-- vytisknout upomínku, potvrzení o dluzích pro prodej jednotky a oznámení o nové výši záloh,
+- vést vlastníky jednotek s historií převodů a jejich kontakty,
+- vytisknout upomínku, potvrzení o dluzích pro prodej jednotky a oznámení o nové výši záloh
+  se jménem a adresou vlastníka,
 - vyúčtovat zálohy na správu domu,
 - sestavit rozvahu a výkaz zisku a ztráty ve zkráceném rozsahu,
 - připravit uzávěrku roku: kontrolní seznam, inventurní soupisy, posouzení daně z příjmů
@@ -104,7 +106,8 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
   stejné zaúčtování jako u dřívější platby ze stejného účtu či se stejným VS. Návrh vždy
   potvrzuje člověk a při potvrzení si aplikace může volbu zapamatovat.
 - Platbu vlastníka aplikace přiřadí k jednotce podle VS (předpona z profilu SVJ, číslo
-  jednotky a pořadí vlastníka), a když VS chybí, podle částky měsíčního předpisu.
+  jednotky a pořadí vlastníka), když VS chybí, podle účtu, ze kterého platí vlastník,
+  a nakonec podle částky měsíčního předpisu.
 - U odchozí platby za fakturu se vybírá z nezaplacených faktur. Aplikace ji navrhne podle
   VS faktury, potom podle účtu dodavatele a částky. Platbu vyšší, než kolik z faktury
   zbývá, odmítne.
@@ -152,7 +155,18 @@ složek a za rok předepsáno, zaplaceno a dluh nebo přeplatek.
 Stránka Dlužníci ukazuje po jednotkách, kolik je po splatnosti, od kdy a co ještě splatné
 není. Platby se započítají na nejdřív splatné dluhy (OZ § 1932): nejdřív zůstatky
 z minulých let, pak měsíční zálohy. U jednotky s dluhem jde zobrazit a vytisknout text
-upomínky; jméno a adresu vlastníka aplikace zatím nezná.
+upomínky se jménem a adresou vlastníka.
+
+### Vlastníci
+
+Stránka Vlastníci vede, kdo kterou jednotku vlastní a od kdy, podle katastru. Spoluvlastníci
+a manželé jsou jeden zápis s více osobami. Nový vlastník po prodeji uzavře vlastnictví
+dosavadního den před svým začátkem, takže na sebe období navazují bez mezery; že se
+nepřekrývají, hlídá i databáze. U osoby je adresa pro doručování, e-mail, souhlas
+s doručováním e-mailem, telefon a účet. Jméno a adresa se tisknou v hlavičce upomínky,
+oznámení o zálohách a vyúčtování a účet pomáhá párovat platby bez VS. Osobní údaje jsou
+v samostatných tabulkách, takže jdou opravit nebo smazat bez zásahu do deníku. Předpisy
+a dluhy zůstávají vedené na jednotku.
 
 U každé položky po splatnosti je zákonný úrok z prodlení (nařízení vlády 351/2013 Sb.):
 repo sazba ČNB k prvnímu dni pololetí, kdy prodlení začalo, plus 8 procentních bodů.
@@ -266,7 +280,8 @@ Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 [Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
 
 - vyúčtování služeb (vyúčtování záloh na správu už aplikace umí),
-- vlastníci a vlastnická období: dluhy a předpisy jsou vedené na jednotku,
+- předpisy a dluhy po vlastnických obdobích: teď jsou vedené na jednotku, takže po prodeji
+  jednotky nejde dluh rozdělit mezi prodávajícího a kupujícího,
 - odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
 - uzávěrkové zápisy, otevření dalšího roku a uzavření roku v aplikaci,
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,

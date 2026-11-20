@@ -73,9 +73,12 @@ na něj každá složka předpisu, klíč vyúčtování a volba v profilu. Bez 
 
 **V aplikaci:** SVJ, jednotky (označení, plocha, podíl) a služby jsou v profilu SVJ
 (`profiles/<id>.yaml`); podíl zatím nemá platnost v čase. Počty osob jsou u verze předpisu.
-Osoby, vlastnictví, měřidla a rozhodnutí v aplikaci zatím nejsou. Jméno dřívějšího
-vlastníka jde zadat jen u počátečních stavů a u faktury za opravu z fondu oprav se píše,
-kdo ji schválil. Potvrzení o dluzích aplikace vydá na jednotku.
+Osoby a vlastnictví jsou v databázi (stránka Vlastníci). Nové vlastnictví po posledním
+zapsaném ho uzavře den před svým začátkem, takže mezera nevznikne; překryv odmítne
+i databáze. Smazat jde jen první nebo poslední záznam jednotky. Spoluvlastnické podíly osob
+jsou nepovinné a musí dát celek. Souhlas s doručováním e-mailem se ukládá s datem. Potvrzení
+o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Měřidla a rozhodnutí
+v aplikaci zatím nejsou; jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
 
 ## 2. Předpisy
 
@@ -138,7 +141,7 @@ Předpisy po měsících. Saldo se počítá z deníku. Na stránce Dlužníci s
 na nejdřív splatné dluhy: nejdřív zůstatky z minulých let, pak měsíční zálohy. Určení
 dluhu dlužníkem ani pořadí podle upomínek zatím aplikace nezná. Úrok z prodlení
 (nařízení vlády 351/2013 Sb.) se počítá jen do přehledu a upomínky; zaúčtuje se, až ho SVJ
-skutečně požaduje. Vlastnická období zatím chybí, takže předpis i saldo jsou na jednotku.
+skutečně požaduje. Předpis i saldo jsou zatím na jednotku, ne na vlastnické období.
 
 ## 3. Banka
 
@@ -207,7 +210,7 @@ cestě (261), protože odchod a příchod můžou být v různých dnech a na r�
 
 **V aplikaci:** hotové pro formát GPC (ABO) a přehled pohybů Raiffeisenbank (CSV). Návrhy:
 převod mezi účty SVJ, bankovní poplatek, faktura podle VS nebo účtu dodavatele a částky,
-jednotka podle VS nebo částky předpisu a naučené zaúčtování podle dřívější platby ze
+jednotka podle VS, účtu vlastníka nebo částky předpisu a naučené zaúčtování podle dřívější platby ze
 stejného protiúčtu nebo se stejným VS. Zaúčtovaná platba jde stornovat a pohyb se vrátí
 k zaúčtování. Operace k ověření (nespárovaný příjem) jde zaúčtovat; uzávěrka ji připomene.
 

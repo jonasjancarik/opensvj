@@ -42,7 +42,8 @@ instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 
 | Oblast | Stav |
 | --- | --- |
-| Jednotky, plochy, podíly, počty osob | V profilu SVJ (YAML). Změny v čase a vlastníci zatím chybí. |
+| Jednotky, plochy, podíly, počty osob | V profilu SVJ (YAML). Podíly zatím nemají platnost v čase. |
+| Vlastníci | Osoby a vlastnictví jednotek s platností od–do, stránka Vlastníci. Jméno a adresa se tisknou v upomínce, oznámení o zálohách, vyúčtování a potvrzení o dluzích; účet vlastníka pomáhá párovat platby. Předpis a saldo zatím nejsou po vlastnických obdobích a kdo platí předpis za měsíc převodu, aplikace neřeší. Měřidla a rozhodnutí chybí. |
 | Účetní období a archiv | Účetní období je jen kalendářní rok; hospodářský rok ani první období delší než 12 měsíců nejdou. Export deníku a dokladů pro archiv chybí a lhůty úschovy aplikace nehlídá. |
 | Předpisy záloh | Hotovo: verze s platností od, pět způsobů výpočtu, zaúčtování po měsících. |
 | Nezálohové příspěvky | Zatím ne. Volba `prispevky: nezalohove` v profilu mění jen text přílohy; fond ze zisku 911 aplikace nepodporuje. |
