@@ -17,7 +17,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 | 6 | [Majetek a zásoby](06-majetek.md) | hotovo |
 | 7 | [Dluhy vlastníků](07-dluhy.md) | hotovo |
 | 8 | [Doklady a průkaznost](08-doklady.md) | hotovo |
-| 9 | Uzávěrka a účetní závěrka | připravuje se |
+| 9 | [Uzávěrka a účetní závěrka](09-uzaverka.md) | hotovo |
 | 10 | Daně | připravuje se |
 | 11 | Odměny členů orgánů | připravuje se |
 
