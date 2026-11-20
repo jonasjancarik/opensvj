@@ -369,8 +369,8 @@ a hlavní kniha jako PDF a CSV.
 a hlídají je triggery v databázi. Stránka Uzávěrka ověří z dat body 1, 2, 4 a 5 a zůstatky
 pomocných účtů. Ostatní body se odškrtávají ručně a odškrtnutí se ukládá s tím, kdo a kdy.
 Výkazy, inventurní soupisy, posouzení daně z příjmů a návrh přílohy aplikace sestaví.
-Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků a zpráva o hospodaření
-zatím chybí; první rok se otevírá zadáním počátečních stavů.
+Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků, zpráva o hospodaření
+a uzavření roku v aplikaci (přechod stavu období) zatím chybí; první rok se otevírá zadáním počátečních stavů.
 
 ## 6. Vyúčtování
 
