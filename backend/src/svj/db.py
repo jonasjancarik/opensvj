@@ -343,3 +343,33 @@ class Odecet(Zaklad):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     meridlo: Mapped[Meridlo] = relationship(back_populates="odecty")
+
+
+class Rozhodnuti(Zaklad):
+    """Usnesení shromáždění, výboru nebo předsedy."""
+
+    __tablename__ = "rozhodnuti"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    organ: Mapped[str] = mapped_column(String(32))
+    datum: Mapped[date] = mapped_column(Date)
+    bod: Mapped[str] = mapped_column(String(32), default="")
+    nazev: Mapped[str] = mapped_column(String(200))
+    text: Mapped[str] = mapped_column(Text, default="")
+    hlasovani: Mapped[str] = mapped_column(String(200), default="")
+    ulozeni: Mapped[str] = mapped_column(String(500), default="")  # kde je zápis uložený
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class RozhodnutiPro(Zaklad):
+    """Které rozhodnutí dokládá položku (verzi předpisu, klíč, volbu v profilu)."""
+
+    __tablename__ = "rozhodnuti_pro"
+    klic: Mapped[str] = mapped_column(String(128), primary_key=True)
+    rozhodnuti_id: Mapped[int] = mapped_column(ForeignKey("rozhodnuti.id", ondelete="CASCADE"))
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

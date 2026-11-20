@@ -11,7 +11,7 @@ from datetime import date
 from sqlalchemy import case, exists, func, select
 from sqlalchemy.orm import Session, aliased
 
-from . import banka, denik, dluznici, pocatecni, predpisy, vyuctovani_spravy
+from . import banka, denik, dluznici, pocatecni, predpisy, rozhodnuti, vyuctovani_spravy
 from .db import BankovniPohyb, BankovniUcet, BankovniVypis, Faktura, RadekZapisu, Zapis
 from .domena import katalog, vykazy
 from .domena.profil import Profil
@@ -233,6 +233,19 @@ def kontroly(
                 "dluznici",
             )
         )
+
+    bez = rozhodnuti.bez_rozhodnuti(session, profil, nastaveni, rok)
+    vysledek.append(
+        Kontrola("rozhodnuti", "Výše záloh, klíče a volby mají doložené rozhodnutí", "hotovo")
+        if not bez
+        else Kontrola(
+            "rozhodnuti",
+            "Výše záloh, klíče a volby mají doložené rozhodnutí",
+            "chybi",
+            "Bez doloženého rozhodnutí: " + "; ".join(p.nazev for p in bez) + ".",
+            "rozhodnuti",
+        )
+    )
 
     vysledek.extend(
         Kontrola(k, n, "rucne", d)
