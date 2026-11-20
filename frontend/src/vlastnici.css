@@ -37,3 +37,9 @@ ul.historie > li {
 ul.historie > li > form { flex: 1 1 100%; }
 
 .upominka .adresat { margin-bottom: 1rem; }
+
+.dluhy-prevodu { flex: 1 1 100%; display: grid; gap: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--okraj); }
+.dluhy-prevodu p { margin: 0; }
+ul.dluhy-seznam { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+ul.dluhy-seznam li { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+ul.dluhy-seznam li > span { font-variant-numeric: tabular-nums; white-space: nowrap; }

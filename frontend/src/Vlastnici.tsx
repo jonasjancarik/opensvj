@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api } from './auth'
+import { kc } from './penize'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import './vlastnici.css'
@@ -182,6 +183,7 @@ function DetailJednotky({
 }) {
   const [upravuji, setUpravuji] = useState<number | null>(null)
   const [opravuji, setOpravuji] = useState<number | null>(null)
+  const [dluhy, setDluhy] = useState<number | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
   const v = platne(j, data.dnes)
   const historie = [...j.vlastnictvi].reverse()
@@ -274,6 +276,11 @@ function DetailJednotky({
                       </span>
                     </div>
                     <div className="radek">
+                      {i < historie.length - 1 && (
+                        <button className="vedlejsi" onClick={() => setDluhy(dluhy === x.id ? null : x.id)}>
+                          Dluhy při převodu
+                        </button>
+                      )}
                       <button className="vedlejsi" onClick={() => setOpravuji(x.id)}>
                         Opravit
                       </button>
@@ -283,6 +290,7 @@ function DetailJednotky({
                         </button>
                       )}
                     </div>
+                    {dluhy === x.id && <DluhyPriPrevodu vlastnictviId={x.id} />}
                   </>
                 )}
               </li>
@@ -720,5 +728,108 @@ function OpravaVlastnictvi({
         {chyba && <span className="chyba">{chyba}</span>}
       </div>
     </form>
+  )
+}
+
+type Prevod = {
+  jednotka: string
+  plati_od: string
+  prevodce: string
+  nabyvatel: string
+  volba: 'dosavadni' | 'novy'
+  dluhy: { klic: string; popis: string; zbyva: number; splatnost: string | null; navrh: boolean }[]
+  zapis: string | null
+  zauctovano: number
+}
+
+/** Dluhy jednotky při převodu: které z nich zůstávají prodávajícímu. */
+function DluhyPriPrevodu({ vlastnictviId }: { vlastnictviId: number }) {
+  const [p, setP] = useState<Prevod | null>(null)
+  const [vybrane, setVybrane] = useState<Set<string>>(new Set())
+  const [chyba, setChyba] = useState<string | null>(null)
+  const [pracuji, setPracuji] = useState(false)
+
+  useEffect(() => {
+    api<Prevod>(`/api/vlastnici/prevody/${vlastnictviId}`)
+      .then((d) => {
+        setP(d)
+        setVybrane(new Set(d.dluhy.filter((x) => x.navrh).map((x) => x.klic)))
+      })
+      .catch((e) => setChyba(e.message))
+  }, [vlastnictviId])
+
+  if (!p) return chyba ? <p className="chyba">{chyba}</p> : <p className="tlumene">Načítám…</p>
+
+  async function ponechat() {
+    if (!p) return
+    const celkem = p.dluhy.filter((d) => vybrane.has(d.klic)).reduce((a, d) => a + d.zbyva, 0)
+    const ok = await potvrdit({
+      nadpis: 'Ponechat dluhy prodávajícímu?',
+      text: `Dluh ${kc(celkem)} se přesune z jednotky ${p.jednotka} na prodávajícího (${p.prevodce}). Kupujícímu se z jeho dluhů odečte a dál se bude vymáhat po prodávajícím.`,
+      ano: 'Zaúčtovat',
+    })
+    if (!ok) return
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setP(await api<Prevod>(`/api/vlastnici/prevody/${vlastnictviId}`, { method: 'POST', json: { klice: [...vybrane] } }))
+    } catch (e) {
+      setChyba((e as Error).message)
+    } finally {
+      setPracuji(false)
+    }
+  }
+
+  return (
+    <div className="dluhy-prevodu">
+      {p.zapis ? (
+        <p className="uspech">
+          Prodávajícímu ({p.prevodce}) zůstal dluh {kc(p.zauctovano)}, zápis {p.zapis}. Je vidět
+          na stránce Předpisy mezi dluhy dřívějších vlastníků. Opravit ho jde stornem zápisu na
+          stránce Deník.
+        </p>
+      ) : p.dluhy.length === 0 ? (
+        <p className="tlumene">Jednotka teď nemá žádné nezaplacené dluhy.</p>
+      ) : (
+        <>
+          <p className="tlumene">
+            Dluhy prodávajícího přecházejí na kupujícího, pokud o nich věděl nebo mohl vědět,
+            typicky z potvrzení o dluzích (§ 1186 občanského zákoníku). Tady zapište jen dluhy,
+            které na kupujícího nepřešly; ty se pak budou vymáhat po prodávajícím. Zálohy za
+            měsíc převodu platí podle nastavení společenství{' '}
+            {p.volba === 'dosavadni' ? 'dosavadní vlastník' : 'nový vlastník'}.
+          </p>
+          <ul className="dluhy-seznam">
+            {p.dluhy.map((d) => (
+              <li key={d.klic}>
+                <label className="zaskrtavatko">
+                  <input
+                    type="checkbox"
+                    checked={vybrane.has(d.klic)}
+                    onChange={(e) => {
+                      const n = new Set(vybrane)
+                      if (e.target.checked) n.add(d.klic)
+                      else n.delete(d.klic)
+                      setVybrane(n)
+                    }}
+                  />
+                  <span>
+                    {d.popis}
+                    {d.splatnost && <span className="tlumene"> · splatné {datum(d.splatnost)}</span>}
+                  </span>
+                </label>
+                <span>{kc(d.zbyva)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="radek">
+            <button disabled={pracuji || vybrane.size === 0} onClick={ponechat}>
+              {pracuji ? 'Účtuji…' : 'Ponechat vybrané dluhy prodávajícímu'}
+            </button>
+            {chyba && <span className="chyba">{chyba}</span>}
+          </div>
+        </>
+      )}
+    </div>
   )
 }

@@ -46,6 +46,7 @@ type OtevrenaFaktura = {
 type Banka = {
   ucty: Ucet[]
   jednotky: string[]
+  drivejsi: { jednotka: string; vlastnik: string; castka: number }[]
   faktury: OtevrenaFaktura[]
   moznosti: Record<'prijem' | 'vydaj', Moznost[]>
   pohyby: Pohyb[]
@@ -274,6 +275,7 @@ const POPIS_POLE: Record<string, string> = {
   jednotka: 'Jednotka',
   protistrana: 'Dodavatel',
   faktura: 'Kterou fakturu platba platí',
+  drivejsi_vlastnik: 'Dřívější vlastník',
 }
 
 function PolozkaPohybu({
@@ -376,6 +378,20 @@ function PolozkaPohybu({
                   value={vstupy.faktura ?? ''}
                   onChange={(v) => setVstupy({ ...vstupy, faktura: v })}
                 />
+              ) : pole === 'drivejsi_vlastnik' ? (
+                <select
+                  value={vstupy.drivejsi_vlastnik ?? ''}
+                  onChange={(e) => setVstupy({ ...vstupy, drivejsi_vlastnik: e.target.value })}
+                >
+                  <option value="">Vyberte…</option>
+                  {data.drivejsi
+                    .filter((d) => !vstupy.jednotka || d.jednotka === vstupy.jednotka)
+                    .map((d) => (
+                      <option key={`${d.jednotka}|${d.vlastnik}`} value={d.vlastnik}>
+                        {d.vlastnik} ({d.jednotka}, {d.castka > 0 ? `dluží ${kc(d.castka)}` : `přeplatek ${kc(-d.castka)}`})
+                      </option>
+                    ))}
+                </select>
               ) : pole === 'protistrana' ? (
                 <input
                   value={vstupy.protistrana ?? ''}
