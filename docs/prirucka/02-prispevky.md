@@ -121,7 +121,7 @@ se účtuje hned, ne až o platbě, jinak by účetnictví neukazovalo, kdo dlu�
 | vypořádání: doplatek / vrácení přeplatku | 221 / 311 | 311 / 221 |
 
 Příspěvky se stanoví ve výši nákladů na správu snížených o ostatní výnosy SVJ, jako jsou
-dotace a pojistné plnění (kapitola 4). Zálohy na správu se v analytice vedou po
+dotace a pojistné plnění ([kapitola 4](04-vynosy.md)). Zálohy na správu se v analytice vedou po
 vlastnících a obvykle i po druzích nákladů, jinak by je nešlo vyúčtovat.
 
 V rozvaze jsou dlouhodobé zálohy (fond oprav) na řádku „B.II.4. Přijaté dlouhodobé
@@ -175,7 +175,7 @@ výsledovce vůbec není. Pro zálohové příspěvky je podle knihy správně o
 SVJ může mít i jiné příjmy než příspěvky. Vyjmenovává je § 16 odst. 1 NV 366/2013: úroky
 z prodlení, úroky z vkladů, smluvní pokuty, pojistné plnění a příjmy z nakládání
 s majetkem SVJ. Nájemné ze společných částí mezi ně nepatří, je to příjem vlastníků
-(§ 16 odst. 2). Podrobně je rozebírá kapitola 4. Pro příspěvky z toho plyne:
+(§ 16 odst. 2). Podrobně je rozebírá [kapitola 4](04-vynosy.md). Pro příspěvky z toho plyne:
 
 - **Ostatní výnosy snižují příspěvky.** SVJ smí majetek použít jen pro správu domu
   (§ 1195 odst. 1 OZ). Podíl na zisku vyplácet nemůže: na SVJ se přiměřeně použijí

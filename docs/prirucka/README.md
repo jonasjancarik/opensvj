@@ -12,7 +12,7 @@ jednotlivé předkontace jsou strojově čitelné v [katalogu](../../catalogue/R
 | 1 | SVJ jako účetní jednotka | připravuje se |
 | 2 | [Příspěvky na správu domu](02-prispevky.md) | hotovo |
 | 3 | [Služby a jejich vyúčtování](03-sluzby.md) | hotovo |
-| 4 | Ostatní výnosy: úroky, sankce, pojistné plnění, dotace, pronájem, fotovoltaika | připravuje se |
+| 4 | [Ostatní výnosy: úroky, sankce, pojistné plnění, dotace, pronájem, fotovoltaika](04-vynosy.md) | hotovo |
 | 5 | Úvěry | připravuje se |
 | 6 | Majetek a zásoby | připravuje se |
 | 7 | Dluhy vlastníků | připravuje se |
@@ -49,6 +49,7 @@ Ověřeno 20. 11. 2026.
 | NV 366/2013 | [nařízení vlády č. 366/2013 Sb.](https://www.zakonyprolidi.cz/cs/2013-366), o úpravě některých záležitostí souvisejících s bytovým spoluvlastnictvím |
 | zákon 67/2013 | [zákon č. 67/2013 Sb.](https://www.zakonyprolidi.cz/cs/2013-67), o službách spojených s užíváním bytů |
 | ZoÚ | [zákon č. 563/1991 Sb., o účetnictví](https://www.zakonyprolidi.cz/cs/1991-563) |
+| ZDP | [zákon č. 586/1992 Sb., o daních z příjmů](https://www.zakonyprolidi.cz/cs/1992-586) |
 | vyhláška 504 | [vyhláška č. 504/2002 Sb.](https://www.zakonyprolidi.cz/cs/2002-504) pro nevýdělečné účetní jednotky, mezi které patří SVJ (§ 1 odst. 1 písm. g)) |
 | ČÚS 4xx | České účetní standardy pro účetní jednotky podle vyhlášky 504 |
 
