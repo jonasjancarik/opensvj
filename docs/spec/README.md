@@ -30,11 +30,13 @@ První verze má zvládnout celý účetní rok malého SVJ bez další účetn�
 - vyúčtování záloh na správu domu a vyúčtování služeb podle zákona 67/2013 Sb.
   s výsledky od externího zúčtovatele tepla a vody,
 - roční uzávěrka: inventura, zkrácená rozvaha a výkaz zisku a ztráty, příloha, zpráva
-  o hospodaření a export deníku.
+  o hospodaření a export deníku,
+- rozesílání předpisů, vyúčtování a upomínek vlastníkům se záznamem o odeslání
+  a doručení a upozornění pro výbor.
 
-Mimo první verzi zůstávají komunikace s vlastníky, hlasování, mzdy a dohody o provedení
-práce, majetek s odpisy, cizí měny, DPH a více domů v jedné instalaci. Datový model je
-nesmí znemožnit, ale nemusí je řešit.
+Mimo první verzi zůstávají hlasování, novinky a další komunikace s vlastníky, mzdy
+a dohody o provedení práce, majetek s odpisy, cizí měny, DPH a více domů v jedné
+instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 
 ### Co z toho aplikace umí
 
@@ -50,6 +52,7 @@ nesmí znemožnit, ale nemusí je řešit.
 | Vyúčtování služeb | Zatím ne. |
 | Úvěr | Operace v katalogu jako návrh. Vyúčtování záloh na správu zatím neodliší náklady kryté zálohou na úvěr (955300) od běžného fondu oprav a potvrzení o dluzích při prodeji jednotky neukazuje nesplacený zbytek podílu na úvěru. |
 | Uzávěrka | Kontrolní seznam, výkazy, inventurní soupisy, daň z příjmů a návrh přílohy. Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků a zpráva o hospodaření zatím ne. Rok nejde v aplikaci uzavřít; databáze zápisy do uzavřeného roku nepustí, ale stav roku se dá změnit jen přímo v ní. |
+| Rozesílání a upozornění | Zatím ne. E-mailem odchází jen odkaz pro přihlášení, upomínka a potvrzení o dluzích jdou vytisknout. |
 | Podklady, podpisové záznamy, role | Zatím ne. Přístup řídí seznam e-mailů, část uživatelů může jen nahlížet. |
 
 ## Zásady
@@ -134,3 +137,6 @@ Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
 5. **Příjem pohybů z banky.** Návrh je přijímat výpisy e-mailem, číst pohyby přes API Fio
    a avíza o platbách brát jen jako předběžné pohyby, které potvrdí až výpis (viz
    [Odkud pohyby přicházejí](01-domena.md#odkud-pohyby-přicházejí)).
+6. **Doručování e-mailem.** Kdy se e-mail bere jako doručený a jestli stačí jako
+   písemné oznámení o změně zálohy. Na tom závisí lhůty u vyúčtování a upomínek (viz
+   [Rozesílání a upozornění](01-domena.md#7-rozesílání-a-upozornění)).

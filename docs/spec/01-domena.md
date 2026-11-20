@@ -2,7 +2,8 @@
 
 Model má pět oblastí: **dům a lidé**, **předpisy**, **banka**, **doklady** a
 **účetnictví**. Vyúčtování a uzávěrka nad nimi jen počítají a výsledek zapisují zpět jako
-zápisy do deníku.
+zápisy do deníku. Rozesílání z nich připravuje dokumenty a upozornění a eviduje, komu
+a kdy odešly.
 
 Názvy jsou česky bez diakritiky, aby šly přímo použít v kódu (`Jednotka`,
 `SlozkaPredpisu`). Na konci každé oblasti je odstavec **V aplikaci**: co z popsaného
@@ -28,8 +29,8 @@ kategorii účetní jednotky (mikro) a profil účtové osnovy (viz
 
 ### Osoba
 
-Fyzická nebo právnická osoba: jméno, adresa pro doručování, e-mail a účet pro vracení
-přeplatků. Osobní údaje jsou oddělené od účetních dat, aby šlo plnit GDPR, třeba smazat
+Fyzická nebo právnická osoba: jméno, adresa pro doručování, e-mail, souhlas s doručováním
+e-mailem (oddíl 7) a účet pro vracení přeplatků. Osobní údaje jsou oddělené od účetních dat, aby šlo plnit GDPR, třeba smazat
 kontakty po uplynutí archivační doby (§ 31 zákona o účetnictví).
 
 ### Vlastnictvi
@@ -405,3 +406,60 @@ zalohy_prijate, klic, rozdeleni[])` a výsledku na jednotku a vlastnické obdob�
 
 **V aplikaci:** zatím ne. Předkontace jsou v katalogu (`vyuctovani-sluzeb`,
 `preuctovani-mezi-sluzbami`, `vyuctovani-zaokrouhleni`).
+
+## 7. Rozesílání a upozornění
+
+Aplikace posílá dva druhy zpráv a každý má jiná pravidla:
+
+- **Dokumenty pro vlastníky**: předpis záloh, oznámení o změně zálohy, vyúčtování,
+  upomínka a potvrzení o dluzích. Mají právní účinky a lhůty se u nich počítají od
+  doručení, proto je odesílá vždy člověk po kontrole.
+- **Upozornění pro výbor a účetní** pomáhají nic nepropásnout a chodí automaticky.
+
+### Zasilka
+
+`Zasilka(dokument, verze, prijemce, kanal, stav, odeslal, odeslano, doruceno)`
+
+- Dokument se před odesláním uloží jako neměnný podklad (PDF se SHA-256) a zásilka na něj
+  odkazuje. Vždy jde doložit, co přesně komu odešlo. Oprava je nová verze dokumentu
+  a nová zásilka.
+- `kanal` je `email`, nebo `posta`. E-mailem jen osobě, která s tím souhlasila. Souhlas
+  se ukládá s datem a odkud pochází (formulář, písemná žádost, rozhodnutí podle stanov).
+  Ostatním aplikace připraví tiskovou sestavu a datum odeslání a doručení se zapíše ručně.
+- Stav: `pripravena → odeslana → dorucena`, nebo `odeslana → nedorucena` (odmítnutí
+  poštovním serverem, vrácená obálka) a pak náhradní cesta.
+- Projev vůle je účinný, jakmile adresátovi dojde (§ 570 OZ). Co se u e-mailu bere jako
+  doručení (přijetí serverem příjemce, otevření odkazu, potvrzení vlastníkem), musí
+  potvrdit právní posouzení. Aplikace ukládá všechny tři události.
+- Datum doručení řídí lhůty: u vyúčtování služeb vyrovnání a námitky (oddíl 6), u změny
+  zálohy účinnost od prvního dne dalšího měsíce (§ 4 odst. 4 zákona 67/2013), u upomínky
+  pořadí, ve kterém se platby započítávají na dluhy (§ 1933 OZ). Změna zálohy potřebuje
+  písemné oznámení; jestli stačí e-mail (§ 562 OZ), je potřeba ověřit.
+- Hromadné rozeslání (předpisy na nový rok, vyúčtování všem) se připraví jako dávka.
+  Výbor ji prohlédne, vidí, kdo dostane e-mail a komu se posílá poštou, a teprve pak
+  odeslání potvrdí.
+- Aplikace posílá z domény s platným SPF, DKIM a DMARC, aby zprávy nekončily ve spamu
+  a příjemce mohl ověřit, že jsou od SVJ.
+
+### Upozornění pro výbor
+
+Události, o kterých aplikace dá vědět:
+
+- nová přijatá faktura ke schválení a blížící se splatnost faktury,
+- platba, kterou se nepodařilo spárovat, a předběžný pohyb bez potvrzení výpisem,
+- vlastník, jehož dluh přesáhl hranici z profilu SVJ,
+- chybějící výpis za uplynulý měsíc,
+- blížící se lhůta: doručení vyúčtování, konec lhůty pro námitky, uzávěrka.
+
+Každý člen výboru si nastaví, která upozornění chce a jestli hned, nebo v denním souhrnu.
+E-mail nese jen stručný popis a odkaz. Jména dlužníků a částky zůstávají v aplikaci za
+přihlášením.
+
+### Ochrana osobních údajů
+
+Vlastník dostává jen dokumenty své jednotky. Údaje o jiných vlastnících, třeba přehled
+dlužníků, jdou jen výboru. Odeslaný dokument se archivuje spolu s dokladem, ke kterému
+patří, a kontakty se mažou stejně jako u osoby (oddíl 1).
+
+**V aplikaci:** zatím ne. E-mailem odchází jen odkaz pro přihlášení, upomínka
+a potvrzení o dluzích jdou vytisknout.
