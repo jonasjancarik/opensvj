@@ -178,15 +178,19 @@ vymáhat zbytek po prodávajícím.
 - **Potvrzení o dluzích** při prodeji jednotky obsahuje splatné dluhy, pro úplnost
   i nesplatné platby a přeplatek. Varuje, když zbývá zaúčtovat bankovní pohyby nebo
   když je poslední výpis starší než týden.
+- Dluhy jsou vedené na jednotku, protože s ní přecházejí. Dluh, který na kupujícího
+  nepřešel, se na stránce **Vlastníci** u záznamu kupujícího (Dluhy při převodu) přesune
+  na prodávajícího operací `dluh-zustava-prevodci`. Aplikace předvybere dluhy splatné
+  před převodem a předpis za měsíc převodu podle volby `predpis_mesice_prevodu`
+  v profilu. Dluh prodávajícího je pak na stránce Předpisy mezi dřívějšími vlastníky
+  a jeho platba se zaúčtuje operací `uhrada-dluhu-drivejsiho`.
 - Katalog má v [`pohledavky.yaml`](../../catalogue/pohledavky.yaml) operace
   `urok-z-prodleni` (311400/641100), `uhrada-uroku-z-prodleni`,
   `pochybne-pohledavky-vycleneni` (955100/955900), `opravna-polozka-tvorba`
   (559100/391100, stav `overit`) a `odpis-nedobytne-pohledavky` (543100/311100).
   Kromě opravné položky mají stav `navrh`.
 - Předepsaný úrok z prodlení je na 311400 zvlášť od předpisů a stránka Dlužníci ho
-  zatím neukazuje. Aplikace také ještě nerozlišuje vlastníky jednotky v čase, takže
-  dluhy i saldo jsou vedené na jednotku, ne na konkrétního vlastníka. Podrozvahovou
-  evidenci odepsaných dluhů nemá.
+  zatím neukazuje. Podrozvahovou evidenci odepsaných dluhů aplikace nemá.
 
 ## Příklad
 

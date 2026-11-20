@@ -38,15 +38,22 @@ kontakty po uplynutí archivační doby (§ 31 zákona o účetnictví).
 `Vlastnictvi(jednotka, osoby[], podily_osob, plati_od, plati_do, zdroj)`
 
 - Spoluvlastníci a společné jmění manželů jsou jedna položka s více osobami. Vůči SVJ ručí
-  společně a nerozdílně a mají jeden hlas, proto předpis a saldo vznikají **na jednotku
-  a vlastnické období**, ne na osobu.
+  společně a nerozdílně a mají jeden hlas, proto předpis a saldo vznikají **na jednotku**,
+  ne na osobu.
 - Období vlastnictví jedné jednotky se nesmějí překrývat ani mít mezeru.
 - Při změně vlastníka rozhoduje den zápisu do katastru. Kdo platí předpis za měsíc
-  převodu, je volba SVJ: dosavadní vlastník, nový vlastník, nebo poměrně podle dnů.
-- Dluhy převodce na příspěvcích a zálohách přecházejí na nabyvatele, pokud o nich věděl
-  nebo mohl vědět, a převodce za ně ručí (§ 1186 odst. 2 OZ). Přechod je samostatná
-  operace s odkazem na potvrzení o dluzích, ne automatika. Aplikace vydá potvrzení
-  o dluzích jednotky k datu podle § 1186 odst. 3 OZ.
+  převodu, je volba SVJ v profilu (`predpis_mesice_prevodu`): dosavadní vlastník
+  (`dosavadni`, výchozí), nebo nový vlastník (`novy`). Rozdělení poměrně podle dnů
+  aplikace nenabízí.
+- **Dluhy jdou s jednotkou.** Dluhy převodce na příspěvcích a zálohách přecházejí na
+  nabyvatele, pokud o nich věděl nebo mohl vědět, a převodce za ně ručí (§ 1186 odst. 2
+  OZ). Saldo se proto vede dál na jednotku a převodem se nijak nedělí. Dluh, který na
+  nabyvatele nepřešel, se přesune na převodce operací `dluh-zustava-prevodci`: řádek
+  pohledávky dostane jméno převodce v dimenzi `protistrana`, takže ze salda současného
+  vlastníka zmizí a dál se vymáhá po převodci. Jeho pozdější platbu zaúčtuje
+  `uhrada-dluhu-drivejsiho`. Přesun není automatika; aplikace jen navrhne položky podle
+  data převodu a volby v profilu a výbor vybere, co skutečně nepřešlo, typicky podle
+  potvrzení o dluzích (§ 1186 odst. 3 OZ).
 
 ### OsobyRozhodne
 
@@ -77,7 +84,10 @@ Osoby a vlastnictví jsou v databázi (stránka Vlastníci). Nové vlastnictví 
 zapsaném ho uzavře den před svým začátkem, takže mezera nevznikne; překryv odmítne
 i databáze. Smazat jde jen první nebo poslední záznam jednotky. Spoluvlastnické podíly osob
 jsou nepovinné a musí dát celek. Souhlas s doručováním e-mailem se ukládá s datem. Potvrzení
-o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Měřidla a rozhodnutí
+o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Dluhy, které při
+převodu zůstávají prodávajícímu, se zapisují u záznamu kupujícího v historii vlastnictví
+(tlačítko Dluhy při převodu); jeden převod jde zaúčtovat jednou, oprava je storno
+v deníku. Měřidla a rozhodnutí
 v aplikaci zatím nejsou; jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
 
 ## 2. Předpisy

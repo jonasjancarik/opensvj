@@ -92,7 +92,7 @@ Tyto situace v provozu nastanou, ale aplikace je zatím neumí, nebo je umí jen
 
 | Případ | Co se má ověřit |
 | --- | --- |
-| Převod jednotky 15. dne v měsíci | předpis měsíce podle volby profilu, saldo a vyúčtování na dvě vlastnická období, potvrzení o dluzích k datu převodu |
+| Převod jednotky 15. dne v měsíci | vyúčtování na dvě vlastnická období, potvrzení o dluzích k datu převodu (předpis měsíce převodu podle profilu a přesun nepřešlých dluhů na prodávajícího už aplikace umí) |
 | Platba bez VS od neznámého účtu | `prijem-nesparovany`, uzávěrka zablokovaná, po vyjasnění `prijem-vyjasneni` |
 | Výdaj 150 Kč bez faktury proplacený členovi výboru | `vydaj-bez-faktury`; kdo o proplacení žádá, nemůže ho sám schválit; podpisové záznamy u náhradního dokladu |
 | Výměna vodoměru během roku | spotřeba = součet obou měřidel |

@@ -165,8 +165,15 @@ dosavadního den před svým začátkem, takže na sebe období navazují bez me
 nepřekrývají, hlídá i databáze. U osoby je adresa pro doručování, e-mail, souhlas
 s doručováním e-mailem, telefon a účet. Jméno a adresa se tisknou v hlavičce upomínky,
 oznámení o zálohách a vyúčtování a účet pomáhá párovat platby bez VS. Osobní údaje jsou
-v samostatných tabulkách, takže jdou opravit nebo smazat bez zásahu do deníku. Předpisy
-a dluhy zůstávají vedené na jednotku.
+v samostatných tabulkách, takže jdou opravit nebo smazat bez zásahu do deníku.
+
+Předpisy a dluhy se vedou na jednotku, protože dluhy na příspěvcích a zálohách přecházejí
+při prodeji na kupujícího (§ 1186 odst. 2 OZ). Co na něj nepřešlo, třeba dluh, který
+nebyl v potvrzení o dluzích, se u jeho záznamu v historii vlastnictví přesune na
+prodávajícího (Dluhy při převodu). Aplikace předvybere dluhy splatné před převodem
+a předpis za měsíc převodu podle profilu (`predpis_mesice_prevodu`: `dosavadni` nebo
+`novy`). Přesunutý dluh je pak na stránce Předpisy mezi dřívějšími vlastníky a jeho
+platbu jde v Bance zaúčtovat jako úhradu dluhu dřívějšího vlastníka.
 
 U každé položky po splatnosti je zákonný úrok z prodlení (nařízení vlády 351/2013 Sb.):
 repo sazba ČNB k prvnímu dni pololetí, kdy prodlení začalo, plus 8 procentních bodů.
@@ -280,8 +287,6 @@ Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 [Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
 
 - vyúčtování služeb (vyúčtování záloh na správu už aplikace umí),
-- předpisy a dluhy po vlastnických obdobích: teď jsou vedené na jednotku, takže po prodeji
-  jednotky nejde dluh rozdělit mezi prodávajícího a kupujícího,
 - odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
 - uzávěrkové zápisy, otevření dalšího roku a uzavření roku v aplikaci,
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,

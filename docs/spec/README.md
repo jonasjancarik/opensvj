@@ -43,14 +43,14 @@ instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 | Oblast | Stav |
 | --- | --- |
 | Jednotky, plochy, podíly, počty osob | V profilu SVJ (YAML). Podíly zatím nemají platnost v čase. |
-| Vlastníci | Osoby a vlastnictví jednotek s platností od–do, stránka Vlastníci. Jméno a adresa se tisknou v upomínce, oznámení o zálohách, vyúčtování a potvrzení o dluzích; účet vlastníka pomáhá párovat platby. Předpis a saldo zatím nejsou po vlastnických obdobích a kdo platí předpis za měsíc převodu, aplikace neřeší. Měřidla a rozhodnutí chybí. |
+| Vlastníci | Osoby a vlastnictví jednotek s platností od–do, stránka Vlastníci. Jméno a adresa se tisknou v upomínce, oznámení o zálohách, vyúčtování a potvrzení o dluzích; účet vlastníka pomáhá párovat platby. Dluhy jdou s jednotkou; ty, které na kupujícího nepřešly, jde při převodu přesunout na prodávajícího a jeho pozdější platbu zaúčtovat v Bance. Kdo platí předpis za měsíc převodu, určuje profil. Měřidla a rozhodnutí chybí. |
 | Účetní období a archiv | Účetní období je jen kalendářní rok; hospodářský rok ani první období delší než 12 měsíců nejdou. Export deníku a dokladů pro archiv chybí a lhůty úschovy aplikace nehlídá. |
 | Předpisy záloh | Hotovo: verze s platností od, pět způsobů výpočtu, zaúčtování po měsících. |
 | Nezálohové příspěvky | Zatím ne. Volba `prispevky: nezalohove` v profilu mění jen text přílohy; fond ze zisku 911 aplikace nepodporuje. |
 | Banka | Hotovo pro GPC (ABO) a přehled pohybů Raiffeisenbank (CSV). |
 | Přijaté faktury | Hotovo bez příloh a bez schvalování více lidmi. |
 | Deník, storno, uzavřené období | Hotovo, hlídané triggery v databázi. |
-| Dlužníci, úrok z prodlení, potvrzení o dluzích | Přehled, upomínka a potvrzení fungují. Dluhy jsou vedené na jednotku, ne na vlastníka, takže po prodeji jednotky je nejde rozdělit mezi prodávajícího a kupujícího. Předepsaný úrok z prodlení (311400) stránka Dlužníci neukazuje. Platby se přiřazují podle splatnosti, bez ohledu na upomínky a na to, který dluh určil vlastník (§ 1933 OZ). Odepsané dluhy se nesledují na podrozvaze. |
+| Dlužníci, úrok z prodlení, potvrzení o dluzích | Přehled, upomínka a potvrzení fungují. Dluhy jsou vedené na jednotku; dluhy prodávajícího, které na kupujícího nepřešly, jsou zvlášť pod jeho jménem. Předepsaný úrok z prodlení (311400) stránka Dlužníci neukazuje. Platby se přiřazují podle splatnosti, bez ohledu na upomínky a na to, který dluh určil vlastník (§ 1933 OZ). Odepsané dluhy se nesledují na podrozvaze. |
 | Vyúčtování záloh na správu | Hotovo. |
 | Vyúčtování služeb | Zatím ne. Lhůty podle § 7 a 8 zákona 67/2013 aplikace nehlídá. |
 | Ostatní výnosy | Úrok z banky, úrok z prodlení, pojistné plnění, dotace a nájemné ze společných částí mají operace v katalogu. Smluvní pokuta dodavateli v katalogu chybí. Pohledávku z pojistného plnění v roce škody ani dohad aplikace sama nenabídne. Rozpouštění dotace do více let se dělí ručně. Podíly vlastníků na nájemném aplikace nespočítá a potvrzení pro jejich daňové přiznání nevystaví. Fotovoltaiku zvlášť neřeší. |
