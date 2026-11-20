@@ -11,7 +11,16 @@ from datetime import date
 from sqlalchemy import case, exists, func, select
 from sqlalchemy.orm import Session, aliased
 
-from . import banka, denik, dluznici, pocatecni, predpisy, rozhodnuti, vyuctovani_spravy
+from . import (
+    banka,
+    denik,
+    dluznici,
+    pocatecni,
+    predpisy,
+    rozhodnuti,
+    vyuctovani_sluzeb,
+    vyuctovani_spravy,
+)
 from .db import BankovniPohyb, BankovniUcet, BankovniVypis, Faktura, RadekZapisu, Zapis
 from .domena import katalog, vykazy
 from .domena.profil import Profil
@@ -182,13 +191,15 @@ def kontroly(
     )
     vysledek.append(
         Kontrola("vyuctovani-sluzeb", "Zálohy na služby jsou vyúčtované", "hotovo")
-        if zalohy_sluzeb == 0 and naklady_sluzeb == 0
+        if (zalohy_sluzeb == 0 and naklady_sluzeb == 0)
+        or denik.aktivni(session, vyuctovani_sluzeb.klic(rok)) is not None
         else Kontrola(
             "vyuctovani-sluzeb",
             "Zálohy na služby jsou vyúčtované",
-            "rucne",
-            f"Vyúčtování služeb aplikace zatím neumí. Zálohy na služby {_kc(-zalohy_sluzeb)}, "
-            f"náklady na služby {_kc(naklady_sluzeb)}. Vyúčtování se zaúčtuje k 31. 12.",
+            "chybi",
+            f"Zálohy na služby {_kc(-zalohy_sluzeb)}, náklady na služby {_kc(naklady_sluzeb)}. "
+            "Zaúčtujte vyúčtování služeb k 31. 12.",
+            "vyuctovani",
         )
     )
 

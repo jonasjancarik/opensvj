@@ -30,6 +30,14 @@ _KLICE_SPRAVY = {
     "podil": "podle podílu na společných částech",
     "jednotka": "rovným dílem na jednotku",
 }
+_KLICE_SLUZEB = {
+    "osoby": "podle počtu osob",
+    "jednotka": "rovným dílem na jednotku",
+    "plocha": "podle podlahové plochy",
+    "podil": "podle podílu na společných částech",
+    "meridla": "podle spotřeby na měřidlech",
+    "zuctovatel": "podle rozúčtování od zúčtovatele",
+}
 _MESIC_PREVODU = {"dosavadni": "dosavadní vlastník", "novy": "nový vlastník"}
 _PRISPEVKY = {"zalohove": "zálohové", "nezalohove": "nezálohové"}
 
@@ -102,6 +110,18 @@ def polozky(profil: Profil, nastaveni: predpisy.Nastaveni) -> list[Polozka]:
                 skupina="Vyúčtování záloh na správu",
                 nazev=f"{u.get('nazev', kod)}: rozúčtování {_KLICE_SPRAVY.get(k, k)}",
                 popis="",
+            )
+        )
+    for kod, u in profil.sluzby.items():
+        k = u.get("klic", "osoby")
+        druh = u.get("meridlo")
+        jak = _KLICE_SLUZEB.get(k, k) + (f" ({druh.replace('_', ' ')})" if druh else "")
+        vysledek.append(
+            Polozka(
+                klic=f"klic-sluzby:{kod}:{k}" + (f":{druh}" if druh else ""),
+                skupina="Vyúčtování služeb",
+                nazev=f"{u.get('nazev', kod)}: rozúčtování {jak}",
+                popis="výchozí klíč podle zákona" if "klic" not in u else "",
             )
         )
     vysledek.append(

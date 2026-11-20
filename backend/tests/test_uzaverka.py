@@ -34,7 +34,7 @@ def test_kontrolni_seznam(session):
     assert k["Počáteční stavy k 1. 1. jsou zaúčtované"] == "hotovo"
     assert k["Předpisy záloh za všechny měsíce jsou zaúčtované"] == "hotovo"
     assert k["Zálohy na správu domu jsou vyúčtované"] == "hotovo"
-    assert k["Zálohy na služby jsou vyúčtované"] == "rucne"  # vyúčtování služeb zatím chybí
+    assert k["Zálohy na služby jsou vyúčtované"] == "chybi"
     assert k["Nezaplacené faktury odpovídají závazkům"] == "info"
 
 

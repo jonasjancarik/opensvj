@@ -20,6 +20,7 @@ from .api_predpisy import router as predpisy_router
 from .api_rozhodnuti import router as rozhodnuti_router
 from .api_uzaverka import router as uzaverka_router
 from .api_vyuctovani import router as vyuctovani_router
+from .api_vyuctovani_sluzeb import router as vyuctovani_sluzeb_router
 from .db import Zapis, sezeni
 from .domena import katalog, profil, vykazy
 from .nastaveni import nastaveni
@@ -35,6 +36,7 @@ app = FastAPI(
 app.include_router(banka_router)
 app.include_router(predpisy_router)
 app.include_router(vyuctovani_router)
+app.include_router(vyuctovani_sluzeb_router)
 app.include_router(uzaverka_router)
 app.include_router(pocatecni_router)
 app.include_router(denik_router)

@@ -18,7 +18,7 @@ from .domena.profil import Profil
 
 POPIS_ROLE = {
     "pohledavky_vlastnici": "Nezaplacené zálohy z minulých let",
-    "pohledavky_vyuctovani": "Nedoplatek z vyúčtování služeb",
+    "pohledavky_vyuctovani": "Nedoplatek z vyúčtování",
     "pohledavky_vyuctovani_minule": "Nedoplatek z vyúčtování dřívějších let",
 }
 # Pořadí dluhů z minulých let, od nejstaršího.
@@ -144,7 +144,7 @@ def prehled(
                 splatnost = splatnost_mesice(datum.year, datum.month, nastaveni.splatnost_den)
                 text = f"Zálohy za {predpisy.MESICE[datum.month - 1]} {datum.year}"
                 mesic = datum.replace(day=1)
-            elif operace == vyuctovani_spravy.OPERACE:
+            elif operace in (vyuctovani_spravy.OPERACE, "vyuctovani-sluzeb"):
                 splatnost, text = vyuctovani_spravy.splatnost(datum.year), popis
             else:
                 splatnost, text = datum, popis

@@ -33,17 +33,21 @@ jednotky:
 # (2 číslice), např. 100100601 pro 1001/6.
 vs_predpona: "1001"
 
+# Služby podle zákona 67/2013. Klíč pro roční vyúčtování: osoby (osobo-měsíce podle předpisu,
+# výchozí podle § 5 odst. 2), jednotka (rovným dílem), plocha, podil, meridla (spotřeba
+# z odečtů; druh měřidla v `meridlo`), nebo zuctovatel (výsledky po jednotkách od zúčtovatele
+# tepla a teplé vody).
 sluzby:
-  ELEKTRINA: {analytika: "002", nazev: Elektřina}
-  ELEKTRINA_VYTAH: {analytika: "003", nazev: Elektřina výtah}
-  OHREV_TUV: {analytika: "004", nazev: Náklady na ohřev}
-  ROZUCTOVANI: {analytika: "005", nazev: Náklady na rozúčtování}
-  TEPLO: {analytika: "006", nazev: Náklady na teplo}
-  ODPAD: {analytika: "007", nazev: Odpad}
-  SV_TUV: {analytika: "011", nazev: SV pro TV}
-  UKLID: {analytika: "012", nazev: Úklid}
-  VODA: {analytika: "013", nazev: Vodné a stočné}
-  VYTAH: {analytika: "014", nazev: Výtah}
+  ELEKTRINA: {analytika: "002", nazev: Elektřina, klic: osoby}
+  ELEKTRINA_VYTAH: {analytika: "003", nazev: Elektřina výtah, klic: osoby}
+  OHREV_TUV: {analytika: "004", nazev: Náklady na ohřev, klic: zuctovatel}
+  ROZUCTOVANI: {analytika: "005", nazev: Náklady na rozúčtování, klic: jednotka}
+  TEPLO: {analytika: "006", nazev: Náklady na teplo, klic: zuctovatel}
+  ODPAD: {analytika: "007", nazev: Odpad, klic: osoby}
+  SV_TUV: {analytika: "011", nazev: SV pro TV, klic: zuctovatel}
+  UKLID: {analytika: "012", nazev: Úklid, klic: osoby}
+  VODA: {analytika: "013", nazev: Vodné a stočné, klic: meridla, meridlo: studena_voda}
+  VYTAH: {analytika: "014", nazev: Výtah, klic: osoby}
 
 # Krátkodobé zálohy na správu domu. Nejsou to služby podle § 2 zákona 67/2013, takže do
 # vyúčtování služeb nepatří; vyúčtují se jako správa. Klíč pro roční vyúčtování: podíl na

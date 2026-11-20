@@ -68,60 +68,63 @@
         - [d, naklady_sluzeb.VODA, "45000.00", {}]
 
 - id: vyuctovani-sluzeb
-  nazev: Zaúčtování ročního vyúčtování
-  kdy: Po schválení vyúčtování za rok.
+  nazev: Roční vyúčtování služeb
+  kdy: K 31. 12., když jsou zaúčtované náklady služeb za rok a předpisy všech měsíců.
   stav: praxe
   doklad: VY
   vstupy:
-    sluzby: "seznam {sluzba, zalohy, naklady}"
-    vysledky: "seznam {jednotka, sluzba, rozdil} (rozdíl = zaokrouhlený náklad jednotky − zálohy jednotky)"
+    zalohy: "seznam {jednotka, sluzba, castka}: předepsané zálohy jednotky na službu za rok"
+    naklady: "seznam {sluzba, castka}: náklady služby za rok (zůstatek sběrného účtu služby)"
+    vysledky: "seznam {jednotka, rozdil}: náklady jednotky za všechny služby minus její zálohy"
   zapisy:
-    - krok: zuctovani
-      pro_kazde: sluzby
+    - pro_kazde: zalohy
       md: "zalohy_sluzby.{sluzba}"
       d: vnitrni_zuctovani
-      castka: "{zalohy}"
-      dimenze: {sluzba: "{sluzba}"}
-    - krok: zuctovani
-      pro_kazde: sluzby
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}", sluzba: "{sluzba}"}
+    - pro_kazde: naklady
       md: vnitrni_zuctovani
       d: "naklady_sluzeb.{sluzba}"
-      castka: "{naklady}"
+      castka: "{castka}"
       dimenze: {sluzba: "{sluzba}"}
-    - krok: zuctovani
-      pro_kazde: vysledky
+    - pro_kazde: vysledky
       md: pohledavky_vyuctovani
       d: vnitrni_zuctovani
       castka: "{rozdil}"
-      dimenze: {jednotka: "{jednotka}", sluzba: "{sluzba}"}
+      dimenze: {jednotka: "{jednotka}"}
   pravidla:
     - Záporná částka (přeplatek) se zapíše s opačnými stranami.
-    - Po zaúčtování mají `zalohy_sluzby.*` a `naklady_sluzeb.*` nulový zůstatek a `vnitrni_zuctovani` zůstatek rovný zaokrouhlovacímu rozdílu; ten vyrovná `vyuctovani-zaokrouhleni`.
+    - Náklady služby se rozdělí na jednotky podle klíče služby metodou největšího zbytku na haléře, takže součet podílů je přesně rovný nákladům a na 395 nic nezůstane. U tepla a teplé vody se převezmou výsledky zúčtovatele; jejich součet musí přesně sedět na náklady v účetnictví.
+    - Po zaúčtování mají `zalohy_sluzby.*` a `naklady_sluzeb.*` nulový zůstatek a jednotka má jeden řádek s nedoplatkem nebo přeplatkem.
     - Jen služby podle zákona 67/2013. Zálohy na správu (`zalohy_sprava.*`: pojištění, správce, revize, drobné opravy) se sem nezahrnují a vyúčtují se zvlášť.
-    - Vyúčtování porovnává náklady s přijatými zálohami (zákon 67/2013 § 7 odst. 1). Pokud se 324 vede v předepsané výši, musí vyúčtování pro vlastníka nedoplatek předpisu ukázat zvlášť.
+    - Vyúčtování porovnává náklady se zálohami (zákon 67/2013 § 7 odst. 1). Účet 324 se vede v předepsané výši, proto vyúčtování pro vlastníka ukazuje nezaplacené zálohy zvlášť; ty zůstávají dluhem na 311100.
     - Zda účtovat k 31. 12., nebo až po sestavení vyúčtování, musí potvrdit účetní; obvyklé je k 31. 12.
   zdroje:
     - {typ: zakon, odkaz: "zákon 67/2013 § 5–8; OZ § 1181"}
     - {typ: praxe, odkaz: "Běžná praxe SVJ: po zaúčtování vyúčtování mají zálohy i náklady služeb nulový zůstatek"}
   platnost: {od: 2014-01-01}
   priklady:
-    - nazev: Jedna služba, dvě jednotky, nedoplatek a přeplatek
+    - nazev: Úklid 1 200,50 Kč, dvě jednotky, nedoplatek a přeplatek
       vstupy:
-        sluzby:
-          - {sluzba: UKLID, zalohy: "1000.00", naklady: "1200.50"}
+        zalohy:
+          - {jednotka: "1001/1", sluzba: UKLID, castka: "300.00"}
+          - {jednotka: "1001/2", sluzba: UKLID, castka: "700.00"}
+        naklady:
+          - {sluzba: UKLID, castka: "1200.50"}
         vysledky:
-          - {jednotka: "1001/1", sluzba: UKLID, rozdil: "300.00"}
-          - {jednotka: "1001/2", sluzba: UKLID, rozdil: "-99.00"}
+          - {jednotka: "1001/1", rozdil: "500.25"}
+          - {jednotka: "1001/2", rozdil: "-99.75"}
       ocekavane:
-        - [md, zalohy_sluzby.UKLID, "1000.00", {sluzba: UKLID}]
-        - [d, vnitrni_zuctovani, "1000.00", {sluzba: UKLID}]
+        - [md, zalohy_sluzby.UKLID, "300.00", {jednotka: "1001/1", sluzba: UKLID}]
+        - [d, vnitrni_zuctovani, "300.00", {jednotka: "1001/1", sluzba: UKLID}]
+        - [md, zalohy_sluzby.UKLID, "700.00", {jednotka: "1001/2", sluzba: UKLID}]
+        - [d, vnitrni_zuctovani, "700.00", {jednotka: "1001/2", sluzba: UKLID}]
         - [md, vnitrni_zuctovani, "1200.50", {sluzba: UKLID}]
         - [d, naklady_sluzeb.UKLID, "1200.50", {sluzba: UKLID}]
-        - [md, pohledavky_vyuctovani, "300.00", {jednotka: "1001/1"}]
-        - [d, vnitrni_zuctovani, "300.00", {jednotka: "1001/1"}]
-        - [md, vnitrni_zuctovani, "99.00", {jednotka: "1001/2"}]
-        - [d, pohledavky_vyuctovani, "99.00", {jednotka: "1001/2"}]
-      poznamka: "Na 395 zůstane 0,50 Kč (1 000 + 300 − 1 200,50 − 99): zaokrouhlovací rozdíl pro `vyuctovani-zaokrouhleni`."
+        - [md, pohledavky_vyuctovani, "500.25", {jednotka: "1001/1"}]
+        - [d, vnitrni_zuctovani, "500.25", {jednotka: "1001/1"}]
+        - [md, vnitrni_zuctovani, "99.75", {jednotka: "1001/2"}]
+        - [d, pohledavky_vyuctovani, "99.75", {jednotka: "1001/2"}]
 
 - id: vyuctovani-spravy
   nazev: Roční vyúčtování záloh na správu domu

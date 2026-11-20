@@ -373,3 +373,18 @@ class RozhodnutiPro(Zaklad):
     upraveno: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class VysledekZuctovatele(Zaklad):
+    """Náklad jednotky na službu podle rozúčtování zúčtovatele (teplo, teplá voda)."""
+
+    __tablename__ = "vysledek_zuctovatele"
+    rok: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sluzba: Mapped[str] = mapped_column(String(32), primary_key=True)
+    jednotka: Mapped[str] = mapped_column(String(32), primary_key=True)
+    castka: Mapped[int] = mapped_column(BigInteger)  # haléře
+    zdroj: Mapped[str] = mapped_column(String(200), default="")
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
