@@ -461,5 +461,5 @@ Vlastník dostává jen dokumenty své jednotky. Údaje o jiných vlastnících,
 dlužníků, jdou jen výboru. Odeslaný dokument se archivuje spolu s dokladem, ke kterému
 patří, a kontakty se mažou stejně jako u osoby (oddíl 1).
 
-**V aplikaci:** zatím ne. E-mailem odchází jen odkaz pro přihlášení, upomínka
-a potvrzení o dluzích jdou vytisknout.
+**V aplikaci:** zatím ne. Aplikace neposílá žádné e-maily, ani přihlašovací odkaz (při
+vývoji se vypíše do konzole). Upomínka a potvrzení o dluzích jdou vytisknout.

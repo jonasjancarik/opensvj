@@ -58,7 +58,7 @@ instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 | Uzávěrka | Kontrolní seznam, výkazy, inventurní soupisy, daň z příjmů a návrh přílohy. Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků a zpráva o hospodaření zatím ne. Rok nejde v aplikaci uzavřít; databáze zápisy do uzavřeného roku nepustí, ale stav roku se dá změnit jen přímo v ní. |
 | Daň z příjmů | Uzávěrka roztřídí výnosy na zdaňované, nezdaňované a zdaněné srážkou a řekne, jestli se podává přiznání. Přiznání nesestaví a daň nespočítá. Neodliší předepsané a zaplacené sankce (řádky 30 a 111 přiznání). Čerpání fondu ze zisku (648) označí jako zdaňovaný výnos, i když se do základu daně nezahrnuje (§ 23 odst. 4 písm. e) a g) ZDP); povinnost podat přiznání tím ale vyhodnotí správně. Pro předpis daně (591/341) a zvýšení příspěvků o daň nemá katalog operaci. |
 | Odměny členů orgánů a mzdy | Operace `odmena-vyboru` v katalogu (stav `overit`); daň a pojistné zadává účetní ručně. Aplikace je nespočítá a nerozliší člena a nečlena SVJ ani rozhodný příjem. Mzdovou agendu (prohlášení k dani, registrace u ČSSZ a zdravotních pojišťoven, jednotné měsíční hlášení, přehledy o platbě) nevede. Mzdy a dohody jsou mimo první verzi. |
-| Rozesílání a upozornění | Zatím ne. E-mailem odchází jen odkaz pro přihlášení, upomínka a potvrzení o dluzích jdou vytisknout. |
+| Rozesílání a upozornění | Zatím ne. Aplikace neposílá žádné e-maily, ani přihlašovací odkaz: při vývoji se odkaz vypíše do konzole. Upomínka a potvrzení o dluzích jdou vytisknout. |
 | Podklady, podpisové záznamy, role | Zatím ne. Přístup řídí seznam e-mailů, část uživatelů může jen nahlížet. |
 
 ## Zásady
@@ -125,8 +125,9 @@ podpisový záznam v aplikaci byl průkazný podle § 33a odst. 4; jestli to sta
 
 Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
 
-1. **Metody přihlášení a provoz.** Teď je přihlášení odkazem v e-mailu. Zbývá rozhodnout
-   o passkey a druhém faktoru a o tom, kde aplikace poběží.
+1. **Metody přihlášení a provoz.** Přihlašuje se odkazem v e-mailu, ale odesílání
+   e-mailů (SMTP, nebo Cloudflare Email) zatím chybí. Zbývá rozhodnout i o passkey a druhém
+   faktoru a o tom, kde aplikace poběží.
 2. **Export hlavní knihy.** Deník v databázi aplikace je zdroj pravdy. Návrh je přidat
    deterministický export do Beancountu: nezávislá kontrola zůstatků (`bean-check`,
    kontrola proti výpisům) a prohlížeč Fava pro výbor.

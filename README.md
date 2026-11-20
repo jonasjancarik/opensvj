@@ -262,11 +262,14 @@ Hlavní pravidla:
 
 ## Co zatím chybí
 
-- jiné formáty výpisů než GPC (camt.053, MT940),
-- úprava předpisů v rozhraní,
-- dobropisy,
-- jména a adresy vlastníků,
-- role a oprávnění,
-- odesílání e-mailů,
-- celé vyúčtování služeb (vyúčtování správy už aplikace umí),
-- export do Beancount.
+Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
+[Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
+
+- vyúčtování služeb (vyúčtování záloh na správu už aplikace umí),
+- vlastníci a vlastnická období: dluhy a předpisy jsou vedené na jednotku,
+- odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
+- uzávěrkové zápisy, otevření dalšího roku a uzavření roku v aplikaci,
+- podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,
+- úprava předpisů v rozhraní (teď jsou v profilu SVJ),
+- dobropisy a jiné formáty výpisů než GPC a CSV Raiffeisenbank (camt.053, MT940),
+- export do Beancountu a pro programy účetních.
