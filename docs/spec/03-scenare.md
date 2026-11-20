@@ -114,4 +114,4 @@ Tyto situace v provozu nastanou, ale aplikace je zatím neumí, nebo je umí jen
 | Změna podkladu po podpisu | podpisový záznam se zneplatní a doklad se vrátí do stavu `uplny` |
 | Revize přiřazená ke službě | odmítnuto s odkazem na § 2 odst. 1 písm. d) zákona 67/2013 |
 | Vyúčtování služeb | porovnání s předepsanými zálohami, nezaplacené zálohy zvlášť, rozdělení přesně na haléře, výsledky zúčtovatele musí sedět na účetnictví, chybějící odečet zaúčtování zablokuje; lhůty podle § 7 a 8 zákona 67/2013 až se zásilkami |
-| Uzavření a otevření roku | uzávěrkové zápisy a počáteční stavy dalšího roku z konečných zůstatků |
+| Uzavření a otevření roku | uzávěrkové zápisy a počáteční stavy dalšího roku z konečných zůstatků, účet po účtu stejné; dluhy vlastníků po položkách se splatností, přeplatek jako přeplatek; nezaplacené faktury se nezdvojí; znovuotevření stornuje obojí a nové uzavření dá stejný výsledek |

@@ -314,6 +314,8 @@ dokladu a podpisové záznamy zatím v aplikaci nejsou; kdo co zaúčtoval, nese
 
 `Obdobi(rok, stav)`: `otevrene → v_uzaverce → uzavrene`. Do uzavřeného období nejde zapsat
 nic. Měsíce mají jen informativní kontrolu (výpisy a předpisy), zamyká se celý rok.
+Aplikace zatím používá jen `otevrene` a `uzavrene`; znovuotevření vrací rok do `otevrene`.
+Další rok jde založit dřív, než je předchozí uzavřený, aby se v lednu dalo účtovat.
 
 ### Zapis a RadekZapisu
 
@@ -402,8 +404,16 @@ a hlavní kniha jako PDF a CSV.
 a hlídají je triggery v databázi. Stránka Uzávěrka ověří z dat body 1, 2, 4 a 5 a zůstatky
 pomocných účtů. Ostatní body se odškrtávají ručně a odškrtnutí se ukládá s tím, kdo a kdy.
 Výkazy, inventurní soupisy, posouzení daně z příjmů a návrh přílohy aplikace sestaví.
-Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků, zpráva o hospodaření
-a uzavření roku v aplikaci (přechod stavu období) zatím chybí; první rok se otevírá zadáním počátečních stavů.
+Bod 8 je hotový: tlačítko Uzavřít rok jde použít po 31. 12., když uzávěrka nehlásí nic
+chybějícího a ruční body jsou odškrtnuté. Zaúčtuje `uzavreni-vysledkovych` (5 a 6 na 963),
+`uzavreni-rozvahovych` (rozvahové účty i s rozpisem na 962) a k 1. 1. dalšího roku
+počáteční stavy proti 961; výsledek roku se otevře na 931. Dluhy současných vlastníků
+se převádějí po položkách se splatností (sloupec `RadekZapisu.splatnost`) a platby se
+přitom započítávají jen v rámci účtu, takže zůstatek každého účtu navazuje. Do schválení
+závěrky jde rok znovu otevřít s důvodem; uzávěrkové zápisy i počáteční stavy dalšího
+roku se stornují. Přehledy a výkazy roku uzávěrkové zápisy nevidí, deník ano.
+Zpráva o hospodaření a schválení závěrky (po něm už rok otevřít nepůjde) zatím chybí.
+První rok se otevírá zadáním počátečních stavů.
 
 ## 6. Vyúčtování
 

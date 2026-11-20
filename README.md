@@ -262,6 +262,14 @@ Stránka Uzávěrka má pět částí:
 Ruční odškrtnutí vidí celý výbor i s tím, kdo bod odškrtl a kdy, a zůstává celá historie
 zaškrtnutí i zrušení.
 
+Od prosince stránka nabídne začít účtovat další rok, aby šly v lednu zaúčtovat předpisy
+a výpisy dřív, než je uzávěrka hotová. Když je všechno hotové nebo odškrtnuté, tlačítko
+Uzavřít rok zaúčtuje k 31. 12. uzávěrkové zápisy a k 1. 1. převede zůstatky do dalšího roku:
+peníze na účtech, nezaplacené faktury i dluhy a přeplatky vlastníků po jednotlivých
+položkách se splatností, takže Dlužníci v novém roce správně počítají, co je po splatnosti.
+Do uzavřeného roku už nic zaúčtovat nejde. Když se před schválením závěrky najde chyba, rok
+jde s uvedením důvodu znovu otevřít a po opravě uzavřít znovu.
+
 ### Deník a storno
 
 Stránka Deník ukazuje zápisy roku s řádky. Zaúčtovaný zápis nejde změnit ani smazat;
@@ -325,7 +333,7 @@ Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 
 - doručení vyúčtování a hlídání lhůt pro vyrovnání a námitky,
 - odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
-- uzávěrkové zápisy, otevření dalšího roku a uzavření roku v aplikaci,
+- zpráva o hospodaření a evidence schválení závěrky,
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,
 - úprava předpisů v rozhraní (teď jsou v profilu SVJ),
 - dobropisy a jiné formáty výpisů než GPC a CSV Raiffeisenbank (camt.053, MT940),

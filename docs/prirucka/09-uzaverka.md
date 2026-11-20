@@ -183,9 +183,19 @@ a ztráty, i když se nezveřejňuje. Zveřejňuje se v rozsahu, v jakém byla s
   `[doplňte]`, která musí vyplnit výbor nebo účetní.
 - Uzávěrka hlídá, že je vyúčtování služeb zaúčtované. Dokud není, ukáže zůstatek záloh
   a nákladů služeb a odkáže na stránku Vyúčtování.
-- Uzávěrkové zápisy, otevření dalšího roku z konečných zůstatků a zprávu o hospodaření
-  aplikace zatím nemá. Rok v ní zatím uzavřít nejde, databáze ale už zápisy do
-  uzavřeného roku nepustí. První rok se otevírá zadáním počátečních stavů.
+- Od prosince nabídne začít účtovat další rok, aby šly v lednu zaúčtovat předpisy
+  a výpisy ještě před uzávěrkou.
+- Rok uzavře tlačítkem, až nic nechybí a ruční body jsou odškrtnuté. Náklady a výnosy
+  uzavře na účet výsledku (963), rozvahové účty na konečný účet rozvažný (962) a k 1. 1.
+  dalšího roku je zrcadlově otevře přes počáteční účet rozvažný (961). Výsledek roku se
+  otevře jako výsledek ve schvalovacím řízení (931). Dluhy a přeplatky vlastníků se
+  převedou po položkách i se splatností, nezaplacené faktury i s číslem faktury.
+- Do uzavřeného roku databáze nic nepustí. Do schválení závěrky jde rok s uvedením
+  důvodu znovu otevřít (§ 17 odst. 7 ZoÚ); uzávěrkové zápisy i počáteční stavy dalšího
+  roku se stornují a po opravě se rok uzavře znovu. Schválení závěrky aplikace zatím
+  neeviduje, takže znovuotevření po schválení nezakáže.
+- Zprávu o hospodaření aplikace zatím nemá. První rok se otevírá zadáním počátečních
+  stavů.
 
 ## Příklad
 
