@@ -664,3 +664,12 @@ details.katalog > p { margin: 0.25rem 0 1rem; }
   .upominka table, .upominka th, .upominka td { background: #fff; color: #000; border-color: #ccc; }
   .upominka .tlumene { color: #333; }
 }
+
+/* Záložky v rámci stránky */
+.zalozky { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.25rem; }
+.zalozky button {
+  background: var(--plocha); color: var(--text); border-color: var(--okraj-silny);
+  font-size: 0.9rem; padding: 0.5rem 0.95rem;
+}
+.zalozky button:hover:not(:disabled) { background: var(--plocha-2); box-shadow: none; }
+.zalozky button.aktivni, .zalozky button.aktivni:hover:not(:disabled) { background: var(--akcent); color: var(--na-akcentu); border-color: var(--akcent); }

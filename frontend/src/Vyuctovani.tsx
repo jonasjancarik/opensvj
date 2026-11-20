@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type ReactNode } from 'react'
 import { api } from './auth'
 import { kc } from './penize'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
+import { VyuctovaniSluzeb } from './VyuctovaniSluzeb'
 import './vyuctovani.css'
 
 type Polozka = {
@@ -51,8 +52,55 @@ function Vysledek({ rozdil }: { rozdil: number }) {
   return <span className="uspech">vyrovnáno</span>
 }
 
+type Zalozka = 'sluzby' | 'sprava'
+
 export function Vyuctovani() {
-  const rok = new Date().getFullYear()
+  // Vyúčtování za rok se dělá na začátku dalšího roku, proto do června ukazuje minulý rok.
+  const dnes = new Date()
+  const [rok, setRok] = useState(dnes.getMonth() < 6 ? dnes.getFullYear() - 1 : dnes.getFullYear())
+  const [zalozka, setZalozka] = useState<Zalozka>('sluzby')
+  const zahlavi = (
+    <>
+      <h1>Vyúčtování {rok}</h1>
+      <div className="radek">
+        <label className="vyber-roku">
+          Rok{' '}
+          <select value={rok} onChange={(e) => setRok(Number(e.target.value))}>
+            {[dnes.getFullYear(), dnes.getFullYear() - 1, dnes.getFullYear() - 2].map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <nav className="zalozky" aria-label="Druh vyúčtování">
+        {(
+          [
+            ['sluzby', 'Služby'],
+            ['sprava', 'Správa domu'],
+          ] as const
+        ).map(([z, nazev]) => (
+          <button
+            key={z}
+            className={zalozka === z ? 'aktivni' : undefined}
+            aria-current={zalozka === z ? 'page' : undefined}
+            onClick={() => setZalozka(z)}
+          >
+            {nazev}
+          </button>
+        ))}
+      </nav>
+    </>
+  )
+  return zalozka === 'sluzby' ? (
+    <VyuctovaniSluzeb key={rok} rok={rok} zahlavi={zahlavi} />
+  ) : (
+    <VyuctovaniSpravy key={rok} rok={rok} zahlavi={zahlavi} />
+  )
+}
+
+function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode }) {
   const [data, setData] = useState<Data | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
   const [otevrena, setOtevrena] = useState<string | null>(null)
@@ -63,7 +111,13 @@ export function Vyuctovani() {
     api<Data>(`/api/vyuctovani-spravy/${rok}`).then(setData).catch((e) => setChyba(e.message))
   }, [rok])
 
-  if (!data) return chyba ? <Chyba text={chyba} /> : <Nacitani />
+  if (!data)
+    return (
+      <>
+        {zahlavi}
+        {chyba ? <Chyba text={chyba} /> : <Nacitani />}
+      </>
+    )
   if (tisk) return <ProVlastnika data={data} j={tisk} zpet={() => setTisk(null)} />
 
   const nazvy = Object.fromEntries(data.polozky.map((p) => [p.kod, p.nazev]))
@@ -91,7 +145,7 @@ export function Vyuctovani() {
 
   return (
     <>
-      <h1>Vyúčtování správy domu {data.rok}</h1>
+      {zahlavi}
       <p>
         Pojištění, správa, revize a drobné opravy se platí ze záloh na správu domu. Jednou ročně
         se skutečné náklady porovnají s tím, kolik měla každá jednotka v předpisu, a vyjde

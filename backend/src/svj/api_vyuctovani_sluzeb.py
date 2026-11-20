@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import predpisy, vyuctovani_sluzeb
+from . import meridla, predpisy, vyuctovani_sluzeb
 from .api_lide import Adresat, adresati
 from .db import BankovniUcet, VysledekZuctovatele, sezeni
 from .domena import profil
@@ -28,6 +28,7 @@ class Sluzba(BaseModel):
     jak_se_deli: str
     naklady: int
     zalohy: int
+    merna_jednotka: str | None  # m³, GJ… u klíče `meridla`
     problem: str | None
     zuctovatel: Zuctovatel | None  # jen u klíče `zuctovatel`
 
@@ -102,6 +103,7 @@ def _prehled(rok: int) -> Vyuctovani:
                 jak_se_deli=x.jak_se_deli,
                 naklady=x.naklady,
                 zalohy=x.zalohy,
+                merna_jednotka=meridla.DRUHY[x.meridlo][1] if x.meridlo in meridla.DRUHY else None,
                 problem=x.problem,
                 zuctovatel=(
                     zuctovatel.get(x.kod, Zuctovatel(castky={}, zdroj=""))
