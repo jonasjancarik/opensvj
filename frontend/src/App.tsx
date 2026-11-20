@@ -12,6 +12,7 @@ import { Predpisy } from './Predpisy'
 import { Prehled } from './Prehled'
 import { Prihlaseni } from './Prihlaseni'
 import { Uzaverka } from './Uzaverka'
+import { Meridla } from './Meridla'
 import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
 
@@ -20,6 +21,7 @@ const STRANKY = {
   predpisy: 'Předpisy',
   dluznici: 'Dlužníci',
   vlastnici: 'Vlastníci',
+  meridla: 'Měřidla',
   faktury: 'Faktury',
   banka: 'Banka',
   vyuctovani: 'Vyúčtování',
@@ -101,6 +103,8 @@ export default function App() {
           <Dluznici />
         ) : stranka === 'vlastnici' ? (
           <Vlastnici />
+        ) : stranka === 'meridla' ? (
+          <Meridla />
         ) : stranka === 'faktury' ? (
           <Faktury />
         ) : stranka === 'denik' ? (
