@@ -1,0 +1,108 @@
+# Příjmy vlastníků, které SVJ jen vybírá: nájemné a pacht ze společných částí, sankce od
+# nájemců, platby za provoz technických zařízení pro třetí osoby, přetoky z fotovoltaiky
+# (NV 366/2013 § 16 odst. 2; Durec, Účetnictví SVJ, 3. vyd., kap. 11). Nejsou to výnosy
+# SVJ, účtují se jako závazek vůči vlastníkům. Formát viz README.md v této složce.
+
+- id: najem-predpis
+  nazev: Předpis nájemného ze společných částí
+  kdy: SVJ podle nájemní nebo pachtovní smlouvy předepíše nájemci platbu za společnou část (střecha, sušárna, plocha na reklamu).
+  stav: navrh
+  doklad: ID
+  vstupy: {najemce: nájemce, castka: nájemné za období}
+  zapisy:
+    - md: pohledavky_najemci
+      d: prijmy_vlastniku
+      castka: "{castka}"
+      dimenze: {protistrana: "{najemce}"}
+  pravidla:
+    - Nájemné ze společných částí není příjmem SVJ, i když přijde na jeho účet (NV 366/2013 § 16 odst. 2 písm. a)). Proto nejde do výnosů.
+    - Stejně se účtují úroky z prodlení od nájemce a platby třetích osob za provoz technických zařízení v domě (§ 16 odst. 2 písm. b) a c)).
+    - Mezi vlastníky se příjem obvykle dělí podle podílů na společných částech.
+  varianty:
+    - id: vynos-svj
+      kdy: SVJ podle dosavadní praxe vede nájemné jako svůj výnos.
+      stav: praxe
+      zmena: "MD pohledavky_najemci / D vynosy.pacht. NV 366/2013 § 16 odst. 2 to vylučuje; nájemné pak vstupuje do daně SVJ a vlastníkům chybí podklad pro jejich přiznání."
+  zdroje:
+    - {typ: zakon, odkaz: "NV 366/2013 § 10 odst. 1 písm. d), § 16 odst. 2"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 77 (kap. 11)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Roční nájemné za anténu na střeše
+      vstupy: {najemce: operator, castka: "25800.00"}
+      ocekavane:
+        - [md, pohledavky_najemci, "25800.00", {protistrana: operator}]
+        - [d, prijmy_vlastniku, "25800.00", {protistrana: operator}]
+
+- id: najem-uhrada
+  nazev: Úhrada nájemného nájemcem
+  kdy: Nájemce společné části zaplatí na účet SVJ.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, najemce: nájemce, castka: zaplacená částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_najemci
+      castka: "{castka}"
+      dimenze: {protistrana: "{najemce}"}
+  pravidla:
+    - Vlastníkům, kteří nevedou účetnictví, vzniká příjem dnem, kdy nájemce zaplatil SVJ, ne až výplatou od SVJ (judikatura podle Durec s. 78). Potvrzení pro daňové účely proto vychází z přijatých plateb.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 77–78 (kap. 11)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Operátor zaplatí nájemné
+      vstupy: {ucet: provozni, najemce: operator, castka: "25800.00"}
+      ocekavane:
+        - [md, banka.provozni, "25800.00", {}]
+        - [d, pohledavky_najemci, "25800.00", {protistrana: operator}]
+
+- id: prijmy-vlastniku-vyplata
+  nazev: Výplata podílu na příjmech ze společných částí
+  kdy: SVJ vyplatí vlastníkovi jeho podíl na nájemném nebo jiném příjmu ze společných částí.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, castka: podíl vlastníka}
+  zapisy:
+    - md: prijmy_vlastniku
+      d: "banka.{ucet}"
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 77 (kap. 11)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Podíl jednotky 1001/3
+      vstupy: {ucet: provozni, jednotka: "1001/3", castka: "2154.00"}
+      ocekavane:
+        - [md, prijmy_vlastniku, "2154.00", {jednotka: "1001/3"}]
+        - [d, banka.provozni, "2154.00", {}]
+
+- id: prijmy-vlastniku-prevod-do-fo
+  nazev: Převod podílu na příjmech ze společných částí do fondu oprav
+  kdy: Vlastník požádá, aby jeho podíl zůstal v domě a zvýšil jeho zálohy na fond oprav.
+  stav: overit
+  doklad: ID
+  vstupy: {jednotka: označení jednotky, castka: podíl vlastníka}
+  zapisy:
+    - md: prijmy_vlastniku
+      d: zalohy_dlouhodobe
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}"}
+  pravidla:
+    - Potřebuje výslovný, nejlépe písemný souhlas toho vlastníka. Shromáždění nemůže většinou hlasů rozhodnout o penězích, které patří jednotlivým vlastníkům; o navýšení příspěvků rozhoduje podle OZ § 1208 písm. c).
+  varianty:
+    - id: do-zaloh-na-spravu
+      kdy: Vlastník chce podíl započíst do krátkodobých záloh na správu.
+      stav: overit
+      zmena: "MD prijmy_vlastniku / D zalohy_sprava.<položka>."
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 77 (kap. 11)"}
+    - {typ: zakon, odkaz: "OZ § 1208 písm. c)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Podíl jednotky 1001/6 do fondu oprav
+      vstupy: {jednotka: "1001/6", castka: "1872.00"}
+      ocekavane:
+        - [md, prijmy_vlastniku, "1872.00", {jednotka: "1001/6"}]
+        - [d, zalohy_dlouhodobe, "1872.00", {jednotka: "1001/6"}]

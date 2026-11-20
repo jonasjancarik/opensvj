@@ -16,6 +16,7 @@ Každý soubor pokrývá jednu oblast:
 | `pohledavky.yaml` | úrok z prodlení, pochybné a nedobytné pohledávky |
 | `majetek-pokladna.yaml` | majetek, zásoby, hotovostní pokladna |
 | `uvery-dotace.yaml` | úvěr na opravy a jeho splácení, dotace |
+| `prijmy-vlastniku.yaml` | nájemné ze společných částí a jiné příjmy vlastníků, které SVJ vybírá |
 | `organy.yaml` | odměny členů výboru |
 | `uzaverka.yaml` | uzavření a otevření roku, storno |
 

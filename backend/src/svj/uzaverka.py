@@ -528,9 +528,9 @@ DAN_PODLE_SKUPINY = {
     "69": ("nepredmetne", "Dotace"),
 }
 POZNAMKY_DANE = {
-    "vynosy.pacht": "Kniha (s. 77–79) řadí pacht mezi příjmy vlastníků, ne SVJ; "
-    "pak by se u SVJ nedanil. "
-    "Vyjasněte s účetní.",
+    "vynosy.pacht": "Nájemné a pacht ze společných částí jsou příjmem vlastníků, ne SVJ "
+    "(NV 366/2013 § 16 odst. 2; kniha s. 77–79), a SVJ je pak nedaní. "
+    "Katalog pro ně má operace najem-predpis a prijmy-vlastniku. Vyjasněte s účetní.",
     "vynosy.urok_z_prodleni": "Daní se až po zaplacení (§ 23 odst. 3 ZDP), ne už při vyúčtování.",
 }
 

@@ -252,25 +252,27 @@ a jak naloží s nájemným, které dosud účtovalo jako svůj výnos.
 ## V aplikaci
 
 - Úrok z banky se zaúčtuje operací
-  [`urok-a-srazkova-dan`](../../catalogue/banka.yaml), zatím hrubě: úrok na 644 a daň
-  na 591. Podle § 27 odst. 3 písm. c) vyhlášky 504 by měl jít čistý úrok rovnou na 644.
-  Příklad v katalogu navíc počítá se sazbou 15 %, pro SVJ platí 21 %. Operace má stav
-  `overit`, takže ji uzávěrka připomene k posouzení.
+  [`urok-a-srazkova-dan`](../../catalogue/banka.yaml) částkou, kterou banka připsala, tedy
+  po srážce daně. Hrubé účtování s daní na 591 je varianta `hrube`.
 - Úrok z prodlení vlastníkovi a jeho úhradu pokrývají operace
   [`urok-z-prodleni` a `uhrada-uroku-z-prodleni`](../../catalogue/pohledavky.yaml). Sankce
   vedou na samostatné analytice 311400, aby se nepočítaly mezi dluhy, které při prodeji
   přecházejí na nového vlastníka. Smluvní pokutu dodavateli katalog zatím nemá.
-- Pojistné plnění ([`pojistne-plneni`](../../catalogue/fond-oprav.yaml)) se účtuje až
-  v den, kdy pojišťovna zaplatí, rovnou z banky do výnosů. Pohledávku v roce škody ani
-  dohad je zatím nutné zadat ručně. Ukázkové SVJ vede pojistné plnění na 648, tedy na
-  účtu pro čerpání fondů; podle § 27 odst. 3 písm. f) vyhlášky 504 patří na 649. Varianta
-  `snizeni-nakladu` odpovídá praxi, ale ne § 7 odst. 6 ZoÚ.
+- Pojistné plnění ([`pojistne-plneni`](../../catalogue/fond-oprav.yaml)) se účtuje
+  v den, kdy pojišťovna zaplatí, rovnou z banky do výnosů na 649. Pohledávku v roce škody
+  ani dohad aplikace zatím sama nenabídne, je nutné je zadat ručně. Operace má stav
+  `overit`, takže ji uzávěrka připomene k posouzení. Varianta `snizeni-nakladu` odpovídá
+  praxi, ale ne § 7 odst. 6 ZoÚ.
 - Dotace mají tři operace v [`uvery-dotace.yaml`](../../catalogue/uvery-dotace.yaml):
   `dotace-rozhodnuti`, `dotace-pouziti` a `dotace-prijeti`. Rozpouštění dotace do více
   let je nutné rozdělit ručně podle nákladů.
-- Ukázkové SVJ účtuje pacht jako svůj výnos (602100). Daňový přehled v uzávěrce u něj
-  upozorní, že podle § 16 odst. 2 NV jde o příjem vlastníků. Operace pro příjmy vlastníků
-  přes 379, jejich rozdělení podle podílů a potvrzení pro daňové účely zatím chybí.
+- Nájemné ze společných částí má operace v
+  [`prijmy-vlastniku.yaml`](../../catalogue/prijmy-vlastniku.yaml): předpis a úhradu
+  nájemného přes 378/379, výplatu podílu vlastníkovi a převod podílu do fondu oprav.
+  Podíly jednotlivých vlastníků aplikace zatím nespočítá a potvrzení pro daňové účely
+  nevystaví. Kdo dosud vedl nájemné jako výnos SVJ, může dál použít variantu
+  `vynos-svj`; daňový přehled v uzávěrce u ní upozorní, že podle § 16 odst. 2 NV jde
+  o příjem vlastníků.
 - Fotovoltaiku aplikace zvlášť neřeší.
 
 ## Příklad

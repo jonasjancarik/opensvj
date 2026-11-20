@@ -150,32 +150,34 @@
         - [d, banka.provozni, "50.00", {}]
 
 - id: urok-a-srazkova-dan
-  nazev: Připsaný úrok a srážková daň
-  kdy: Banka připíše úrok a sama srazí daň.
-  stav: overit
+  nazev: Připsaný úrok z vkladu
+  kdy: Banka připíše úrok a sama z něj srazí daň.
+  stav: navrh
   doklad: BV
-  vstupy: {ucet: bankovní účet SVJ, urok_hruby: hrubý úrok, dan: sražená daň}
+  vstupy: {ucet: bankovní účet SVJ, urok: úrok připsaný po srážce daně}
   zapisy:
     - md: "banka.{ucet}"
       d: vynosy.uroky
-      castka: "{urok_hruby}"
-    - md: naklady.dan_srazkova
-      d: "banka.{ucet}"
-      castka: "{dan}"
+      castka: "{urok}"
   pravidla:
-    - Hrubý úrok a daň se berou z výpisu nebo potvrzení banky.
-    - Úroky z vkladů jsou příjmem SVJ; po zdanění srážkou SVJ s jen takovými příjmy nepodává přiznání k DPPO (podle odpovědi Finanční správy).
+    - Účtuje se částka, kterou banka skutečně připsala, tedy úrok po srážce daně. Hrubý úrok se uvádí jen tehdy, když jde sraženou daň započíst na daňovou povinnost (vyhláška 504 § 27 odst. 3 písm. c)), a to SVJ nemůže.
+    - Daň z úroků SVJ je 21 % a je konečná (zákon 586/1992 § 36 odst. 5 písm. b)). SVJ, které má jen takové a nezdanitelné příjmy, přiznání nepodává (§ 38mb písm. b)).
+  varianty:
+    - id: hrube
+      kdy: SVJ chce ve výkazech vidět hrubý úrok a daň zvlášť.
+      stav: praxe
+      zmena: "MD banka / D vynosy.uroky hrubým úrokem a MD naklady.dan_srazkova / D banka sraženou daní. Výsledek je stejný, vyhláška ale pro tento případ určuje čistou částku."
   zdroje:
-    - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. d); zákon 586/1992 § 36"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002 § 27 odst. 3 písm. c)"}
+    - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. d); zákon 586/1992 § 36 odst. 5 písm. b), § 38mb písm. b)"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 49–50 (kap. 6.3.2)"}
   platnost: {od: 2014-01-01}
   priklady:
-    - nazev: Úrok 100 Kč, daň 15 %
-      vstupy: {urok_hruby: "100.00", dan: "15.00", ucet: fond_oprav}
+    - nazev: Hrubý úrok 1 300 Kč, daň 21 %
+      vstupy: {urok: "1027.00", ucet: fond_oprav}
       ocekavane:
-        - [md, banka.fond_oprav, "100.00", {}]
-        - [d, vynosy.uroky, "100.00", {}]
-        - [md, naklady.dan_srazkova, "15.00", {}]
-        - [d, banka.fond_oprav, "15.00", {}]
+        - [md, banka.fond_oprav, "1027.00", {}]
+        - [d, vynosy.uroky, "1027.00", {}]
 
 - id: vraceni-preplatku
   nazev: Vrácení přeplatku vlastníkovi

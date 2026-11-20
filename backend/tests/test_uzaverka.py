@@ -41,14 +41,14 @@ def test_kontrolni_seznam(session):
 def test_nepotvrzeny_postup_je_v_kontrolnim_seznamu(session):
     """Postup ve stavu `overit` se zaúčtuje a uzávěrka ho jen připomene k posouzení."""
     _otevri_2026(session)
-    op = katalog.nacti()["urok-a-srazkova-dan"]
+    op = katalog.nacti()["pojistne-plneni"]
     zapis = denik.zauctuj(
         session,
         PROFIL,
         op,
-        {"ucet": "provozni", "urok_hruby": "100.00", "dan": "15.00"},
+        {"ucet": "provozni", "castka": "7000.00"},
         datum=date(2026, 6, 30),
-        popis="úrok",
+        popis="pojistné plnění",
         doklad="BV",
         zauctoval="x",
     )
@@ -96,7 +96,7 @@ def test_dan_z_prijmu(session):
         session,
         PROFIL,
         op,
-        {"ucet": "provozni", "urok_hruby": "100.00", "dan": "15.00"},
+        {"ucet": "provozni", "urok": "79.00"},
         datum=date(2026, 6, 30),
         popis="úrok",
         doklad="BV",

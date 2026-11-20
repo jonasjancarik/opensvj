@@ -65,14 +65,17 @@
       d: vynosy.pojistne_plneni
       castka: "{castka}"
   pravidla:
-    - Pojistné plnění je příjmem SVJ (NV 366/2013 § 16 odst. 1 písm. f)).
+    - Pojistné plnění je příjmem SVJ (NV 366/2013 § 16 odst. 1 písm. f)) a patří mezi jiné ostatní výnosy jako náhrada škody (vyhláška 504 § 27 odst. 3 písm. f)), obvykle na 649.
+    - Výnos patří do roku pojistné události. Když pojišťovna zaplatí až v dalším roce, zaúčtuje se v roce škody pohledávka (378/649), nebo odhad přes dohadný účet, pokud je nárok nesporný a výše ještě není známá (388/649). Tyto zápisy je zatím nutné zadat ručně.
   varianty:
     - id: snizeni-nakladu
       kdy: SVJ účtuje pojistné plnění jako snížení nákladů na pojištění.
       stav: praxe
-      zmena: "MD banka / D naklady.pojisteni."
+      zmena: "MD banka / D naklady.pojisteni. Jde o vzájemné zúčtování nákladu a výnosu, které zákon o účetnictví § 7 odst. 6 nepřipouští."
   zdroje:
     - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. f)"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002 § 27 odst. 3 písm. f)"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 50–51 (kap. 6.3.3)"}
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Úhrada škody

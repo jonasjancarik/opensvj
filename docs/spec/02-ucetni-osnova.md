@@ -57,10 +57,10 @@ mít jiné analytiky nebo jiný účet ze stejné skupiny.
 | `vnitrni_zuctovani` | technický účet pro vyúčtování | 395100 | |
 | `naklady.opravy` | drobné opravy | 511100 | |
 | `naklady.sprava`, `naklady.pojisteni`, `naklady.ostatni` | správní náklady | 518100, 518200, 518300 | |
-| `naklady.banka`, `naklady.dan_srazkova` | bankovní poplatky, srážková daň z úroků | 549100, 591100 | |
+| `naklady.banka`, `naklady.dan_srazkova` | bankovní poplatky, srážková daň z úroků (jen při hrubém účtování úroků) | 549100, 591100 | |
 | `naklady.prevod_do_fo` | převod výnosů do fondu oprav | 549300 | |
-| `vynosy.predpis`, `vynosy.pausal`, `vynosy.pacht` | předepsané výnosy, paušální poplatky, pacht | 602000, 602200, 602100 | |
-| `vynosy.uroky`, `vynosy.pojistne_plneni` | bankovní úroky, pojistné plnění | 644100, 648100 | |
+| `vynosy.predpis`, `vynosy.pausal`, `vynosy.pacht` | předepsané výnosy, paušální poplatky, pacht účtovaný jako výnos SVJ | 602000, 602200, 602100 | |
+| `vynosy.uroky`, `vynosy.pojistne_plneni` | bankovní úroky po srážce daně, pojistné plnění | 644100, 649200 | |
 | `vynosy.prevod_do_vyuctovani` | protipoložka k převodu správních nákladů do vyúčtování | 649100 | |
 | `zalohy_dlouhodobe` | fond oprav | 955100 | |
 | `zalohy_dlouhodobe_mimoradne` | mimořádné zálohy na konkrétní akci | 955200 | |
@@ -84,6 +84,7 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 | `uvery`, `naklady.uroky_uver` | dlouhodobý úvěr a jeho úroky | 951100, 544100 |
 | `pohledavky_uver`, `zalohy_dlouhodobe_uver` | podíly vlastníků na splácení úvěru a zálohy na něj | 378100, 955300 |
 | `pohledavky_dotace`, `narok_dotace`, `vynosy.dotace` | nárok na dotaci a její použití | 378200, 346100, 691100 |
+| `pohledavky_najemci`, `prijmy_vlastniku` | nájemné ze společných částí a závazek vůči vlastníkům, kterým patří | 378300, 379200 |
 | `naklady.odmeny`, `zavazky_odmeny` | odměny členů výboru | 523100, 379100 |
 | `naklady.odvody`, `zavazky_pojistne`, `zavazky_dan_odmeny` | pojistné a daň z odměn | 524100, 336100, 342100 |
 

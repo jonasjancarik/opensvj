@@ -83,10 +83,10 @@ role:
   naklady.dan_srazkova: "591100"
   naklady.prevod_do_fo: "549300"
   vynosy.predpis: "602000"
-  vynosy.pacht: "602100"
+  vynosy.pacht: "602100"   # jen pro variantu vynos-svj; podle NV § 16 odst. 2 je to příjem vlastníků
   vynosy.pausal: "602200"
   vynosy.uroky: "644100"
-  vynosy.pojistne_plneni: "648100"
+  vynosy.pojistne_plneni: "649200"
   vynosy.prevod_do_vyuctovani: "649100"
   zalohy_dlouhodobe: "955100"
   zalohy_dlouhodobe_mimoradne: "955200"
@@ -106,6 +106,8 @@ role:
   narok_dotace: "346100"
   pohledavky_uver: "378100"
   pohledavky_dotace: "378200"
+  pohledavky_najemci: "378300"
+  prijmy_vlastniku: "379200"
   opravne_polozky: "391100"
   naklady.spotreba: "501100"
   naklady.odmeny: "523100"
@@ -135,7 +137,9 @@ nazvy_uctu:
   "314400": Záloha na elektřinu výtahu
   "314999": Ostatní poskytnuté zálohy
   "321100": Dodavatelé
+  "378300": Pohledávky za nájemci společných částí
   "378900": Nevyjasněné výdaje
+  "379200": Příjmy vlastníků ze společných částí
   "379900": Nevyjasněné příjmy
   "381100": Náklady příštích období
   "389100": Dohadné účty pasivní
