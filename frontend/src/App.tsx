@@ -13,6 +13,7 @@ import { Prehled } from './Prehled'
 import { Prihlaseni } from './Prihlaseni'
 import { Uzaverka } from './Uzaverka'
 import { Meridla } from './Meridla'
+import { RozhodnutiOrganu } from './Rozhodnuti'
 import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
 
@@ -27,6 +28,7 @@ const STRANKY = {
   vyuctovani: 'Vyúčtování',
   uzaverka: 'Uzávěrka',
   denik: 'Deník',
+  rozhodnuti: 'Rozhodnutí',
 } as const
 // Stránky, které nejsou v menu (jednorázové nastavení); vedou na ně odkazy z jiných stránek.
 const SKRYTE = { pocatecni: 'Počáteční stavy', oznameni: 'Oznámení o zálohách' } as const
@@ -105,6 +107,8 @@ export default function App() {
           <Vlastnici />
         ) : stranka === 'meridla' ? (
           <Meridla />
+        ) : stranka === 'rozhodnuti' ? (
+          <RozhodnutiOrganu />
         ) : stranka === 'faktury' ? (
           <Faktury />
         ) : stranka === 'denik' ? (
