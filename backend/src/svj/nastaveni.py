@@ -24,6 +24,18 @@ class Nastaveni(BaseSettings):
     auth_readonly_emails: str = ""
     # Popis API na /api/docs; zapíná se jen pro vývoj.
     api_docs: bool = False
+    # Adresa aplikace pro odkazy v e-mailech vlastníkům.
+    app_url: str = "http://localhost:5180"
+    # Odesílání e-mailů (dokumenty vlastníkům). Bez SMTP_HOST se e-maily jen uloží jako
+    # soubory .eml do MAIL_DIR (pro vývoj); bez obojího aplikace e-maily neposílá.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_tls: str = "starttls"  # starttls | ssl | none
+    # Odesílatel, např. „SVJ Ukázková 12 <vybor@ukazkova12.cz>“.
+    smtp_from: str = ""
+    mail_dir: Path | None = None
 
 
 @lru_cache

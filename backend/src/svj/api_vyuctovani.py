@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from . import predpisy, vyuctovani_spravy
+from . import predpisy, vyuctovani_spravy, zasilky
 from .api_lide import Adresat, adresati
 from .db import BankovniUcet, sezeni
 from .domena import profil
@@ -40,6 +40,7 @@ class Jednotka(BaseModel):
     rozdil: int  # kladný = nedoplatek
     polozky: list[PolozkaJednotky]
     vlastnici: list[Adresat]  # k dnešku
+    doruceno: date | None  # kdy vlastníkovi došlo vyúčtování
 
 
 class Nezahrnuto(BaseModel):
@@ -58,6 +59,7 @@ class Vyuctovani(BaseModel):
     nezahrnuto: list[Nezahrnuto]
     zapis: str | None  # "n/rok", když je zaúčtované
     proc_nejde: str | None
+    rozeslani: str  # klíč zásilek s tímto vyúčtováním
 
 
 def _prehled(rok: int) -> Vyuctovani:
@@ -70,6 +72,7 @@ def _prehled(rok: int) -> Vyuctovani:
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
         kdo = adresati(s, dnes)
+        doruceno = zasilky.doruceni_jednotek(s, f"vyuctovani_spravy:{rok}")
     return Vyuctovani(
         rok=rok,
         dnes=dnes,
@@ -102,9 +105,11 @@ def _prehled(rok: int) -> Vyuctovani:
                     for p in v.polozky
                 ],
                 vlastnici=kdo.get(j.jednotka, []),
+                doruceno=doruceno.get(j.jednotka),
             )
             for j in v.jednotky
         ],
+        rozeslani=f"vyuctovani_spravy:{rok}",
         nezahrnuto=[Nezahrnuto(popis=n.popis, castka=n.castka) for n in v.nezahrnuto],
         zapis=zapis,
         proc_nejde=duvod,

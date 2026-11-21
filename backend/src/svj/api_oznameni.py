@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from . import oznameni, predpisy
+from . import oznameni, predpisy, zasilky
 from .api_lide import Adresat, adresati
 from .api_predpisy import _skupina
 from .db import sezeni
@@ -31,6 +31,10 @@ class Jednotka(BaseModel):
     zmenena: bool
     slozky: list[Slozka]
     vlastnici: list[Adresat]  # k dnešku
+    doruceno: date | None  # kdy vlastníkovi došlo oznámení
+    # Od kdy jde novou zálohu na služby požadovat, když oznámení došlo pozdě
+    # (první den měsíce po doručení, § 4 odst. 4 zákona 67/2013); jinak None.
+    sluzby_od: date | None
 
 
 class Oznameni(BaseModel):
@@ -45,6 +49,7 @@ class Oznameni(BaseModel):
     dorucit_do: date
     zdroj: str
     jednotky: list[Jednotka]
+    rozeslani: str  # klíč zásilek s tímto oznámením
 
 
 @router.get("")
@@ -73,6 +78,8 @@ def _oznameni(plati_od: date) -> Oznameni:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
     with sezeni()() as s:
         kdo = adresati(s, date.today())
+        klic = f"oznameni:{o.plati_od.isoformat()}"
+        doruceno = zasilky.doruceni_jednotek(s, klic)
     return Oznameni(
         svj=prof.nazev,
         ico=prof.ico,
@@ -101,7 +108,17 @@ def _oznameni(plati_od: date) -> Oznameni:
                     for s in j.slozky
                 ],
                 vlastnici=kdo.get(j.jednotka, []),
+                doruceno=doruceno.get(j.jednotka),
+                sluzby_od=_sluzby_od(o.plati_od, doruceno.get(j.jednotka)),
             )
             for j in o.jednotky
         ],
+        rozeslani=klic,
     )
+
+
+def _sluzby_od(plati_od: date, doruceno: date | None) -> date | None:
+    if doruceno is None:
+        return None
+    od = zasilky.plus_mesice(doruceno.replace(day=1), 1)
+    return od if od > plati_od else None

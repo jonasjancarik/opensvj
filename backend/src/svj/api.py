@@ -22,6 +22,8 @@ from .api_uzaverka import router as uzaverka_router
 from .api_verze_predpisu import router as verze_predpisu_router
 from .api_vyuctovani import router as vyuctovani_router
 from .api_vyuctovani_sluzeb import router as vyuctovani_sluzeb_router
+from .api_zasilky import router as zasilky_router
+from .api_zasilky import verejne as verejne_router
 from .db import Zapis, sezeni
 from .domena import katalog, profil, vykazy
 from .nastaveni import nastaveni
@@ -49,6 +51,8 @@ app.include_router(formulare_router)
 app.include_router(meridla_router)
 app.include_router(rozhodnuti_router)
 app.include_router(lide_router)
+app.include_router(zasilky_router)
+app.include_router(verejne_router)
 
 
 class Ja(BaseModel):

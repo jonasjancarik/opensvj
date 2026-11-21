@@ -403,3 +403,49 @@ class VerzePredpisu(Zaklad):
     osoby: Mapped[dict] = mapped_column(JSONB)  # jednotka | vychozi → počet osob
     upravil: Mapped[str] = mapped_column(String(128))
     upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Dokument(Zaklad):
+    """Dokument přesně tak, jak odešel vlastníkovi. Po uložení se nemění (trigger)."""
+
+    __tablename__ = "dokument"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    druh: Mapped[str] = mapped_column(String(32))
+    klic: Mapped[str] = mapped_column(String(64))
+    jednotka: Mapped[str] = mapped_column(String(32))
+    nazev: Mapped[str] = mapped_column(String(200))
+    html: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(String(64))
+    vytvoril: Mapped[str] = mapped_column(String(128))
+    vytvoreno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Zasilka(Zaklad):
+    """Jedno odeslání dokumentu jednomu vlastníkovi, e-mailem nebo poštou."""
+
+    __tablename__ = "zasilka"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    dokument_id: Mapped[int] = mapped_column(ForeignKey("dokument.id"))
+    davka: Mapped[str] = mapped_column(String(36))
+    osoba_id: Mapped[int | None] = mapped_column(
+        ForeignKey("osoba.id", ondelete="SET NULL"), nullable=True
+    )
+    jmeno: Mapped[str] = mapped_column(String(200))
+    email: Mapped[str | None] = mapped_column(String(254), nullable=True)
+    adresa: Mapped[str] = mapped_column(Text, default="")
+    kanal: Mapped[str] = mapped_column(String(8))  # email | posta
+    stav: Mapped[str] = mapped_column(String(16), default="pripravena")
+    pripravil: Mapped[str] = mapped_column(String(128))
+    pripraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    odeslal: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    odeslano: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    prijato_serverem: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    otevreno: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    potvrzeno: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    doruceno: Mapped[date | None] = mapped_column(Date, nullable=True)
+    doruceni_zdroj: Mapped[str] = mapped_column(String(200), default="")
+    token_hash: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
+    chyba: Mapped[str] = mapped_column(Text, default="")
+    dokument: Mapped[Dokument] = relationship()

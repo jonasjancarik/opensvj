@@ -1,12 +1,12 @@
 """API pro roční vyúčtování služeb (teplo, voda, výtah, úklid…)."""
 
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import meridla, predpisy, vyuctovani_sluzeb
+from . import meridla, predpisy, vyuctovani_sluzeb, zasilky
 from .api_lide import Adresat, adresati
 from .db import BankovniUcet, VysledekZuctovatele, sezeni
 from .domena import profil
@@ -49,6 +49,9 @@ class Jednotka(BaseModel):
     nezaplacene: int
     polozky: list[PolozkaJednotky]
     vlastnici: list[Adresat]
+    doruceno: date | None  # kdy vlastníkovi došlo vyúčtování
+    namitky_do: date | None  # 30 dní od doručení (§ 8 odst. 1 zákona 67/2013)
+    vyrovnani_do: date | None  # 4 měsíce od doručení (§ 7 odst. 1 zákona 67/2013)
 
 
 class Vyuctovani(BaseModel):
@@ -62,6 +65,11 @@ class Vyuctovani(BaseModel):
     jednotky: list[Jednotka]
     zapis: str | None
     proc_nejde: str | None
+    rozeslani: str  # klíč zásilek s tímto vyúčtováním
+
+
+def klic_rozeslani(rok: int) -> str:
+    return f"vyuctovani_sluzeb:{rok}"
 
 
 class VysledkyZuctovatele(BaseModel):
@@ -88,6 +96,7 @@ def _prehled(rok: int) -> Vyuctovani:
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
         kdo = adresati(s, dnes)
         zuctovatel = _zuctovatel(s, rok)
+        doruceno = zasilky.doruceni_jednotek(s, klic_rozeslani(rok))
     return Vyuctovani(
         rok=rok,
         dnes=dnes,
@@ -131,11 +140,19 @@ def _prehled(rok: int) -> Vyuctovani:
                     for x in v.sluzby
                 ],
                 vlastnici=kdo.get(j.jednotka, []),
+                doruceno=doruceno.get(j.jednotka),
+                namitky_do=(
+                    doruceno[j.jednotka] + timedelta(days=30) if j.jednotka in doruceno else None
+                ),
+                vyrovnani_do=(
+                    zasilky.plus_mesice(doruceno[j.jednotka], 4) if j.jednotka in doruceno else None
+                ),
             )
             for j in v.jednotky
         ],
         zapis=zapis,
         proc_nejde=duvod,
+        rozeslani=klic_rozeslani(rok),
     )
 
 
