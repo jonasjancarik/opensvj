@@ -4,6 +4,7 @@ import { StavFormulare, useSdilenyFormular } from './sdilenyFormular'
 import { kc } from './penize'
 import { SKUPINY } from './Predpisy'
 import { Chyba, Nacitani } from './ui'
+import { Rozeslat } from './Rozeslat'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import './oznameni.css'
 
@@ -21,6 +22,8 @@ type Jednotka = {
   zmenena: boolean
   slozky: Slozka[]
   vlastnici: Adresat[]
+  doruceno: string | null
+  sluzby_od: string | null
 }
 type Data = {
   svj: string
@@ -34,6 +37,7 @@ type Data = {
   dorucit_do: string
   zdroj: string
   jednotky: Jednotka[]
+  rozeslani: string
 }
 
 const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
@@ -152,6 +156,7 @@ export function Oznameni() {
               {!prvni && <th className="cislo">Dosud měsíčně</th>}
               <th className="cislo">Nově měsíčně</th>
               {!prvni && <th className="cislo">Změna</th>}
+              <th>Doručeno</th>
               <th></th>
             </tr>
           </thead>
@@ -162,6 +167,12 @@ export function Oznameni() {
                 {!prvni && <td className="cislo">{kc(j.puvodne)}</td>}
                 <td className="cislo">{kc(j.nove)}</td>
                 {!prvni && <td className="cislo">{rozdil(j.nove - j.puvodne)}</td>}
+                <td>
+                  {j.doruceno ? datum(j.doruceno) : <span className="tlumene">zatím ne</span>}
+                  {j.sluzby_od && (
+                    <div className="varovani-text">zálohy na služby v nové výši až od {datum(j.sluzby_od)}</div>
+                  )}
+                </td>
                 <td>
                   <button className="odkaz" onClick={() => setTisk([j])}>
                     Oznámení
@@ -201,10 +212,15 @@ function Tisk({
           Chybí odůvodnění změny. Doplňte ho na předchozí stránce.
         </p>
       )}
+      <Rozeslat
+        druh="oznameni"
+        klic={data.rozeslani}
+        nazev={`${prvni ? 'Oznámení o výši měsíčních záloh' : 'Oznámení o nové výši měsíčních záloh'} od ${datum(data.plati_od)}`}
+      />
       <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>
       <ChybiVlastnici jednotky={jednotky} />
       {jednotky.map((j) => (
-        <article key={j.jednotka} className="upominka oznameni">
+        <article key={j.jednotka} className="upominka oznameni" data-jednotka={j.jednotka}>
           <p>
             <strong>{data.svj}</strong>
             {data.ico && <>, IČ {data.ico}</>}

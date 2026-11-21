@@ -4,6 +4,7 @@ import { Chyba, Nacitani } from './ui'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import { kc } from './penize'
 import { PotvrzeniDluhu } from './PotvrzeniDluhu'
+import { Rozeslat } from './Rozeslat'
 
 export type Polozka = {
   popis: string
@@ -243,6 +244,7 @@ function Upominka({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka;
       <p className="tlumene neni-v-tisku">
         Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu.
       </p>
+      <Rozeslat druh="upominka" klic={`upominka:${j.jednotka}`} nazev="Upozornění na nezaplacené platby" />
       <ChybiVlastnici jednotky={[j]} />
       {j.urok > 0 && (
         <label className="neni-v-tisku">
@@ -250,7 +252,7 @@ function Upominka({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka;
           Uvést v upomínce úrok z prodlení ({kc(j.urok)})
         </label>
       )}
-      <article className="upominka">
+      <article className="upominka" data-jednotka={j.jednotka}>
         <p>
           <strong>{data.svj}</strong>
         </p>

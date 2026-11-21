@@ -16,6 +16,7 @@ import { Meridla } from './Meridla'
 import { RozhodnutiOrganu } from './Rozhodnuti'
 import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
+import { Zasilky } from './Zasilky'
 
 const STRANKY = {
   prehled: 'Přehled',
@@ -26,6 +27,7 @@ const STRANKY = {
   faktury: 'Faktury',
   banka: 'Banka',
   vyuctovani: 'Vyúčtování',
+  zasilky: 'Zásilky',
   uzaverka: 'Uzávěrka',
   denik: 'Deník',
   rozhodnuti: 'Rozhodnutí',
@@ -115,6 +117,8 @@ export default function App() {
           <Denik />
         ) : stranka === 'vyuctovani' ? (
           <Vyuctovani />
+        ) : stranka === 'zasilky' ? (
+          <Zasilky />
         ) : stranka === 'uzaverka' ? (
           <Uzaverka />
         ) : (

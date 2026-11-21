@@ -1,6 +1,7 @@
 import type { Data, Jednotka } from './Dluznici'
 import { datum, SeznamPolozek } from './Dluznici'
 import { kc } from './penize'
+import { Rozeslat } from './Rozeslat'
 import './tisk.css'
 
 const DNI_STARY_VYPIS = 7
@@ -51,9 +52,10 @@ export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednot
           s jeho souhlasem. Výdaje za vydání (např. faktura účetní) může společenství přeúčtovat
           prodávajícímu, ale ne víc, než skutečně stály.
         </p>
+        <Rozeslat druh="potvrzeni" klic={`potvrzeni:${j.jednotka}`} nazev="Potvrzení o dluzích vlastníka jednotky" />
       </div>
 
-      <article className="upominka">
+      <article className="upominka" data-jednotka={j.jednotka}>
         <p>
           <strong>{data.svj}</strong>
           {data.ico && <>, IČ {data.ico}</>}

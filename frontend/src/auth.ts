@@ -9,7 +9,7 @@ let token: { hodnota: string; platiDo: number } | null = null
 let probiha: Promise<string> | null = null
 
 /** Krátkodobý token pro backend. Obnoví se chvíli před vypršením; souběžné žádosti sdílí jeden dotaz. */
-function ziskejToken(): Promise<string> {
+export function ziskejToken(): Promise<string> {
   if (token && token.platiDo - Date.now() > 30_000) return Promise.resolve(token.hodnota)
   probiha ??= novyToken().finally(() => {
     probiha = null

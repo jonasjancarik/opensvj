@@ -3,6 +3,7 @@ import { api } from './auth'
 import { kc } from './penize'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
+import { Rozeslat } from './Rozeslat'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import { VyuctovaniSluzeb } from './VyuctovaniSluzeb'
 import './vyuctovani.css'
@@ -25,6 +26,7 @@ type Jednotka = {
   rozdil: number
   polozky: PolozkaJednotky[]
   vlastnici: Adresat[]
+  doruceno: string | null
 }
 type Data = {
   rok: number
@@ -37,6 +39,7 @@ type Data = {
   nezahrnuto: { popis: string; castka: number }[]
   zapis: string | null
   proc_nejde: string | null
+  rozeslani: string
 }
 
 const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
@@ -104,7 +107,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
   const [data, setData] = useState<Data | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
   const [otevrena, setOtevrena] = useState<string | null>(null)
-  const [tisk, setTisk] = useState<Jednotka | null>(null)
+  const [tisk, setTisk] = useState<Jednotka[] | null>(null)
   const [pracuji, setPracuji] = useState(false)
 
   useEffect(() => {
@@ -118,7 +121,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
         {chyba ? <Chyba text={chyba} /> : <Nacitani />}
       </>
     )
-  if (tisk) return <ProVlastnika data={data} j={tisk} zpet={() => setTisk(null)} />
+  if (tisk) return <ProVlastnika data={data} jednotky={tisk} zpet={() => setTisk(null)} />
 
   const nazvy = Object.fromEntries(data.polozky.map((p) => [p.kod, p.nazev]))
   const naklady = data.polozky.reduce((a, p) => a + p.naklady, 0)
@@ -222,6 +225,11 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
         Porovnávají se zálohy podle předpisu. Měsíční zálohy, které vlastník nezaplatil, dluží
         zvlášť a jsou na stránce Dlužníci.
       </p>
+      {data.zapis && (
+        <div className="radek">
+          <button onClick={() => setTisk(data.jednotky)}>Vyúčtování všem vlastníkům</button>
+        </div>
+      )}
       <div className="tabulka-posun">
         <table className="jednotky">
           <thead>
@@ -231,6 +239,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
               <th className="cislo">Náklady jednotky</th>
               <th className="cislo">Zálohy v předpisu</th>
               <th className="cislo">Výsledek</th>
+              {data.zapis && <th>Doručeno</th>}
             </tr>
           </thead>
           <tbody>
@@ -248,10 +257,13 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
                   <td className="cislo">
                     <Vysledek rozdil={j.rozdil} />
                   </td>
+                  {data.zapis && (
+                    <td>{j.doruceno ? datum(j.doruceno) : <span className="tlumene">zatím ne</span>}</td>
+                  )}
                 </tr>
                 {otevrena === j.jednotka && (
                   <tr className="rozpis">
-                    <td colSpan={5}>
+                    <td colSpan={data.zapis ? 6 : 5}>
                       <ul>
                         {j.polozky.map((p) => (
                           <li key={p.kod}>
@@ -262,7 +274,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
                           </li>
                         ))}
                       </ul>
-                      <button className="vedlejsi" onClick={() => setTisk(j)}>
+                      <button className="vedlejsi" onClick={() => setTisk([j])}>
                         Vyúčtování pro vlastníka
                       </button>
                     </td>
@@ -287,8 +299,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
   )
 }
 
-function ProVlastnika({ data, j, zpet }: { data: Data; j: Jednotka; zpet: () => void }) {
-  const nazvy = Object.fromEntries(data.polozky.map((p) => [p.kod, p]))
+function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka[]; zpet: () => void }) {
   return (
     <>
       <div className="radek neni-v-tisku">
@@ -302,8 +313,27 @@ function ProVlastnika({ data, j, zpet }: { data: Data; j: Jednotka; zpet: () => 
           ? 'Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu.'
           : 'Vyúčtování ještě není zaúčtované, čísla se do konce roku můžou změnit. Vlastníkům ho posílejte až po zaúčtování.'}
       </p>
-      <ChybiVlastnici jednotky={[j]} />
-      <article className="upominka">
+      {data.zapis && (
+        <Rozeslat
+          druh="vyuctovani_spravy"
+          klic={data.rozeslani}
+          nazev={`Vyúčtování záloh na správu domu za rok ${data.rok}`}
+        />
+      )}
+      {jednotky.length > 1 && <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>}
+      <ChybiVlastnici jednotky={jednotky} />
+      {jednotky.map((j) => (
+        <Dokument key={j.jednotka} data={data} j={j} />
+      ))}
+    </>
+  )
+}
+
+function Dokument({ data, j }: { data: Data; j: Jednotka }) {
+  const nazvy = Object.fromEntries(data.polozky.map((p) => [p.kod, p]))
+  return (
+    <>
+      <article className="upominka" data-jednotka={j.jednotka}>
         <p>
           <strong>{data.svj}</strong>
         </p>

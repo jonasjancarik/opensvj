@@ -3,6 +3,7 @@ import { api } from './auth'
 import { kc, naHalire } from './penize'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
+import { Rozeslat } from './Rozeslat'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
 import './vyuctovani.css'
 
@@ -32,6 +33,9 @@ type Jednotka = {
   nezaplacene: number
   polozky: PolozkaJednotky[]
   vlastnici: Adresat[]
+  doruceno: string | null
+  namitky_do: string | null
+  vyrovnani_do: string | null
 }
 type Data = {
   rok: number
@@ -44,6 +48,7 @@ type Data = {
   jednotky: Jednotka[]
   zapis: string | null
   proc_nejde: string | null
+  rozeslani: string
 }
 
 const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
@@ -65,7 +70,7 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
   const [chyba, setChyba] = useState<string | null>(null)
   const [otevrena, setOtevrena] = useState<string | null>(null)
   const [zadavana, setZadavana] = useState<string | null>(null)
-  const [tisk, setTisk] = useState<Jednotka | null>(null)
+  const [tisk, setTisk] = useState<Jednotka[] | null>(null)
   const [pracuji, setPracuji] = useState(false)
 
   useEffect(() => {
@@ -81,7 +86,7 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
         {chyba ? <Chyba text={chyba} /> : <Nacitani />}
       </>
     )
-  if (tisk) return <ProVlastnika data={data} j={tisk} zpet={() => setTisk(null)} />
+  if (tisk) return <ProVlastnika data={data} jednotky={tisk} zpet={() => setTisk(null)} />
 
   const nazvy = Object.fromEntries(data.sluzby.map((x) => [x.kod, x.nazev]))
   const naklady = data.sluzby.reduce((a, x) => a + x.naklady, 0)
@@ -207,7 +212,14 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
           <p className="tlumene">
             Porovnávají se zálohy podle předpisu. Měsíční zálohy, které vlastník nezaplatil, dluží zvlášť a jsou na
             stránce Dlužníci.
+            {data.zapis &&
+              ' Lhůta pro námitky (30 dní) a pro vyrovnání nedoplatků a přeplatků (4 měsíce) běží od doručení vyúčtování.'}
           </p>
+          {data.zapis && (
+            <div className="radek">
+              <button onClick={() => setTisk(data.jednotky)}>Vyúčtování všem vlastníkům</button>
+            </div>
+          )}
           {data.sluzby.some((x) => x.problem) && (
             <p className="upozorneni">Služby s upozorněním výše zatím nejsou v nákladech jednotek započtené.</p>
           )}
@@ -220,6 +232,7 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
                   <th className="cislo">Náklady jednotky</th>
                   <th className="cislo">Zálohy v předpisu</th>
                   <th className="cislo">Výsledek</th>
+                  {data.zapis && <th>Doručeno</th>}
                 </tr>
               </thead>
               <tbody>
@@ -243,10 +256,24 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
                           </>
                         )}
                       </td>
+                      {data.zapis && (
+                        <td>
+                          {j.doruceno ? (
+                            <>
+                              {datum(j.doruceno)}
+                              <div className="tlumene">
+                                námitky do {datum(j.namitky_do!)}, vyrovnání do {datum(j.vyrovnani_do!)}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="tlumene">zatím ne</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                     {otevrena === j.jednotka && (
                       <tr className="rozpis">
-                        <td colSpan={sOsobami ? 5 : 4}>
+                        <td colSpan={(sOsobami ? 5 : 4) + (data.zapis ? 1 : 0)}>
                           <ul>
                             {j.polozky
                               .filter((p) => p.naklady || p.zalohy)
@@ -268,7 +295,7 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
                                 </li>
                               ))}
                           </ul>
-                          <button className="vedlejsi" onClick={() => setTisk(j)}>
+                          <button className="vedlejsi" onClick={() => setTisk([j])}>
                             Vyúčtování pro vlastníka
                           </button>
                         </td>
@@ -392,9 +419,7 @@ function VysledkyZuctovatele({
   )
 }
 
-function ProVlastnika({ data, j, zpet }: { data: Data; j: Jednotka; zpet: () => void }) {
-  const sluzby = Object.fromEntries(data.sluzby.map((x) => [x.kod, x]))
-  const sOsobami = data.sluzby.some((x) => x.klic === 'osoby')
+function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka[]; zpet: () => void }) {
   return (
     <>
       <div className="radek neni-v-tisku">
@@ -408,8 +433,24 @@ function ProVlastnika({ data, j, zpet }: { data: Data; j: Jednotka; zpet: () => 
           ? `Text si můžete upravit: zkopírujte ho do dopisu nebo e-mailu. Vlastníkovi musí dojít do ${datum(data.doruceni)}.`
           : 'Vyúčtování ještě není zaúčtované a čísla se můžou změnit. Vlastníkům ho posílejte až po zaúčtování.'}
       </p>
-      <ChybiVlastnici jednotky={[j]} />
-      <article className="upominka">
+      {data.zapis && (
+        <Rozeslat druh="vyuctovani_sluzeb" klic={data.rozeslani} nazev={`Vyúčtování služeb za rok ${data.rok}`} />
+      )}
+      {jednotky.length > 1 && <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>}
+      <ChybiVlastnici jednotky={jednotky} />
+      {jednotky.map((j) => (
+        <Dokument key={j.jednotka} data={data} j={j} />
+      ))}
+    </>
+  )
+}
+
+function Dokument({ data, j }: { data: Data; j: Jednotka }) {
+  const sluzby = Object.fromEntries(data.sluzby.map((x) => [x.kod, x]))
+  const sOsobami = data.sluzby.some((x) => x.klic === 'osoby')
+  return (
+    <>
+      <article className="upominka" data-jednotka={j.jednotka}>
         <p>
           <strong>{data.svj}</strong>
         </p>
