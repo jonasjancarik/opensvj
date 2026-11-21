@@ -165,7 +165,10 @@ upomenut, jinak na nejméně zajištěný a při stejném zajištění na nejdř
 dluhu se platba započte nejdřív na náklady, pak na úroky z prodlení a pak na jistinu
 (§ 1932 OZ).
 
-**V aplikaci:** předpis je v `profiles/<id>-predpisy.yaml` a zaúčtuje se na stránce
+**V aplikaci:** výchozí předpis je v `profiles/<id>-predpisy.yaml`. Další verze se zadávají
+na stránce Předpisy (tabulka `verze_predpisu`); verze z aplikace se stejným `plati_od`
+nahradí verzi ze souboru. Verzi, která by zasáhla už zaúčtovaný měsíc, nejde změnit ani
+smazat. Splatnost a poznámka zůstávají v souboru. Předpis se zaúčtuje na stránce
 Předpisy po měsících. Saldo se počítá z deníku. Na stránce Dlužníci se platby započítávají
 na nejdřív splatné dluhy: nejdřív zůstatky z minulých let, pak měsíční zálohy. Určení
 dluhu dlužníkem ani pořadí podle upomínek zatím aplikace nezná. Úrok z prodlení

@@ -2,7 +2,8 @@
 
 Profil převádí role z katalogu operací na účty konkrétního SVJ a popisuje jeho jednotky
 (označení, plocha, podíl na společných částech), služby, položky správy a identifikaci.
-Vedle profilu `<id>.yaml` může být předpis záloh `<id>-predpisy.yaml`.
+Vedle profilu `<id>.yaml` může být předpis záloh `<id>-predpisy.yaml`. Ten je výchozí;
+pozdější změny předpisu se obvykle zadávají v aplikaci na stránce Předpisy.
 
 Profil skutečného SVJ do tohoto repozitáře nepatří. Profil pilotního SVJ, na kterém se
 aplikace vyvíjí, je v soukromém repozitáři `opensvj-pilot`; složku určuje `PROFILY` v

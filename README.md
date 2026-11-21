@@ -146,6 +146,12 @@ plochy, sazba za osobu, částka za dům rozdělená podle podílů nebo rovným
 částka u každé jednotky. Plochy a podíly jednotek jsou v profilu SVJ. Při změně předpisu
 se přidá nová verze s pozdějším datem a starší měsíce zůstanou podle staré verze.
 
+Novou verzi (třeba po shromáždění od 1. ledna) jde zadat přímo na stránce Předpisy v části
+Změny předpisu. Formulář se předvyplní podle posledního předpisu a pod ním je vidět, kolik
+bude každá jednotka platit nově a o kolik víc nebo míň než dosud. Uložená verze se ukáže i
+v Oznámení vlastníkům a v Rozhodnutích. Upravit nebo smazat jde jen verzi zadanou
+v aplikaci, a to jen dokud podle ní není zaúčtovaný žádný měsíc.
+
 Složky jsou ve třech skupinách: fond oprav, zálohy na správu domu (pojištění, správce,
 revize, drobné opravy) a zálohy na služby. Zálohy na správu nejsou služby podle § 2 zákona
 67/2013, a proto se nevyúčtovávají spolu se službami, ale zvlášť.
