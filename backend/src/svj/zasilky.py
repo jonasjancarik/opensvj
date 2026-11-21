@@ -142,8 +142,7 @@ def _text_emailu(svj: str, dok: Dokument, odkaz: str) -> str:
         f"posíláme vám dokument „{dok.nazev}“ pro jednotku {dok.jednotka}. "
         "Najdete ho v příloze tohoto e-mailu a také na této adrese:\n\n"
         f"{odkaz}\n\n"
-        "Prosíme, otevřete odkaz a potvrďte, že jste dokument dostali. "
-        "Od převzetí se počítají lhůty, které dokument uvádí.\n\n"
+        "Prosíme, otevřete odkaz a potvrďte převzetí, ať víme, že dokument dorazil.\n\n"
         "Děkujeme.\n"
         f"{svj}\n"
     )

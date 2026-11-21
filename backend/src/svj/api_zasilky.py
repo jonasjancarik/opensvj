@@ -4,7 +4,7 @@ from datetime import date, datetime
 from html import escape
 
 from fastapi import APIRouter, HTTPException, status
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
@@ -299,13 +299,14 @@ def dokument_vlastnika(token: str) -> Response:
         )
 
 
-@verejne.post("/zasilka/{token}/potvrdit", response_class=HTMLResponse)
-def potvrd(token: str) -> HTMLResponse:
-    svj = profil.nacti(nastaveni().profil).nazev
+@verejne.post("/zasilka/{token}/potvrdit")
+def potvrd(token: str) -> Response:
     with sezeni()() as s:
         z = zasilky.podle_tokenu(s, token)
-        if z is not None:
-            zasilky.otevreno(s, z)
-            zasilky.potvrzeno(s, z)
-            s.commit()
-        return _stranka(svj, z, token)
+        if z is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        zasilky.otevreno(s, z)
+        zasilky.potvrzeno(s, z)
+        s.commit()
+    # Zpět na stránku dokumentu, aby obnovení stránky formulář neposílalo znovu.
+    return RedirectResponse(f"{ZAKLAD}/{token}", status.HTTP_303_SEE_OTHER)

@@ -51,7 +51,7 @@ class Jednotka(BaseModel):
     vlastnici: list[Adresat]
     doruceno: date | None  # kdy vlastníkovi došlo vyúčtování
     namitky_do: date | None  # 30 dní od doručení (§ 8 odst. 1 zákona 67/2013)
-    vyrovnani_do: date | None  # 4 měsíce od doručení (§ 7 odst. 1 zákona 67/2013)
+    vyrovnani_do: date | None  # 4 měsíce od doručení (§ 7 odst. 2 zákona 67/2013)
 
 
 class Vyuctovani(BaseModel):
