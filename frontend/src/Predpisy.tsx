@@ -3,6 +3,7 @@ import { api } from './auth'
 import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import { kc } from './penize'
+import { UpravaPredpisu } from './UpravaPredpisu'
 
 type Skupina = 'fond_oprav' | 'sprava' | 'sluzby'
 type Slozka = { kod: string; nazev: string; klic: string; sazba: number | null; skupina: Skupina }
@@ -91,8 +92,13 @@ export function Predpisy() {
   const [pracuji, setPracuji] = useState<number | null>(null)
   const [otevrena, setOtevrena] = useState<string | null>(null)
 
+  const nacti = () =>
+    api<Data>(`/api/predpisy/${rok}`)
+      .then(setData)
+      .catch((e) => setChyba(e.message))
   useEffect(() => {
-    api<Data>(`/api/predpisy/${rok}`).then(setData).catch((e) => setChyba(e.message))
+    nacti()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rok])
 
   async function zauctuj(m: Mesic) {
@@ -323,6 +329,8 @@ export function Predpisy() {
           {data.zdroj && <p className="tlumene">Podklad: {data.zdroj}.</p>}
         </>
       )}
+
+      <UpravaPredpisu zmeneno={nacti} />
     </>
   )
 }

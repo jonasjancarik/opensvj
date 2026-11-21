@@ -673,3 +673,10 @@ details.katalog > p { margin: 0.25rem 0 1rem; }
 }
 .zalozky button:hover:not(:disabled) { background: var(--plocha-2); box-shadow: none; }
 .zalozky button.aktivni, .zalozky button.aktivni:hover:not(:disabled) { background: var(--akcent); color: var(--na-akcentu); border-color: var(--akcent); }
+
+/* ---------- Úprava předpisu ---------- */
+.uprava-predpisu { display: grid; gap: 0.75rem; }
+.uprava-predpisu h3 { margin-top: 0.75rem; }
+.uprava-predpisu td input, .uprava-predpisu td select { width: 100%; min-width: 9rem; }
+.uprava-predpisu td .tlumene { font-size: 0.8rem; margin-top: 0.2rem; }
+.osoby-predpisu { grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); }
