@@ -390,3 +390,16 @@ class VysledekZuctovatele(Zaklad):
     upraveno: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class VerzePredpisu(Zaklad):
+    """Verze předpisu záloh zadaná v aplikaci; nahrazuje verzi ze souboru se stejným datem."""
+
+    __tablename__ = "verze_predpisu"
+    plati_od: Mapped[date] = mapped_column(Date, primary_key=True)
+    zdroj: Mapped[str] = mapped_column(String(200), default="")
+    slozky: Mapped[list] = mapped_column(JSONB)  # [{kod, nazev, role, klic, sazba}]
+    pevne: Mapped[dict] = mapped_column(JSONB)  # jednotka | vychozi → kód → haléře
+    osoby: Mapped[dict] = mapped_column(JSONB)  # jednotka | vychozi → počet osob
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

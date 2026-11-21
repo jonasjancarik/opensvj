@@ -49,7 +49,7 @@ class Oznameni(BaseModel):
 
 @router.get("")
 def nejnovejsi(_: Prihlaseny) -> Oznameni:
-    nast = predpisy.nacti(_profil())
+    nast = predpisy.nacti_s(_profil(), sezeni)
     if not nast.verze:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "SVJ zatím nemá žádný předpis záloh.")
     return _oznameni(max(v.plati_od for v in nast.verze))
@@ -66,7 +66,7 @@ def _profil() -> profil.Profil:
 
 def _oznameni(plati_od: date) -> Oznameni:
     prof = _profil()
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     try:
         o = oznameni.oznameni(prof, nast, plati_od)
     except oznameni.ChybaOznameni as e:

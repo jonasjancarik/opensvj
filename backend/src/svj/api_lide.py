@@ -279,7 +279,7 @@ class PonechaniDluhu(BaseModel):
 def _prevod(s, vlastnictvi_id: int) -> Prevod:
     prof = profil.nacti(nastaveni().profil)
     try:
-        p = prevody.prevod(s, prof, predpisy.nacti(prof), vlastnictvi_id)
+        p = prevody.prevod(s, prof, predpisy.nacti(prof, s), vlastnictvi_id)
     except prevody.ChybaPrevodu as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
     return Prevod(
@@ -311,7 +311,7 @@ def ponech_prevodci(vlastnictvi_id: int, z: PonechaniDluhu, uzivatel: Zapisujici
     with sezeni()() as s:
         try:
             prevody.ponech_prevodci(
-                s, prof, predpisy.nacti(prof), vlastnictvi_id, z.klice, uzivatel.email
+                s, prof, predpisy.nacti(prof, s), vlastnictvi_id, z.klice, uzivatel.email
             )
         except prevody.ChybaPrevodu as e:
             s.rollback()

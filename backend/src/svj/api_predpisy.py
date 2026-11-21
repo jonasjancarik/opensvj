@@ -79,7 +79,7 @@ def _profil() -> profil.Profil:
 
 def _prehled(rok: int) -> Predpisy:
     prof = _profil()
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     dnes = date.today()
     # Ukazujeme předpis platný v aktuálním měsíci; u jiného roku poslední platný v tom roce.
     mesic = dnes.month if dnes.year == rok else 12
@@ -171,7 +171,9 @@ def vygeneruj(rok: int, mesic: int, uzivatel: Zapisujici) -> Predpisy:
     prof = _profil()
     with sezeni()() as s:
         try:
-            predpisy.vygeneruj(s, prof, predpisy.nacti(prof), rok, mesic, zauctoval=uzivatel.email)
+            predpisy.vygeneruj(
+                s, prof, predpisy.nacti(prof, s), rok, mesic, zauctoval=uzivatel.email
+            )
         except predpisy.ChybaPredpisu as e:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e

@@ -196,7 +196,7 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
         otevrene = faktury.prehled(s, jen_otevrene=True)
         kontext = banka.KontextNavrhu(
             profil=prof,
-            mesicni=predpisy.mesicni_celkem(prof, predpisy.nacti(prof), dnes.year, dnes.month),
+            mesicni=predpisy.mesicni_celkem(prof, predpisy.nacti(prof, s), dnes.year, dnes.month),
             otevrene_faktury=otevrene,
             ucty_vlastniku=lide.jednotky_podle_uctu(s, dnes),
         )

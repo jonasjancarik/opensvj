@@ -79,7 +79,7 @@ def _zuctovatel(s, rok: int) -> dict[str, Zuctovatel]:
 
 def _prehled(rok: int) -> Vyuctovani:
     prof = profil.nacti(nastaveni().profil)
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     dnes = date.today()
     with sezeni()() as s:
         v = vyuctovani_sluzeb.spocitej(s, prof, nast, rok, dnes)
@@ -154,7 +154,9 @@ def zauctuj(rok: int, uzivatel: Zapisujici) -> Vyuctovani:
     prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         try:
-            vyuctovani_sluzeb.zauctuj(s, prof, predpisy.nacti(prof), rok, zauctoval=uzivatel.email)
+            vyuctovani_sluzeb.zauctuj(
+                s, prof, predpisy.nacti(prof, s), rok, zauctoval=uzivatel.email
+            )
         except vyuctovani_sluzeb.ChybaVyuctovani as e:
             raise _chyba(s, e) from e
         s.commit()

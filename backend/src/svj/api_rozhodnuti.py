@@ -93,7 +93,7 @@ def _prehled(s) -> Prehled:
                 popis=p.popis,
                 rozhodnuti_id=prirazeni.get(p.klic),
             )
-            for p in rozhodnuti.polozky(prof, predpisy.nacti(prof))
+            for p in rozhodnuti.polozky(prof, predpisy.nacti(prof, s))
         ],
     )
 
@@ -130,7 +130,7 @@ def prirad(z: Prirazeni, uzivatel: Zapisujici) -> Prehled:
     prof = profil.nacti(nastaveni().profil)
     return _proved(
         lambda s: rozhodnuti.prirad(
-            s, prof, predpisy.nacti(prof), z.klic, z.rozhodnuti_id, uzivatel.email
+            s, prof, predpisy.nacti(prof, s), z.klic, z.rozhodnuti_id, uzivatel.email
         )
     )
 

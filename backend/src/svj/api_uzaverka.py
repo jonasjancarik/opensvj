@@ -118,7 +118,7 @@ def _kontrola(k: uzaverka.Kontrola, odskrtnute: dict) -> Kontrola:
 @router.get("/{rok}")
 def prehled(rok: int, _: Prihlaseny) -> Uzaverka:
     prof = profil.nacti(nastaveni().profil)
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     k_datu = date(rok, 12, 31)
     with sezeni()() as s:
         kontroly = uzaverka.kontroly(s, prof, nast, rok, k_datu)
@@ -184,7 +184,7 @@ def uzavri(rok: int, uzivatel: Zapisujici) -> Uzaverka:
     return _proved(
         rok,
         lambda s, prof: uzavreni.uzavri(
-            s, prof, predpisy.nacti(prof), rok, zauctoval=uzivatel.email
+            s, prof, predpisy.nacti(prof, s), rok, zauctoval=uzivatel.email
         ),
     )
 
@@ -201,7 +201,7 @@ def znovu_otevri(rok: int, z: ZnovuOtevreni, uzivatel: Zapisujici) -> Uzaverka:
 def odskrtni(rok: int, zmena: ZmenaOdskrtnuti, uzivatel: Zapisujici) -> Odskrtnuti | None:
     """Ručně odškrtne bod uzávěrky (nebo odškrtnutí zruší) pro celý výbor."""
     prof = profil.nacti(nastaveni().profil)
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     with sezeni()() as s:
         kontrola = next(
             (

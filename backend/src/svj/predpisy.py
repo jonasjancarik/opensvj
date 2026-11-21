@@ -1,9 +1,11 @@
 """Předpisy záloh: výpočet měsíčních částek po jednotkách, zaúčtování měsíce a saldo.
 
 Nastavení předpisu je v `<profil>-predpisy.yaml` ve složce profilů (složky, klíče, sazby,
-pevné částky a počty osob, vše s platností od). Výpočet je deterministický: stejné nastavení
-dá stejné haléře. Předpis měsíce je jeden zápis v deníku s řádky po jednotkách a složkách;
-saldo jednotek se počítá z deníku, takže nevzniká druhá evidence.
+pevné částky a počty osob, vše s platností od). Další verze zadává výbor v aplikaci
+(tabulka `verze_predpisu`); verze z aplikace se stejným datem nahradí verzi ze souboru.
+Výpočet je deterministický: stejné nastavení dá stejné haléře. Předpis měsíce je jeden
+zápis v deníku s řádky po jednotkách a složkách; saldo jednotek se počítá z deníku, takže
+nevzniká druhá evidence.
 """
 
 from dataclasses import dataclass, field
@@ -16,7 +18,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from . import denik, pocatecni
-from .db import RadekZapisu, Zapis
+from .db import RadekZapisu, VerzePredpisu, Zapis
 from .domena import katalog
 from .domena.penize import halire, na_text
 from .domena.profil import Profil, vychozi_cesta
@@ -49,6 +51,8 @@ class Verze:
     slozky: list[Slozka]
     pevne: dict[str, dict[str, int]]  # jednotka nebo "vychozi" → kód složky → haléře
     osoby: dict[str, int]  # jednotka nebo "vychozi" → počet osob
+    v_aplikaci: bool = False  # zadaná v aplikaci, ne v souboru profilu
+    upravil: str = ""
 
 
 @dataclass
@@ -63,11 +67,10 @@ class Nastaveni:
         return max(platne, key=lambda v: v.plati_od) if platne else None
 
 
-def nacti(profil: Profil, cesta: Path | None = None) -> Nastaveni:
+def nacti(profil: Profil, session: Session | None = None, cesta: Path | None = None) -> Nastaveni:
+    """Nastavení předpisu ze souboru profilu; se sezením i s verzemi zadanými v aplikaci."""
     soubor = (cesta or vychozi_cesta()) / f"{profil.id}-predpisy.yaml"
-    if not soubor.exists():
-        return Nastaveni(poznamka="", splatnost_den=15)
-    d = yaml.safe_load(soubor.read_text(encoding="utf-8"))
+    d = yaml.safe_load(soubor.read_text(encoding="utf-8")) if soubor.exists() else {}
     n = Nastaveni(poznamka=d.get("poznamka", ""), splatnost_den=int(d.get("splatnost_den", 15)))
     for v in d.get("verze") or []:
         slozky = [
@@ -92,7 +95,89 @@ def nacti(profil: Profil, cesta: Path | None = None) -> Nastaveni:
         )
         zkontroluj(profil, verze)
         n.verze.append(verze)
+    if session is not None:
+        z_aplikace = {
+            v.plati_od: v for v in map(_z_databaze, session.scalars(select(VerzePredpisu)))
+        }
+        n.verze = [v for v in n.verze if v.plati_od not in z_aplikace] + list(z_aplikace.values())
+    n.verze.sort(key=lambda v: v.plati_od)
     return n
+
+
+def nacti_s(profil: Profil, tovarna) -> Nastaveni:
+    """Nastavení předpisu včetně verzí z aplikace; `tovarna` vrací sessionmaker."""
+    with tovarna()() as s:
+        return nacti(profil, s)
+
+
+def _z_databaze(r: VerzePredpisu) -> Verze:
+    return Verze(
+        plati_od=r.plati_od,
+        zdroj=r.zdroj,
+        slozky=[Slozka(**x) for x in r.slozky],
+        pevne={j: {k: int(c) for k, c in castky.items()} for j, castky in r.pevne.items()},
+        osoby={j: int(p) for j, p in r.osoby.items()},
+        v_aplikaci=True,
+        upravil=r.upravil,
+    )
+
+
+def prvni_mesic_ke_zmene(session: Session) -> date:
+    """Od kdy jde předpis měnit: první měsíc po posledním zaúčtovaném předpisu.
+
+    Zaúčtované měsíce se zpětně nepřepočítávají; změna by rozbila jejich vazbu na deník.
+    """
+    posledni = session.scalar(
+        select(func.max(Zapis.datum)).where(Zapis.operace == "predpis-mesicni", denik.platny())
+    )
+    if posledni is None:
+        return date(1900, 1, 1)
+    return date(posledni.year + posledni.month // 12, posledni.month % 12 + 1, 1)
+
+
+def uloz_verzi(session: Session, profil: Profil, v: Verze, kdo: str, puvodni: date | None) -> None:
+    """Uloží verzi zadanou v aplikaci. `puvodni` je datum upravované verze (None = nová)."""
+    od = prvni_mesic_ke_zmene(session)
+    for datum in {v.plati_od, puvodni} - {None}:
+        if datum < od:
+            raise ChybaPredpisu(
+                f"Předpis od {datum.day}. {datum.month}. {datum.year} už jde do zaúčtovaných "
+                f"měsíců. Změna může platit nejdřív od {od.day}. {od.month}. {od.year}."
+            )
+    zkontroluj(profil, v)
+    spocitej(profil, v)  # ověří, že u pevných částek nic nechybí
+    if puvodni is not None and puvodni != v.plati_od:
+        stara = session.get(VerzePredpisu, puvodni)
+        if stara is None:
+            raise ChybaPredpisu("Tato verze předpisu v aplikaci není. Načtěte stránku znovu.")
+        session.delete(stara)
+        session.flush()
+    elif puvodni is None and session.get(VerzePredpisu, v.plati_od) is not None:
+        raise ChybaPredpisu(
+            f"Předpis od {v.plati_od.day}. {v.plati_od.month}. {v.plati_od.year} už v aplikaci "
+            "je. Upravte ten."
+        )
+    r = session.get(VerzePredpisu, v.plati_od) or VerzePredpisu(plati_od=v.plati_od)
+    r.zdroj = v.zdroj.strip()[:200]
+    r.slozky = [
+        {"kod": x.kod, "nazev": x.nazev, "role": x.role, "klic": x.klic, "sazba": x.sazba}
+        for x in v.slozky
+    ]
+    r.pevne = v.pevne
+    r.osoby = v.osoby
+    r.upravil = kdo
+    session.add(r)
+    session.flush()
+
+
+def smaz_verzi(session: Session, plati_od: date) -> None:
+    r = session.get(VerzePredpisu, plati_od)
+    if r is None:
+        raise ChybaPredpisu("Smazat jde jen předpis zadaný v aplikaci.")
+    if plati_od < prvni_mesic_ke_zmene(session):
+        raise ChybaPredpisu("Předpis už jde do zaúčtovaných měsíců, smazat ho nejde.")
+    session.delete(r)
+    session.flush()
 
 
 def zkontroluj(profil: Profil, v: Verze) -> None:

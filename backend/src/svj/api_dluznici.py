@@ -58,7 +58,7 @@ class Dluznici(BaseModel):
 @router.get("/{rok}")
 def prehled(rok: int, _: Prihlaseny) -> Dluznici:
     prof = profil.nacti(nastaveni().profil)
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     dnes = date.today()
     with sezeni()() as s:
         vse = dluznici.prehled(s, prof, nast, rok, dnes)

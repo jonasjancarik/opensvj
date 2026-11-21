@@ -62,7 +62,7 @@ class Vyuctovani(BaseModel):
 
 def _prehled(rok: int) -> Vyuctovani:
     prof = profil.nacti(nastaveni().profil)
-    nast = predpisy.nacti(prof)
+    nast = predpisy.nacti_s(prof, sezeni)
     dnes = date.today()
     with sezeni()() as s:
         v = vyuctovani_spravy.spocitej(s, prof, rok)
@@ -121,7 +121,9 @@ def zauctuj(rok: int, uzivatel: Zapisujici) -> Vyuctovani:
     prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         try:
-            vyuctovani_spravy.zauctuj(s, prof, predpisy.nacti(prof), rok, zauctoval=uzivatel.email)
+            vyuctovani_spravy.zauctuj(
+                s, prof, predpisy.nacti(prof, s), rok, zauctoval=uzivatel.email
+            )
         except vyuctovani_spravy.ChybaVyuctovani as e:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
