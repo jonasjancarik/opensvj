@@ -468,9 +468,10 @@ a zápis `vyuctovani-sluzeb`. Proti návrhu výše se liší:
 - Zaúčtovat jde od 31. 12., když jsou zaúčtované předpisy všech měsíců a žádná služba nemá
   problém: chybějící měřidlo nebo odečet, výsledky zúčtovatele, které nesedí na náklady
   v účetnictví. Nedoplatek i přeplatek jsou splatné 30. 4. dalšího roku.
-- Stav, doručení a námitky aplikace zatím nevede. Lhůty pro doručení a vyrovnání uvádí
-  na stránce a ve vyúčtování pro vlastníka, hlídat je bude až se zásilkami (oddíl 7).
-  Oprava po zaúčtování je storno a nové zaúčtování.
+- Doručení se bere ze zásilek (oddíl 7). U každé jednotky stránka ukáže datum doručení
+  a z něj konec lhůty pro námitky (30 dní) a pro vyrovnání (4 měsíce). Námitky samotné
+  a stav vyrovnání aplikace zatím nevede. Oprava po zaúčtování je storno a nové
+  zaúčtování; nově rozeslané vyúčtování je nový dokument a lhůty běží od jeho doručení.
 
 ## 7. Rozesílání a upozornění
 
@@ -526,5 +527,21 @@ Vlastník dostává jen dokumenty své jednotky. Údaje o jiných vlastnících,
 dlužníků, jdou jen výboru. Odeslaný dokument se archivuje spolu s dokladem, ke kterému
 patří, a kontakty se mažou stejně jako u osoby (oddíl 1).
 
-**V aplikaci:** zatím ne. Aplikace neposílá žádné e-maily, ani přihlašovací odkaz (při
-vývoji se vypíše do konzole). Upomínka a potvrzení o dluzích jdou vytisknout.
+**V aplikaci:** dokumenty pro vlastníky ano, upozornění pro výbor zatím ne.
+
+- Oznámení o zálohách, obě vyúčtování, upomínka a potvrzení o dluzích mají tlačítko
+  Rozeslat vlastníkům. Dokument se neukládá jako PDF, ale jako samostatné HTML tak, jak ho
+  vykreslí aplikace (bez skriptů, se styly), s otiskem SHA-256 (tabulka `dokument`; změnu
+  zakazuje trigger). Zásilky jsou v tabulce `zasilka`, každá patří do dávky.
+- Dávka se nejdřív připraví a ukáže ke kontrole; e-maily odejdou až potvrzením. Kanál
+  určuje souhlas osoby s doručováním e-mailem k dnešku. Odkud souhlas pochází, se zatím
+  neukládá, jen od kdy platí.
+- E-mail nese dokument v příloze a odkaz s náhodným tokenem (v databázi je jen jeho otisk)
+  na veřejnou stránku. Otevření stránky se zapíše jako otevření, tlačítko na ní (POST) jako
+  potvrzení. Za doručení aplikace bere potvrzení vlastníkem nebo ruční zápis výboru;
+  otevření ne, protože odkazy otevírají i antivirové kontroly pošty. Jako „přijetí
+  serverem“ se ukládá převzetí zprávy odesílacím SMTP serverem; vrácené zprávy (bounce)
+  se zatím nezpracovávají a nedoručení zapisuje výbor ručně.
+- Datum doručení řídí lhůty u vyúčtování služeb a u oznámení o změně záloh. U upomínky
+  se zatím jen eviduje; pořadí započtení plateb podle upomínek (§ 1933 OZ) aplikace neřeší.
+- Odesílá se přes SMTP (nastavení `SMTP_*`), stejně jako přihlašovací odkaz.

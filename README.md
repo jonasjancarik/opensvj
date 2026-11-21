@@ -25,8 +25,10 @@ Proč se v SVJ účtuje tak, jak se účtuje, vysvětluje [příručka](docs/pri
 - vést měřidla a odečty a spočítat z nich roční spotřebu jednotek,
 - vést rozhodnutí shromáždění a výboru a u výše záloh, klíčů a voleb ukázat, o které
   rozhodnutí se opírají,
-- vytisknout upomínku, potvrzení o dluzích pro prodej jednotky a oznámení o nové výši záloh
-  se jménem a adresou vlastníka,
+- vytisknout upomínku, potvrzení o dluzích pro prodej jednotky, oznámení o nové výši záloh
+  a vyúčtování se jménem a adresou vlastníka a rozeslat je e-mailem nebo poštou,
+- evidovat, kdy dokument vlastníkovi došel, a od toho počítat lhůty pro námitky
+  a vyrovnání vyúčtování služeb,
 - vyúčtovat zálohy na správu domu,
 - sestavit rozvahu a výkaz zisku a ztráty ve zkráceném rozsahu,
 - připravit uzávěrku roku: kontrolní seznam, inventurní soupisy, posouzení daně z příjmů
@@ -58,10 +60,13 @@ pnpm --dir frontend dev                                                         
 Aplikace běží na <http://localhost:5180>. Vite předává `/api/auth` službě přihlašování
 a zbytek `/api` backendu, takže prohlížeč vidí jen jednu adresu.
 
-Ve vývoji se e-maily neposílají. Když je v `.env` `AUTH_LINKS_TO_CONSOLE=1`, přihlašovací
-odkaz se vypíše do výstupu služby `auth` (řádek `[auth] přihlašovací odkaz pro …`). Bez
-toho, a vždy v produkčním režimu (`NODE_ENV=production`), odeslání odkazu zatím skončí
-chybou, protože skutečné odesílání pošty ještě není napojené.
+E-maily (přihlašovací odkaz i dokumenty pro vlastníky) se posílají přes SMTP podle
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_TLS` a `SMTP_FROM` v `.env`.
+Ve vývoji stačí `SMTP_FROM` a `MAIL_DIR`: e-maily se pak místo odeslání uloží jako soubory
+`.eml` do té složky. Když není nastavené nic z toho a v `.env` je `AUTH_LINKS_TO_CONSOLE=1`,
+přihlašovací odkaz se vypíše do výstupu služby `auth` (řádek `[auth] přihlašovací odkaz
+pro …`); v produkčním režimu (`NODE_ENV=production`) se do konzole nevypisuje nikdy.
+Odesílací doména má mít platné SPF, DKIM a DMARC, jinak zprávy skončí ve spamu.
 
 Do aplikace smějí jen adresy z `AUTH_ALLOWED_EMAILS`; adresy v `AUTH_READONLY_EMAILS` mohou
 jen nahlížet. Kdo ze seznamu vypadne, ztratí přístup k datům do pěti minut a po restartu
@@ -223,6 +228,26 @@ lze požadovat nejdřív od prvního dne měsíce po doručení písemného odů
 (zákon 67/2013 § 4 odst. 3), takže stránka ukáže, do kdy musí oznámení dojít. Odůvodnění
 se napíše na stránce, uloží se ke konkrétní verzi předpisu a vytiskne se v každém oznámení.
 
+### Rozesílání dokumentů
+
+U oznámení o zálohách, obou vyúčtování, upomínky a potvrzení o dluzích je tlačítko
+Rozeslat vlastníkům. Aplikace dokument každé jednotky uloží přesně v podobě, v jaké odejde
+(HTML s otiskem SHA-256, později už nejde změnit), a ukáže ke kontrole, kdo dostane e-mail
+a komu je potřeba poslat dopis. E-mail jde jen vlastníkům, kteří s doručováním e-mailem
+souhlasili; manželé se společnou adresou dostanou jeden. Teprve potvrzením se e-maily odešlou.
+Dopisy se vytisknou zvlášť a odeslání se zapíše jedním tlačítkem.
+
+E-mail nese dokument v příloze a odkaz na stránku, kde ho vlastník otevře a tlačítkem
+potvrdí převzetí. Aplikace ukládá předání poštovnímu serveru, otevření odkazu i potvrzení.
+Za doručení bere potvrzení vlastníkem nebo datum, které výbor zapíše ručně na stránce
+Zásilky (dodejka, převzetí osobně); samotné otevření odkazu ne, protože ho může způsobit
+i antivirová kontrola pošty. Co se u e-mailu má brát jako doručení, ještě potřebuje
+právní posouzení.
+
+Od doručení se počítají lhůty: u vyúčtování služeb 30 dní na námitky a 4 měsíce na
+vyrovnání, u oznámení o změně záloh měsíc, od kterého jde novou zálohu na služby požadovat,
+když oznámení došlo pozdě. Obojí je vidět v tabulce jednotek na stránce dokumentu.
+
 ### Vyúčtování správy
 
 Stránka Vyúčtování porovná náklady roku na správu domu (pojištění, správa, revize, drobné
@@ -337,10 +362,9 @@ Hlavní pravidla:
 Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 [Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
 
-- doručení vyúčtování a hlídání lhůt pro vyrovnání a námitky,
-- odesílání e-mailů, včetně přihlašovacího odkazu, a rozesílání dokumentů vlastníkům,
+- upozornění pro výbor (blížící se lhůty, nové faktury, dluhy) e-mailem,
+- vrácené e-maily (bounce) se do zásilek zatím nezapisují samy,
 - zpráva o hospodaření a evidence schválení závěrky,
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,
-- úprava předpisů v rozhraní (teď jsou v profilu SVJ),
 - dobropisy a jiné formáty výpisů než GPC a CSV Raiffeisenbank (camt.053, MT940),
 - export do Beancountu a pro programy účetních.
