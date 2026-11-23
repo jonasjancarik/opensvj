@@ -54,7 +54,7 @@
   kdy: K 31. 12. roku, za který SVJ podává přiznání a vyjde mu daň (stránka Uzávěrka, Daň z příjmů).
   stav: overit
   doklad: ID
-  vstupy: {polozka: položka správy, ze které daň zaplatí vlastníci, castka: daň za rok}
+  vstupy: {polozka: "položka správy, ze které daň zaplatí vlastníci", castka: daň za rok}
   zapisy:
     - md: naklady.dan_z_prijmu
       d: zavazky_dan_z_prijmu

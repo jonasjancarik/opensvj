@@ -1,3 +1,4 @@
+import re
 from fractions import Fraction
 
 import pytest
@@ -76,6 +77,20 @@ class TestKatalog:
             for priklad in op.priklady:
                 for r in katalog.sestav(op, priklad.get("vstupy") or {}, priklad.get("krok")):
                     assert p.ucet(r.role), (op.id, r.role)
+
+    def test_vstupy_jsou_pojmenovane(self):
+        """Každá proměnná v šabloně zápisu je mezi vstupy a vstupy mají platná jména
+        (popis s čárkou bez uvozovek by YAML rozdělil na falešné vstupy)."""
+        jmeno = re.compile(r"^[a-z_][a-z0-9_]*$")
+        for op in katalog.nacti().values():
+            vstupy = op.data.get("vstupy") or {}
+            assert all(jmeno.match(k) for k in vstupy), (op.id, list(vstupy))
+            for z in op.zapisy:
+                if z.get("pro_kazde"):
+                    continue
+                sablony = [z["md"], z["d"], z["castka"], *(z.get("dimenze") or {}).values()]
+                for promenna in re.findall(r"\{([a-z_0-9]+)\}", " ".join(map(str, sablony))):
+                    assert promenna in vstupy, (op.id, promenna)
 
     def test_zaporna_castka_prohodi_strany(self):
         op = katalog.nacti()["uhrada-predpisu"]

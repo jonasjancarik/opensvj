@@ -113,7 +113,7 @@
   kdy: Pohledávka je nedobytná (typicky skončené insolvenční řízení) a SVJ rozhodlo o odpisu.
   stav: navrh
   doklad: ID
-  vstupy: {jednotka: označení jednotky, castka: odepisovaná částka, polozka: položka správy, do jejíchž nákladů odpis patří, rozhodnuti: odkaz na rozhodnutí}
+  vstupy: {jednotka: označení jednotky, castka: odepisovaná částka, polozka: "položka správy, do jejíchž nákladů odpis patří", rozhodnuti: odkaz na rozhodnutí}
   zapisy:
     - md: naklady.odpis_pohledavky
       d: pohledavky_vlastnici
@@ -138,7 +138,7 @@
   kdy: Dlužník nebo jeho dědic zaplatí dluh, který SVJ dřív odepsalo jako nedobytný.
   stav: navrh
   doklad: BV
-  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, polozka: položka správy, do které šel odpis, castka: zaplacená částka}
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, polozka: "položka správy, do které šel odpis", castka: zaplacená částka}
   zapisy:
     - md: "banka.{ucet}"
       d: vynosy.odepsane_pohledavky

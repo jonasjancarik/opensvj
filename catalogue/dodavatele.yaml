@@ -111,18 +111,21 @@
   kdy: Faktura (typicky pojištění) pokrývá období přesahující rozvahový den.
   stav: praxe
   doklad: ID
-  vstupy: {kategorie: kategorie nákladu, castka: část nákladu patřící do příštího roku}
+  vstupy: {kategorie: kategorie nákladu, sluzba: položka správy, castka: část nákladu patřící do příštího roku}
   zapisy:
     - krok: k_rozvahovemu_dni
       md: naklady_pristich_obdobi
       d: "naklady.{kategorie}"
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
     - krok: rozpusteni
       md: "naklady.{kategorie}"
       d: naklady_pristich_obdobi
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
   pravidla:
     - Rozpuštění je zápis s datem 1. 1. následujícího roku a odkazem na původní.
+    - Náklad nese položku správy jako faktura, ke které patří, aby vyúčtování záloh na správu počítalo jen s náklady svého roku.
   zdroje:
     - {typ: zakon, odkaz: "ZoÚ § 3 odst. 1 (věcná a časová souvislost)"}
     - {typ: praxe, odkaz: "Běžná praxe SVJ: roční pojištění domu placené od poloviny roku zčásti patří do příštího roku"}
@@ -130,10 +133,10 @@
   priklady:
     - nazev: Pojištění placené od 1. 7., polovina patří do příštího roku
       krok: k_rozvahovemu_dni
-      vstupy: {castka: "18500.00", kategorie: pojisteni}
+      vstupy: {castka: "18500.00", kategorie: pojisteni, sluzba: POJISTENI}
       ocekavane:
-        - [md, naklady_pristich_obdobi, "18500.00", {}]
-        - [d, naklady.pojisteni, "18500.00", {}]
+        - [md, naklady_pristich_obdobi, "18500.00", {sluzba: POJISTENI}]
+        - [d, naklady.pojisteni, "18500.00", {sluzba: POJISTENI}]
 
 - id: dohadna-polozka
   nazev: Dohadná položka pasivní
