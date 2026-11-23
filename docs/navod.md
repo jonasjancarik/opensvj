@@ -12,6 +12,7 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Při změně záloh | [Oznámení o výši záloh](#oznámení-o-výši-záloh), [Rozesílání dokumentů](#rozesílání-dokumentů) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
+| Kdo co změnil | [Historie změn](#historie-změn) |
 
 ## Banka
 
@@ -153,6 +154,13 @@ klíče vyúčtování správy a voleb z profilu (kdo platí měsíc převodu, z
 jde vybrat rozhodnutí, o které se opírá. Co doložené není, ukáže stránka i kontrolní
 seznam uzávěrky. Když se v profilu klíč nebo volba změní, položka čeká na nové rozhodnutí.
 
+Schválený předpis záloh jde dál upravit nebo smazat, ale jen s napsaným důvodem. Změna se
+zapíše do historie změn a schválení přestane platit: u předpisu i na stránce Rozhodnutí se
+objeví „Změněno po schválení“ s datem, autorem a důvodem a s odkazem na to, co přesně se
+změnilo. Když rozhodnutí pokrývá i novou podobu (třeba šlo o překlep), stačí tlačítko
+Rozhodnutí platí i pro změnu. Jinak se k předpisu vybere nové rozhodnutí. Dokud schválení
+neplatí, upozorní na to i kontrolní seznam uzávěrky.
+
 ## Oznámení o výši záloh
 
 Stránka Oznámení o zálohách (odkaz je na stránce Předpisy) porovná novou verzi předpisu s předchozí
@@ -238,6 +246,15 @@ peníze na účtech, nezaplacené faktury i dluhy a přeplatky vlastníků po je
 položkách se splatností, takže Dlužníci v novém roce správně počítají, co je po splatnosti.
 Do uzavřeného roku už nic zaúčtovat nejde. Když se před schválením závěrky najde chyba, rok
 jde s uvedením důvodu znovu otevřít a po opravě uzavřít znovu.
+
+## Historie změn
+
+Stránka Historie změn ukazuje, kdo a kdy přidal, změnil nebo smazal vlastníka nebo
+vlastnictví jednotky, rozhodnutí a jeho přiřazení, předpis záloh, měřidlo, odečet, výsledek
+od zúčtovatele nebo stav účetního roku (uzavření a znovuotevření). U každé změny je stav
+předtím a potom a důvod, pokud ho aplikace vyžaduje. Záznamy nejde upravit ani smazat.
+Zaúčtované doklady se v deníku nemění, opravují se stornem, takže jejich historie je
+v Deníku.
 
 ## Deník a storno
 

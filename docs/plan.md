@@ -23,7 +23,8 @@ změna schválené věci:
 - je vidět na stránce, kde se schválená věc zobrazuje: jasné upozornění „Změněno po
   schválení“ s datem, autorem a důvodem a s odkazem na to, co se změnilo.
 
-Auditní záznam proto vzniká dřív než schvalování a podpisy, které na něm stojí.
+Auditní záznam (stránka Historie změn) a upozornění „Změněno po schválení“ u předpisu
+záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky na nich stavějí.
 
 ## 1. Základy, na kterých stojí další oblasti
 
@@ -31,8 +32,6 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
   operací. Chybí výdaj bez faktury (platba a náhradní doklad), vyrovnání dohadné položky
   po doručení faktury, mimořádná záloha pro všechny jednotky podle podílů a pokladna.
   Operace úvěru a pořízení majetku přijdou s jejich oblastmi níže.
-- **Auditní záznam** obecně pro změny v aplikaci (vlastníci, rozhodnutí, předpisy, uzávěrka,
-  znovuotevření roku) a upozornění „Změněno po schválení“ podle zásady výše.
 - **Podíly s platností v čase:** změna podílů prohlášením vlastníka během roku, předpisy
   od data změny, součet podílů vždy přesně 1. Potřebují ji úvěr, nájemné i vyúčtování.
 - **Převod jednotky uprostřed měsíce:** vyúčtování na dvě vlastnická období a potvrzení

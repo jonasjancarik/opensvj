@@ -98,6 +98,26 @@ nové rozhodnutí. Kontrolní seznam uzávěrky má bod „Výše záloh, klíč
 doložené rozhodnutí“ s verzemi předpisu, které v roce platily. Klíče vyúčtování služeb
 přibudou s vyúčtováním služeb.
 
+Přiřazení (`rozhodnuti_pro.otisk`) si pamatuje SHA-256 schválené podoby položky: u verze
+předpisu kanonický JSON složek, pevných částek a počtů osob (bez podkladu), u ostatních
+položek klíč, který zvolenou hodnotu už obsahuje. Když se verze po schválení změní, otisk
+nesedí a schválení neplatí: kontrola v uzávěrce ho počítá jako nedoložené a rozhraní
+ukáže „Změněno po schválení“ s poslední změnou z auditního záznamu. Schválený předpis jde
+změnit nebo smazat jen s důvodem. Opětovné přiřazení téhož rozhodnutí uloží nový otisk.
+Při posunu data verze jde přiřazení s ní, s původním otiskem.
+
+### Auditní záznam
+
+`auditni_zaznam(kdy, transakce, kdo, jmeno, druh, klic, akce, nazev, duvod, pred, po)`:
+změny údajů mimo deník. Zachytí je posluchač sezení SQLAlchemy po každém flush a zapíše
+při commitu jeden řádek za věc a transakci (stav před prvním a po posledním zápisu); co
+vzniklo a zaniklo v jedné transakci, se nezapíše. Sledované jsou `osoba`, `vlastnictvi`
+(i se seznamem vlastníků a podílů), `meridlo`, `odecet`, `rozhodnuti`, `rozhodnuti_pro`,
+`verze_predpisu`, `vysledek_zuctovatele` a `obdobi`. Kdo změnu udělal, bere aplikace
+z přihlášeného uživatele, důvod z `audit.duvod()`. Trigger nedovolí záznam změnit ani
+smazat. Rozepsané formuláře, odškrtnutí uzávěrky (má vlastní záznam), naučená párování
+plateb a odeslané dokumenty se nesledují.
+
 **V aplikaci:** SVJ, jednotky (označení, plocha, podíl) a služby jsou v profilu SVJ
 (`profiles/<id>.yaml`); podíl zatím nemá platnost v čase. Počty osob jsou u verze předpisu.
 Osoby a vlastnictví jsou v databázi (stránka Vlastníci). Nové vlastnictví po posledním
