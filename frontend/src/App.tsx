@@ -85,7 +85,7 @@ export default function App() {
         </nav>
         <div className="uzivatel">
           <PrepinacVzhledu />
-          <span className="avatar" aria-hidden="true">
+          <span className="avatar" title={session.user.email} aria-hidden="true">
             {session.user.email.slice(0, 1).toUpperCase()}
           </span>
           <span>{session.user.email}</span>

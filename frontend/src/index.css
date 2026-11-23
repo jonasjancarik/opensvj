@@ -233,11 +233,16 @@ p.varovani-text { background: var(--varovani-mekka); }
   white-space: nowrap;
 }
 .znacka { width: 28px; height: 28px; flex: none; }
-nav.hlavni { display: flex; gap: 0.15rem; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+/* Když se nabídka nevejde, posouvá se do strany a u pravého kraje se ztrácí do pozadí. */
+nav.hlavni {
+  display: flex; gap: 0.15rem; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none;
+  padding: 0.3rem 1.75rem 0.3rem 0.15rem; margin: -0.3rem 0;
+  mask-image: linear-gradient(90deg, #000 calc(100% - 1.75rem), transparent);
+}
 nav.hlavni::-webkit-scrollbar { display: none; }
 nav.hlavni a {
   position: relative; color: var(--tlumeny); text-decoration: none; font-weight: 500; font-size: 0.93rem;
-  padding: 0.4rem 0.8rem; border-radius: 999px; white-space: nowrap;
+  padding: 0.4rem 0.7rem; border-radius: 999px; white-space: nowrap;
   transition: color 0.15s, background-color 0.15s;
 }
 nav.hlavni a:hover { color: var(--text); background: var(--plocha-2); }
@@ -408,13 +413,13 @@ svg a:hover .dum-okno, svg a:focus-visible .dum-okno { stroke-width: 2.5; filter
 }
 .dlazdice {
   display: grid; gap: 0.3rem; align-content: start; padding: 1.15rem 1.25rem 1.2rem;
-  color: var(--text); text-decoration: none; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  container-type: inline-size; color: var(--text); text-decoration: none; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 a.dlazdice:hover { transform: translateY(-2px); box-shadow: var(--stin-velky); border-color: var(--okraj-silny); text-decoration: none; }
 .dlazdice-popis { font-size: 0.85rem; color: var(--tlumeny); font-weight: 500; }
 .dlazdice-hodnota {
-  font-family: var(--pismo); font-size: 1.75rem; line-height: 1.2; font-weight: 600;
-  letter-spacing: -0.025em; font-variant-numeric: tabular-nums;
+  font-family: var(--pismo); font-size: clamp(1.2rem, 11.5cqi, 1.75rem); line-height: 1.2; font-weight: 600;
+  letter-spacing: -0.025em; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .dlazdice-hodnota small { font-size: 0.55em; color: var(--tlumeny); font-weight: 450; margin-left: 0.15em; }
 .dlazdice-pod { font-size: 0.85rem; color: var(--tlumeny); }
@@ -422,7 +427,7 @@ a.dlazdice:hover { transform: translateY(-2px); box-shadow: var(--stin-velky); b
 .dlazdice.ton-chyba .dlazdice-hodnota { color: var(--chyba); }
 .dlazdice.ton-uspech .dlazdice-hodnota { color: var(--uspech); }
 .ucty-mini { list-style: none; padding: 0; margin: 0.35rem 0 0; display: grid; gap: 0.15rem; font-size: 0.85rem; }
-.ucty-mini li { display: flex; justify-content: space-between; gap: 0.75rem; color: var(--tlumeny); }
+.ucty-mini li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; color: var(--tlumeny); }
 .ucty-mini li span:last-child { color: var(--text); white-space: nowrap; }
 .rok-pruh { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin: 0.5rem 0 0.2rem; }
 .rok-pruh span { height: 1.5rem; border-radius: 4px; background: var(--plocha-2); border: 1px solid var(--okraj); }
@@ -607,7 +612,7 @@ details.katalog > p { margin: 0.25rem 0 1rem; }
 @media (min-width: 64rem) {
   .dlazdice-mrizka { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-@media (max-width: 64rem) {
+@media (max-width: 100rem) {
   .uzivatel > span:not(.avatar) { display: none; }
 }
 @media (max-width: 34rem) {
