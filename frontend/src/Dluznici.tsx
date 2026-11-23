@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { api } from './auth'
 import { Chyba, Nacitani } from './ui'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
-import { kc } from './penize'
+import { kc, naHalire } from './penize'
 import { PotvrzeniDluhu } from './PotvrzeniDluhu'
 import { Rozeslat } from './Rozeslat'
 
@@ -24,6 +24,8 @@ export type Jednotka = {
   z_minulych_let: boolean
   urok: number
   urok_neuplny: boolean
+  urok_do: string | null
+  sankce: number
   polozky: Polozka[]
   vlastnici: Adresat[]
 }
@@ -113,6 +115,11 @@ export function Dluznici() {
                     <td>{j.jednotka}</td>
                     <td className={j.po_splatnosti ? 'cislo dluh' : 'cislo'}>
                       {j.po_splatnosti ? kc(j.po_splatnosti) : '–'}
+                      {j.sankce > 0 && (
+                        <span className="tlumene">
+                          <br />a úrok {kc(j.sankce)}
+                        </span>
+                      )}
                     </td>
                     <td>
                       {j.z_minulych_let
@@ -149,7 +156,13 @@ export function Dluznici() {
                         {j.preplatek > 0 && (
                           <p className="tlumene">Navíc má přeplatek {kc(j.preplatek)}.</p>
                         )}
+                        {j.sankce > 0 && (
+                          <p>
+                            Předepsaný úrok z prodlení, který zbývá zaplatit: {kc(j.sankce)}.
+                          </p>
+                        )}
                         {j.po_splatnosti > 0 && <PoznamkaKUroku data={data} j={j} />}
+                        {j.urok > 0 && <PredpisUroku data={data} j={j} setData={setData} />}
                         <div className="radek">
                           {j.po_splatnosti > 0 && (
                             <button className="vedlejsi" onClick={() => setUpominka(j)}>
@@ -181,6 +194,12 @@ function PoznamkaKUroku({ data, j }: { data: Data; j: Jednotka }) {
   return (
     <p className="tlumene">
       {j.urok > 0 && <>Úrok z prodlení ze zbývajících částek k dnešku: {kc(j.urok)}. </>}
+      {j.urok_do && (
+        <>
+          Úrok do {datum(j.urok_do)} už společenství předepsalo, tady je spočtený jen za dobu
+          potom.{' '}
+        </>
+      )}
       {j.urok_neuplny &&
         'U dluhů z minulých let aplikace nezná splatnost, úrok z nich proto nepočítá. '}
       Zákonný úrok je repo sazba ČNB k prvnímu dni pololetí, kdy prodlení začalo, plus 8 procentních
@@ -188,6 +207,78 @@ function PoznamkaKUroku({ data, j }: { data: Data; j: Jednotka }) {
       se jen z toho, co ještě není zaplacené. Do účetnictví se úrok zapíše, až ho společenství
       po vlastníkovi skutečně požaduje.
     </p>
+  )
+}
+
+function PredpisUroku({
+  data,
+  j,
+  setData,
+}: {
+  data: Data
+  j: Jednotka
+  setData: (d: Data) => void
+}) {
+  const [otevreno, setOtevreno] = useState(false)
+  const [castka, setCastka] = useState(() => kc(j.urok).replace(' Kč', ''))
+  const [pracuji, setPracuji] = useState(false)
+  const [chyba, setChyba] = useState<string | null>(null)
+  const halire = naHalire(castka)
+
+  async function predepsat(e: FormEvent) {
+    e.preventDefault()
+    if (!halire || halire <= 0) return
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setData(
+        await api<Data>(`/api/dluznici/${data.rok}/${encodeURIComponent(j.jednotka)}/urok`, {
+          method: 'POST',
+          json: { castka: halire },
+        }),
+      )
+    } catch (e) {
+      setChyba((e as Error).message)
+      setPracuji(false)
+    }
+  }
+
+  if (!otevreno)
+    return (
+      <div className="radek">
+        <button className="vedlejsi" onClick={() => setOtevreno(true)}>
+          Požadovat úrok z prodlení
+        </button>
+      </div>
+    )
+  return (
+    <form className="upozorneni" onSubmit={predepsat}>
+      <p>
+        Když společenství úrok po vlastníkovi požaduje, zapíše se do účetnictví jako jeho dluh
+        a výnos společenství. Vlastník ho platí zvlášť od záloh a do dluhů, které při prodeji
+        přecházejí na kupujícího, se nepočítá. Daní se, až ho vlastník zaplatí. Částku můžete
+        snížit, třeba když se výbor rozhodl část odpustit.
+      </p>
+      <div className="radek">
+        <label>
+          Úrok k {datum(data.dnes)}{' '}
+          <input
+            value={castka}
+            onChange={(e) => setCastka(e.target.value)}
+            inputMode="decimal"
+            size={12}
+          />{' '}
+          Kč
+        </label>
+        <button type="submit" disabled={pracuji || !halire || halire <= 0}>
+          {pracuji ? 'Zapisuji…' : 'Zapsat úrok vlastníkovi'}
+        </button>
+        <button type="button" className="vedlejsi" onClick={() => setOtevreno(false)}>
+          Zrušit
+        </button>
+        {chyba && <span className="chyba">{chyba}</span>}
+      </div>
+    </form>
   )
 }
 
@@ -265,8 +356,11 @@ function Upominka({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka;
           tyto platby po splatnosti:
         </p>
         <SeznamPolozek polozky={polozky} urok={sUrokem} />
+        {j.sankce > 0 && (
+          <p>Dále evidujeme nezaplacený úrok z prodlení, který jsme vám předepsali: {kc(j.sankce)}.</p>
+        )}
         <p>
-          <strong>Celkem k úhradě: {kc(j.po_splatnosti)}</strong>
+          <strong>Celkem k úhradě: {kc(j.po_splatnosti + j.sankce)}</strong>
         </p>
         {sUrokem && (
           <p>

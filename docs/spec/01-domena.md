@@ -172,8 +172,9 @@ smazat. Splatnost a poznámka zůstávají v souboru. Předpis se zaúčtuje na 
 Předpisy po měsících. Saldo se počítá z deníku. Na stránce Dlužníci se platby započítávají
 na nejdřív splatné dluhy: nejdřív zůstatky z minulých let, pak měsíční zálohy. Určení
 dluhu dlužníkem ani pořadí podle upomínek zatím aplikace nezná. Úrok z prodlení
-(nařízení vlády 351/2013 Sb.) se počítá jen do přehledu a upomínky; zaúčtuje se, až ho SVJ
-skutečně požaduje. Předpis i saldo jsou zatím na jednotku, ne na vlastnické období.
+(nařízení vlády 351/2013 Sb.) se počítá do přehledu a upomínky; zaúčtuje se, až ho SVJ
+skutečně požaduje (tlačítko na stránce Dlužníci, předpis k dnešku na 311400). Po předpisu
+se počítá jen za dobu potom. Předpis i saldo jsou zatím na jednotku, ne na vlastnické období.
 
 ## 3. Banka
 

@@ -189,8 +189,12 @@ vymáhat zbytek po prodávajícím.
   `pochybne-pohledavky-vycleneni` (955100/955900), `opravna-polozka-tvorba`
   (559100/391100, stav `overit`) a `odpis-nedobytne-pohledavky` (543100/311100).
   Kromě opravné položky mají stav `navrh`.
-- Předepsaný úrok z prodlení je na 311400 zvlášť od předpisů a stránka Dlužníci ho
-  zatím neukazuje. Podrozvahovou evidenci odepsaných dluhů aplikace nemá.
+- Úrok z prodlení předepíše tlačítko Požadovat úrok z prodlení na stránce Dlužníci
+  (`urok-z-prodleni`, 311400/641100) k dnešku. Je vedený zvlášť od předpisů, takže se
+  nepočítá do dluhů, které při prodeji přecházejí na kupujícího. Stránka ukazuje, kolik
+  z něj zbývá zaplatit, a spočtený úrok dál počítá jen za dobu po posledním předpisu.
+  Úrok z částí, které vlastník zaplatil pozdě, aplikace nepočítá.
+- Podrozvahovou evidenci odepsaných dluhů aplikace nemá.
 
 ## Příklad
 

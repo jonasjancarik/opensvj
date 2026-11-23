@@ -9,9 +9,10 @@ import calendar
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import pocatecni, predpisy, vyuctovani_spravy
+from . import denik, pocatecni, predpisy, vyuctovani_spravy
 from .db import RadekZapisu, Zapis
 from .domena import urok as urok_z_prodleni
 from .domena.profil import Profil
@@ -39,12 +40,13 @@ class Polozka:
     def po_splatnosti(self, dnes: date) -> bool:
         return self.splatnost is None or self.splatnost < dnes
 
-    def urok(self, dnes: date) -> int | None:
+    def urok(self, dnes: date, od: date | None = None) -> int | None:
         """Zákonný úrok z prodlení z dosud nezaplacené části k `dnes` (None = neumíme spočítat,
-        např. u dluhu z minulých let bez známé splatnosti)."""
+        např. u dluhu z minulých let bez známé splatnosti). S `od` jen za dobu po `od`,
+        protože úrok do toho dne už SVJ předepsalo."""
         if self.splatnost is None:
             return None
-        return urok_z_prodleni.urok(self.zbyva, self.splatnost, dnes)
+        return urok_z_prodleni.urok(self.zbyva, self.splatnost, dnes, od)
 
     def sazba(self) -> int | None:
         if self.splatnost is None:
@@ -58,6 +60,8 @@ class DluhJednotky:
     polozky: list[Polozka] = field(default_factory=list)  # jen nezaplacené, od nejstarší
     preplatek: int = 0
     dnes: date = field(default_factory=date.today)
+    urok_do: date | None = None  # do kdy už SVJ úrok z prodlení předepsalo
+    sankce: int = 0  # předepsaný úrok z prodlení a pokuty, které zbývá zaplatit
 
     @property
     def po_splatnosti(self) -> int:
@@ -81,12 +85,15 @@ class DluhJednotky:
     @property
     def urok(self) -> int:
         """Součet úroků z prodlení, které umíme spočítat."""
-        return sum(p.urok(self.dnes) or 0 for p in self.polozky)
+        return sum(p.urok(self.dnes, self.urok_do) or 0 for p in self.polozky)
 
     @property
     def urok_neuplny(self) -> bool:
         """Některá položka po splatnosti nemá spočitatelný úrok."""
-        return any(p.po_splatnosti(self.dnes) and p.urok(self.dnes) is None for p in self.polozky)
+        return any(
+            p.po_splatnosti(self.dnes) and p.urok(self.dnes, self.urok_do) is None
+            for p in self.polozky
+        )
 
     @property
     def saldo(self) -> int:
@@ -193,6 +200,45 @@ def _rozpis(
     return dluhy, kredit
 
 
+OPERACE_UROKU = "urok-z-prodleni"
+ROLE_SANKCI = "pohledavky_vlastnici_sankce"
+
+
+def urok_predepsan_do(session: Session) -> dict[str, date]:
+    """Po jednotkách datum posledního předpisu úroku z prodlení (přes všechny roky)."""
+    radky = session.execute(
+        select(RadekZapisu.jednotka, func.max(Zapis.datum))
+        .join(Zapis)
+        .where(
+            Zapis.operace == OPERACE_UROKU,
+            RadekZapisu.role == ROLE_SANKCI,
+            RadekZapisu.jednotka.is_not(None),
+            denik.nestornovany(),
+        )
+        .group_by(RadekZapisu.jednotka)
+    ).all()
+    return {j: d for j, d in radky}
+
+
+def nezaplacene_sankce(session: Session, rok: int) -> dict[str, int]:
+    """Po jednotkách zůstatek předepsaných sankcí (úrok z prodlení, pokuty) v roce."""
+    radky = session.execute(
+        select(RadekZapisu.jednotka, RadekZapisu.strana, func.sum(RadekZapisu.castka))
+        .join(Zapis)
+        .where(
+            Zapis.rok == rok,
+            RadekZapisu.role == ROLE_SANKCI,
+            RadekZapisu.jednotka.is_not(None),
+            denik.platny(),
+        )
+        .group_by(RadekZapisu.jednotka, RadekZapisu.strana)
+    ).all()
+    vysledek: dict[str, int] = {}
+    for jednotka, strana, castka in radky:
+        vysledek[jednotka] = vysledek.get(jednotka, 0) + (castka if strana == "md" else -castka)
+    return {j: c for j, c in vysledek.items() if c}
+
+
 def prehled(
     session: Session,
     profil: Profil,
@@ -202,6 +248,8 @@ def prehled(
 ) -> list[DluhJednotky]:
     dnes = dnes or date.today()
     dluhy, kredit = _rozpis(session, profil, nastaveni, rok, podle_uctu=False)
+    urok_do = urok_predepsan_do(session)
+    sankce = nezaplacene_sankce(session, rok)
     vysledek = []
     for jednotka in profil.jednotky:
         polozky = sorted(
@@ -209,7 +257,16 @@ def prehled(
             key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi),
         )
         nezaplacene = [p for p in polozky if p.zbyva]
-        vysledek.append(DluhJednotky(jednotka, nezaplacene, kredit.get(jednotka, 0), dnes))
+        vysledek.append(
+            DluhJednotky(
+                jednotka,
+                nezaplacene,
+                kredit.get(jednotka, 0),
+                dnes,
+                urok_do.get(jednotka),
+                sankce.get(jednotka, 0),
+            )
+        )
     return vysledek
 
 

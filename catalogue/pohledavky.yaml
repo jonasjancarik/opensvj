@@ -16,7 +16,7 @@
     - Dokud SVJ úrok nepožaduje, neúčtuje se; aplikace ho jen ukazuje u dlužníka (NV 351/2013 Sb.).
     - Výše se počítá ze zákonné sazby; pohledávka i s úrokem nesmí převýšit částku, kterou lze od dlužníka reálně získat (interpretace NÚR I-10).
     - Úrok z prodlení od vlastníka je výnos SVJ a daní se v roce, kdy ho vlastník zaplatí (§ 23 odst. 3 ZDP).
-    - Vedený zvlášť od předpisů (311400), takže se nepočítá do dluhů, které přecházejí při prodeji jednotky; na stránce Dlužníci se zatím neukazuje.
+    - Vedený zvlášť od předpisů (311400), takže se nepočítá do dluhů, které přecházejí při prodeji jednotky. Stránka Dlužníci ho ukazuje zvlášť a předepisuje ho tlačítkem k dnešku; spočtený úrok pak počítá jen za dobu po posledním předpisu.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 48–49 (kap. 6.3)"}
     - {typ: zakon, odkaz: "OZ § 1970; nařízení vlády 351/2013 Sb. § 2"}

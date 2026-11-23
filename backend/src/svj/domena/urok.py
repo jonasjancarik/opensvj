@@ -74,12 +74,14 @@ def sazba(prvni_den_prodleni: date) -> int | None:
     return repo_sazba(pololeti) + PRIRAZKA
 
 
-def urok(castka: int, splatnost: date, do: date) -> int | None:
+def urok(castka: int, splatnost: date, do: date, od: date | None = None) -> int | None:
     """Úrok z prodlení v haléřích z dlužné částky od dne po splatnosti do `do` včetně.
 
-    0 = ještě není v prodlení; None = sazbu neznáme. Zaokrouhluje se na celé haléře.
+    S `od` se počítá až ode dne po `od` (úrok do toho dne už SVJ předepsalo); sazba se
+    řídí pořád začátkem prodlení. 0 = není v prodlení; None = sazbu neznáme. Zaokrouhluje
+    se na celé haléře.
     """
-    dni = (do - splatnost).days
+    dni = (do - max(splatnost, od or splatnost)).days
     if dni <= 0 or castka <= 0:
         return 0
     s = sazba(splatnost + timedelta(days=1))

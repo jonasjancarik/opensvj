@@ -75,3 +75,35 @@ def test_dluhy_z_minulych_let_od_nejstarsiho(session):
     # 311300 (dřívější roky) se platí před 311200 (vyúčtování minulého roku).
     assert [p.popis for p in d["1001/3"].polozky] == ["Vyúčtování 2024"]
     assert d["1001/3"].polozky[0].zbyva == 10_000_000 - 100
+
+
+def test_predepsany_urok_se_nepocita_znovu(session):
+    """Po předpisu úroku z prodlení se úrok počítá jen za dobu potom; předepsaný úrok je
+    vedený zvlášť, dokud ho vlastník nezaplatí."""
+    _otevri_2026(session)
+    predpisy.vygeneruj(session, PROFIL, NAST, 2026, 3, zauctoval="x", dnes=date(2026, 5, 1))
+    mesic = predpisy.mesicni_celkem(PROFIL, NAST, 2026, 3)["1001/1"]
+
+    def prehled(dnes):
+        vse = dluznici.prehled(session, PROFIL, NAST, 2026, dnes)
+        return next(d for d in vse if d.jednotka == "1001/1")
+
+    pred = prehled(date(2026, 5, 15))
+    assert pred.urok == round(mesic * 0.115 * 61 / 365) and pred.urok_do is None  # 16. 3.–15. 5.
+
+    ops = katalog.nacti()
+    for op, vstupy, datum in [
+        ("urok-z-prodleni", {"castka": f"{pred.urok / 100:.2f}"}, date(2026, 5, 15)),
+        ("uhrada-uroku-z-prodleni", {"castka": "1.00", "ucet": "provozni"}, date(2026, 5, 20)),
+    ]:
+        denik.zauctuj(
+            session, PROFIL, ops[op], {"jednotka": "1001/1", **vstupy}, datum=datum,
+            popis=op, doklad="ID", zauctoval="x",
+        )  # fmt: skip
+    session.commit()
+
+    po = prehled(date(2026, 5, 25))
+    assert po.urok_do == date(2026, 5, 15)
+    assert po.urok == round(mesic * 0.115 * 10 / 365)  # jen 16.–25. 5.
+    assert po.sankce == pred.urok - 100
+    assert po.saldo == pred.saldo  # úrok se do dluhů na zálohách nepočítá

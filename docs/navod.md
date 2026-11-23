@@ -110,7 +110,11 @@ repo sazba ČNB k prvnímu dni pololetí, kdy prodlení začalo, plus 8 procentn
 Tabulka repo sazeb je v `backend/src/svj/domena/urok.py` a po každé změně sazby ČNB je
 potřeba ji doplnit, jinak aplikace úrok pro nové pololetí nespočítá. Úrok se počítá jen
 ze zbývající nezaplacené části a u dluhů z minulých let bez známé splatnosti chybí.
-V upomínce ho jde zapnout. Do účetnictví se zapíše, až ho SVJ skutečně požaduje.
+V upomínce ho jde zapnout. Do účetnictví se zapíše, až ho SVJ skutečně požaduje:
+tlačítko Požadovat úrok z prodlení u jednotky ho předepíše k dnešku (částku jde snížit).
+Předepsaný úrok je pak vidět zvlášť od dluhů na zálohách, upomínka ho přičte k úhradě
+a spočtený úrok se dál počítá jen za dobu po předpisu. Platbu úroku jde v Bance zaúčtovat
+jako úhradu úroku z prodlení.
 
 Ke každé jednotce jde vytisknout potvrzení o dluzích pro prodej (§ 1186 odst. 3 OZ). Na
 kupujícího přejdou jen dluhy uvedené v potvrzení, proto stránka varuje, když nejsou
