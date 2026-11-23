@@ -12,7 +12,7 @@ class Nastaveni(BaseSettings):
     database_url: str = "postgresql+psycopg://svj:svj@localhost:5440/svj"
     test_database_url: str = "postgresql+psycopg://svj:svj@localhost:5440/svj_test"
     # Profil SVJ (účty, jednotky, předpis) a složka, ve které leží. Údaje skutečného SVJ do
-    # repozitáře nepatří; pro vývoj je čte aplikace ze soukromé složky (viz README).
+    # repozitáře nepatří; pro vývoj je čte aplikace ze soukromé složky (viz docs/vyvoj.md).
     profil: str = "ukazka"
     profily: Path = KOREN / "profiles"
     jwks_url: str = "http://localhost:3010/api/auth/jwks"

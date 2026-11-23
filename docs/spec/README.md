@@ -16,7 +16,8 @@ vyrovnanosti v databázi. U každé části je vidět, co aplikace už umí a co
    z provozu ještě testy nemají.
 
 Proč se účtuje tak, jak se účtuje, s odkazy na předpisy a literaturu, vysvětluje
-[příručka](../prirucka/README.md).
+[příručka](../prirucka/README.md). Jak se s hotovými částmi pracuje, popisuje
+[návod](../navod.md).
 
 ## Rozsah první verze
 
@@ -45,7 +46,7 @@ instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 | Jednotky, plochy, podíly, počty osob | V profilu SVJ (YAML). Podíly zatím nemají platnost v čase. |
 | Vlastníci | Osoby a vlastnictví jednotek s platností od–do, stránka Vlastníci. Jméno a adresa se tisknou v upomínce, oznámení o zálohách, vyúčtování a potvrzení o dluzích; účet vlastníka pomáhá párovat platby. Dluhy jdou s jednotkou; ty, které na kupujícího nepřešly, jde při převodu přesunout na prodávajícího a jeho pozdější platbu zaúčtovat v Bance. Kdo platí předpis za měsíc převodu, určuje profil. |
 | Rozhodnutí orgánů | Stránka Rozhodnutí: evidence usnesení a jejich přiřazení k verzím předpisu, splatnosti, klíčům vyúčtování správy a volbám v profilu. Chybějící doložení hlásí uzávěrka. Zápis jako přílohu aplikace neukládá. |
-| Měřidla a odečty | Stránka Měřidla: evidence měřidel jednotek i domu, hromadný odečet k datu, výměna měřidla a roční spotřeba. Výsledky zúčtovatele převzít ani spotřebu použít ve vyúčtování zatím nejde. |
+| Měřidla a odečty | Stránka Měřidla: evidence měřidel jednotek i domu, hromadný odečet k datu, výměna měřidla a roční spotřeba. Roční spotřeba slouží jako klíč ve vyúčtování služeb; výsledky zúčtovatele tepla se opisují ručně na stránce Vyúčtování. |
 | Účetní období a archiv | Účetní období je jen kalendářní rok; hospodářský rok ani první období delší než 12 měsíců nejdou. Export deníku a dokladů pro archiv chybí a lhůty úschovy aplikace nehlídá. |
 | Předpisy záloh | Hotovo: verze s platností od, pět způsobů výpočtu, zaúčtování po měsících. |
 | Nezálohové příspěvky | Zatím ne. Volba `prispevky: nezalohove` v profilu mění jen text přílohy; fond ze zisku 911 aplikace nepodporuje. |
@@ -128,9 +129,8 @@ podpisový záznam v aplikaci byl průkazný podle § 33a odst. 4; jestli to sta
 
 Rozhodnutí, která specifikace nechává volná nebo jen navrhuje:
 
-1. **Metody přihlášení a provoz.** Přihlašuje se odkazem v e-mailu, ale odesílání
-   e-mailů (SMTP, nebo Cloudflare Email) zatím chybí. Zbývá rozhodnout i o passkey a druhém
-   faktoru a o tom, kde aplikace poběží.
+1. **Metody přihlášení a provoz.** Přihlašuje se odkazem poslaným e-mailem přes
+   SMTP. Zbývá rozhodnout o passkey a druhém faktoru a o tom, kde aplikace poběží.
 2. **Export hlavní knihy.** Deník v databázi aplikace je zdroj pravdy. Návrh je přidat
    deterministický export do Beancountu: nezávislá kontrola zůstatků (`bean-check`,
    kontrola proti výpisům) a prohlížeč Fava pro výbor.
