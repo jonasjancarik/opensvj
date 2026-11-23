@@ -89,6 +89,10 @@ class RadekZapisu(Zaklad):
     parovaci_symbol: Mapped[str | None] = mapped_column(String(40), nullable=True)
     # Jen u počátečních stavů převzatých z minulého roku: splatnost převedeného dluhu.
     splatnost: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Jen u platby vlastníka: řádek dluhu, na který vlastník při platbě určil, že platí.
+    urceno_na: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("radek_zapisu.id"), nullable=True
+    )
     zapis: Mapped[Zapis] = relationship(back_populates="radky")
     __table_args__ = (
         CheckConstraint("strana in ('md', 'd')", name="strana"),

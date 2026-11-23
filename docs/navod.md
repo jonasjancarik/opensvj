@@ -32,6 +32,9 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
 - Platbu vlastníka aplikace přiřadí k jednotce podle VS (předpona z profilu SVJ, číslo
   jednotky a pořadí vlastníka), když VS chybí, podle účtu, ze kterého platí vlastník,
   a nakonec podle částky měsíčního předpisu.
+- Když vlastník při platbě řekl, na který dluh platí (třeba nedoplatek z vyúčtování
+  místo záloh), vybere se ten dluh u platby v poli Na který dluh vlastník platí. Platba
+  se pak zaúčtuje na jeho účet a na stránce Dlužníci jde nejdřív na něj (§ 1933 OZ).
 - U odchozí platby za fakturu se vybírá z nezaplacených faktur. Aplikace ji navrhne podle
   VS faktury, potom podle účtu dodavatele a částky. Platbu vyšší, než kolik z faktury
   zbývá, odmítne.
@@ -83,9 +86,15 @@ složek a za rok předepsáno, zaplaceno a dluh nebo přeplatek.
 ## Dlužníci
 
 Stránka Dlužníci ukazuje po jednotkách, kolik je po splatnosti, od kdy a co ještě splatné
-není. Platby se započítají na nejdřív splatné dluhy (OZ § 1932): nejdřív zůstatky
-z minulých let, pak měsíční zálohy. U jednotky s dluhem jde zobrazit a vytisknout text
-upomínky se jménem a adresou vlastníka.
+není. Platba, u které vlastník určil dluh, jde nejdřív na ten dluh. Ostatní platby se
+započítají na nejdřív splatné dluhy (§ 1933 OZ): nejdřív zůstatky z minulých let, pak
+měsíční zálohy. U jednotky s dluhem jde zobrazit a vytisknout text upomínky se jménem
+a adresou vlastníka.
+
+Když má vlastník předepsaný úrok z prodlení a platbu nijak neurčil, jde podle § 1932
+OZ nejdřív na úrok a teprve potom na zálohy. Aplikace platbu zaúčtovanou jako úhradu
+předpisu vždy počítá na zálohy; v takovém případě ji v Bance zaúčtujte jako úhradu úroku
+z prodlení.
 
 ## Vlastníci
 

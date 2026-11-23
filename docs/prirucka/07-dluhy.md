@@ -166,9 +166,14 @@ vymáhat zbytek po prodávajícím.
 ## V aplikaci
 
 - Stránka **Dlužníci** ukazuje u každé jednotky splatné a ještě nesplatné dluhy, od kdy
-  je vlastník v prodlení a zákonný úrok z prodlení k dnešku. Platby přiřazuje
-  k nejdříve splatným dluhům, nejdřív k zůstatkům z minulých let. Na upomínky
-  ani na to, který dluh určil vlastník, zatím nehledí.
+  je vlastník v prodlení a zákonný úrok z prodlení k dnešku. Platbu, u které vlastník
+  určil dluh (v Bance pole Na který dluh vlastník platí), přiřadí nejdřív k tomu dluhu
+  a zaúčtuje ji na jeho účet. Ostatní platby přiřazuje k nejdříve splatným dluhům,
+  nejdřív k zůstatkům z minulých let. Upomínka z aplikace obsahuje všechny dluhy po
+  splatnosti, takže pořadí podle upomenutí je stejné. Platbu zaúčtovanou jako úhradu
+  předpisu počítá vždy na zálohy, i když má vlastník předepsaný úrok z prodlení; podle
+  § 1932 OZ by neurčená platba šla nejdřív na úrok, a takovou platbu je proto potřeba
+  zaúčtovat jako úhradu úroku.
 - Úrok počítá podle nařízení vlády 351/2013 Sb. z tabulky repo sazeb ČNB. U dluhů
   z minulých let, u kterých nezná splatnost, a u prodlení před rokem 2014 úrok
   nespočítá a řekne to.

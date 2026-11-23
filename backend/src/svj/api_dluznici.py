@@ -118,14 +118,16 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
 
 
 class PredpisUroku(BaseModel):
+    jednotka: str
     castka: int  # haléře
 
 
-@router.post("/{rok}/{jednotka}/urok")
-def predepis_urok(rok: int, jednotka: str, z: PredpisUroku, uzivatel: Zapisujici) -> Dluznici:
+@router.post("/{rok}/urok")
+def predepis_urok(rok: int, z: PredpisUroku, uzivatel: Zapisujici) -> Dluznici:
     """Předepíše vlastníkovi úrok z prodlení k dnešku: SVJ ho od této chvíle požaduje."""
     prof = profil.nacti(nastaveni().profil)
     dnes = date.today()
+    jednotka = z.jednotka
     if jednotka not in prof.jednotky:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Jednotka {jednotka} není v profilu.")
     if z.castka <= 0:

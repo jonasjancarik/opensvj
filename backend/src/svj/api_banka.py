@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
-from . import banka, faktury, lide, predpisy
+from . import banka, dluznici, faktury, lide, predpisy
 from .db import (
     BankovniPohyb,
     BankovniUcet,
@@ -51,6 +51,14 @@ class Moznost(BaseModel):
     nazev: str
     stav: str
     pole: list[str]
+    volitelna: list[str] = []  # nepovinné vstupy (dluh, který vlastník platbou určil)
+
+
+class DluhJednotky(BaseModel):
+    radek: int  # řádek zápisu, kterým dluh vznikl
+    popis: str
+    splatnost: date | None
+    zbyva: int
 
 
 class Navrh(BaseModel):
@@ -259,7 +267,13 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
             ],
             moznosti={
                 smer: [
-                    Moznost(id=i, nazev=ops[i].nazev, stav=ops[i].stav, pole=pole)
+                    Moznost(
+                        id=i,
+                        nazev=ops[i].nazev,
+                        stav=ops[i].stav,
+                        pole=pole,
+                        volitelna=banka.VOLITELNE.get(i, []),
+                    )
                     for i, pole in mozne.items()
                 ]
                 for smer, mozne in banka.OPERACE.items()
@@ -267,6 +281,23 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
             pohyby=[_pohyb(p, ops, ucty, pravidla, zapisy, kontext) for p in pohyby],
             nezauctovano=pocet,
         )
+
+
+@router.get("/dluhy/{rok}")
+def dluhy(rok: int, jednotka: str, _: Prihlaseny) -> list[DluhJednotky]:
+    """Nezaplacené dluhy jednotky v roce platby, aby u ní šlo určit, na který dluh platí."""
+    prof = _profil()
+    nast = predpisy.nacti_s(prof, sezeni)
+    with _session() as s:
+        vse = dluznici.prehled(s, prof, nast, rok)
+    d = next((x for x in vse if x.jednotka == jednotka), None)
+    if d is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Jednotku {jednotka} SVJ nemá.")
+    return [
+        DluhJednotky(radek=p.radek, popis=p.popis, splatnost=p.splatnost, zbyva=p.zbyva)
+        for p in d.polozky
+        if p.radek is not None
+    ]
 
 
 @router.post("/vypisy")

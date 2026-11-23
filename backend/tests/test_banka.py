@@ -219,3 +219,48 @@ def test_zauctovani_jen_jednou_a_s_kontrolou(session):
         banka.zauctuj_pohyb(
             session, PROFIL, p["101"].id, "uhrada-predpisu", {"jednotka": "1001/5"}, zauctoval="x"
         )
+
+
+def test_platba_s_urcenym_dluhem(session):
+    """Platbu jde poslat na dluh, který vlastník určil, i na jiném účtu pohledávek; dluh
+    jiné jednotky nebo jiného roku aplikace odmítne."""
+    from svj import dluznici, pocatecni, predpisy
+    from svj.db import RadekZapisu
+
+    stav = pocatecni.PocatecniStav(
+        rok=2025,
+        zustatky={"311200": 1_000_000, "311300": 500_000, "955100": -1_500_000},
+        polozky=[
+            pocatecni.Polozka("311200", 1_000_000, "1001/5", "Vyúčtování 2024"),
+            pocatecni.Polozka("311300", 500_000, "1001/5", "Vyúčtování 2023"),
+        ],
+    )
+    pocatecni.zauctuj(session, PROFIL, stav, zauctoval="x")
+    _nahraj(session)
+    p = _pohyby(session)
+    nedoplatek = session.scalar(
+        select(RadekZapisu.id).where(RadekZapisu.ucet == "311200", RadekZapisu.strana == "md")
+    )
+    with pytest.raises(banka.ChybaBanky, match="Určený dluh"):
+        banka.zauctuj_pohyb(
+            session, PROFIL, p["101"].id, "uhrada-predpisu",
+            {"jednotka": "1001/6", "dluh": str(nedoplatek)}, zauctoval="x",
+        )  # fmt: skip
+    banka.zauctuj_pohyb(
+        session, PROFIL, p["101"].id, "uhrada-predpisu",
+        {"jednotka": "1001/5", "dluh": str(nedoplatek)}, zauctoval="x", zapamatovat=True,
+    )  # fmt: skip
+    session.commit()
+
+    platba = session.scalar(select(RadekZapisu).where(RadekZapisu.urceno_na == nedoplatek))
+    # Celá platba jde na účet určeného dluhu (nedoplatek z vyúčtování, ne předpisy).
+    assert (platba.ucet, platba.castka) == ("311200", 1_038_000)
+    d = next(
+        x
+        for x in dluznici.prehled(session, PROFIL, predpisy.nacti(PROFIL), 2025, date(2025, 2, 1))
+        if x.jednotka == "1001/5"
+    )
+    # Určený nedoplatek je zaplacený celý a přebytek 380 Kč jde na starší dluh.
+    assert [(x.popis, x.zbyva) for x in d.polozky] == [("Vyúčtování 2023", 500_000 - 38_000)]
+    pravidlo = session.scalar(select(PravidloParovani))
+    assert "dluh" not in pravidlo.parametry

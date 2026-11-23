@@ -107,3 +107,46 @@ def test_predepsany_urok_se_nepocita_znovu(session):
     assert po.urok == round(mesic * 0.115 * 10 / 365)  # jen 16.–25. 5.
     assert po.sankce == pred.urok - 100
     assert po.saldo == pred.saldo  # úrok se do dluhů na zálohách nepočítá
+
+
+def test_platba_na_dluh_urceny_vlastnikem(session):
+    """Vlastník určí, že platí duben: platba jde nejdřív na duben, březen zůstane dlužný
+    (§ 1933 odst. 1 OZ). Co z určené platby zbude, jde na nejstarší dluh."""
+    from svj import banka
+    from svj.db import RadekZapisu, Zapis
+
+    _otevri_2026(session)
+    for m in (3, 4):
+        predpisy.vygeneruj(session, PROFIL, NAST, 2026, m, zauctoval="x", dnes=date(2026, 5, 1))
+    mesic = predpisy.mesicni_celkem(PROFIL, NAST, 2026, 4)["1001/1"]
+    duben = session.scalar(
+        RadekZapisu.__table__.select()
+        .with_only_columns(RadekZapisu.id)
+        .join(Zapis.__table__)
+        .where(
+            RadekZapisu.jednotka == "1001/1",
+            RadekZapisu.strana == "md",
+            Zapis.operace == "predpis-mesicni",
+            Zapis.datum >= date(2026, 4, 1),
+        )
+        .limit(1)
+    )
+    op = katalog.nacti()["uhrada-predpisu"]
+    vstupy = {"ucet": "provozni", "jednotka": "1001/1", "castka": f"{(mesic + 10_000) / 100:.2f}"}
+    radky = banka.s_urcenim_dluhu(katalog.sestav(op, vstupy), session.get(RadekZapisu, duben))
+    denik.zauctuj(
+        session, PROFIL, op, vstupy, datum=date(2026, 4, 20), popis="platba za duben",
+        doklad="BV", zauctoval="x", radky=radky,
+    )  # fmt: skip
+    session.commit()
+
+    d = next(
+        x
+        for x in dluznici.prehled(session, PROFIL, NAST, 2026, date(2026, 5, 1))
+        if x.jednotka == "1001/1"
+    )
+    assert [(p.popis, p.zbyva) for p in d.polozky] == [
+        ("Zálohy za březen 2026", predpisy.mesicni_celkem(PROFIL, NAST, 2026, 3)["1001/1"] - 10_000)
+    ]
+    saldo = {s.jednotka: s.saldo for s in predpisy.saldo(session, PROFIL, 2026)}
+    assert d.saldo == saldo["1001/1"]

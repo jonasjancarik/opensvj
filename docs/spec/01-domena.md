@@ -170,8 +170,11 @@ na stránce Předpisy (tabulka `verze_predpisu`); verze z aplikace se stejným `
 nahradí verzi ze souboru. Verzi, která by zasáhla už zaúčtovaný měsíc, nejde změnit ani
 smazat. Splatnost a poznámka zůstávají v souboru. Předpis se zaúčtuje na stránce
 Předpisy po měsících. Saldo se počítá z deníku. Na stránce Dlužníci se platby započítávají
-na nejdřív splatné dluhy: nejdřív zůstatky z minulých let, pak měsíční zálohy. Určení
-dluhu dlužníkem ani pořadí podle upomínek zatím aplikace nezná. Úrok z prodlení
+na dluh, který vlastník určil (sloupec `RadekZapisu.urceno_na` u platby odkazuje na řádek,
+kterým dluh vznikl), a jinak na nejdřív splatné dluhy: nejdřív zůstatky z minulých let,
+pak měsíční zálohy. Upomínka obsahuje všechny dluhy po splatnosti, takže pořadí podle
+upomenutí dává totéž. Pořadí náklady, úrok, jistina (§ 1932 OZ) aplikace sama
+nepoužije: platba zaúčtovaná jako úhrada předpisu jde vždy na zálohy. Úrok z prodlení
 (nařízení vlády 351/2013 Sb.) se počítá do přehledu a upomínky; zaúčtuje se, až ho SVJ
 skutečně požaduje (tlačítko na stránce Dlužníci, předpis k dnešku na 311400). Po předpisu
 se počítá jen za dobu potom. Předpis i saldo jsou zatím na jednotku, ne na vlastnické období.

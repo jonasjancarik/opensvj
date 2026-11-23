@@ -232,9 +232,9 @@ function PredpisUroku({
     setChyba(null)
     try {
       setData(
-        await api<Data>(`/api/dluznici/${data.rok}/${encodeURIComponent(j.jednotka)}/urok`, {
+        await api<Data>(`/api/dluznici/${data.rok}/urok`, {
           method: 'POST',
-          json: { castka: halire },
+          json: { jednotka: j.jednotka, castka: halire },
         }),
       )
     } catch (e) {

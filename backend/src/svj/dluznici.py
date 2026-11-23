@@ -1,8 +1,11 @@
 """Dlužníci: co který vlastník nezaplatil a od kdy.
 
-Platby se přiřazují k nejstarším dluhům (FIFO): nejdřív zůstatky z minulých let, potom
-měsíční předpisy a další pohledávky podle splatnosti. Součet nezaplacených položek minus
-přeplatek je vždy rovný saldu jednotky z `predpisy.saldo`.
+Platba, u které vlastník určil, na který dluh platí, jde nejdřív na ten dluh (§ 1933
+odst. 1 OZ). Ostatní platby se přiřazují k nejstarším dluhům (FIFO): nejdřív zůstatky
+z minulých let, potom měsíční předpisy a další pohledávky podle splatnosti. Upomínka
+v aplikaci vždy obsahuje všechny dluhy po splatnosti, takže pořadí podle upomenutí
+(§ 1933 odst. 1 OZ) dává totéž. Součet nezaplacených položek minus přeplatek je vždy
+rovný saldu jednotky z `predpisy.saldo`.
 """
 
 import calendar
@@ -36,6 +39,12 @@ class Polozka:
     role: str = "pohledavky_vlastnici"
     vznik: date | None = None  # datum zápisu, ze kterého dluh vznikl
     mesic: date | None = None  # u měsíčního předpisu první den měsíce
+    radky: list[int] = field(default_factory=list, repr=False, compare=False)
+
+    @property
+    def radek(self) -> int | None:
+        """Řádek zápisu, kterým dluh vznikl; na něj odkazuje platba, která ho určuje."""
+        return self.radky[0] if self.radky else None
 
     def po_splatnosti(self, dnes: date) -> bool:
         return self.splatnost is None or self.splatnost < dnes
@@ -125,6 +134,8 @@ def _rozpis(
             RadekZapisu.splatnost,
             RadekZapisu.strana,
             RadekZapisu.castka,
+            RadekZapisu.id,
+            RadekZapisu.urceno_na,
             Zapis.id,
             Zapis.operace,
             Zapis.datum,
@@ -136,6 +147,7 @@ def _rozpis(
 
     dluhy: dict = {}
     kredit: dict = {}
+    urcene: dict = {}  # skupina → [(řádek určeného dluhu, částka)]
     for (
         jednotka,
         role,
@@ -143,6 +155,8 @@ def _rozpis(
         splatnost_radku,
         strana,
         castka,
+        radek_id,
+        urceno_na,
         zapis_id,
         operace,
         datum,
@@ -164,8 +178,13 @@ def _rozpis(
                 klic, Polozka(text, splatnost_radku, 0, poradi=poradi, role=role)
             )
             p.castka += znamenko * castka
+            if strana == "md":
+                p.radky.append(radek_id)
         elif strana == "d":
-            kredit[skupina] += castka
+            if urceno_na is not None:
+                urcene.setdefault(skupina, []).append((urceno_na, castka))
+            else:
+                kredit[skupina] += castka
         else:
             mesic = None
             if operace == "predpis-mesicni":
@@ -181,6 +200,7 @@ def _rozpis(
                 Polozka(text, splatnost, 0, role=role, vznik=datum, mesic=mesic),
             )
             p.castka += castka
+            p.radky.append(radek_id)
 
     for skupina, polozky in dluhy.items():
         zbyva_kreditu = kredit[skupina]
@@ -192,9 +212,20 @@ def _rozpis(
                 kladne.append(p)
         kladne.sort(key=lambda p: (p.splatnost is not None, p.splatnost or date.min, p.poradi))
         for p in kladne:
-            uhrazeno = min(p.castka, zbyva_kreditu)
+            p.zbyva = p.castka
+        # Platby, u kterých vlastník určil dluh, jdou nejdřív na něj (§ 1933 odst. 1 OZ);
+        # co z nich zbude, se započte jako ostatní platby.
+        podle_radku = {r: p for p in kladne for r in p.radky}
+        for radek, castka in urcene.get(skupina, []):
+            p = podle_radku.get(radek)
+            uhrazeno = min(p.zbyva, castka) if p else 0
+            if p:
+                p.zbyva -= uhrazeno
+            zbyva_kreditu += castka - uhrazeno
+        for p in kladne:
+            uhrazeno = min(p.zbyva, zbyva_kreditu)
             zbyva_kreditu -= uhrazeno
-            p.zbyva = p.castka - uhrazeno
+            p.zbyva -= uhrazeno
         dluhy[skupina] = {k: p for k, p in polozky.items() if p.castka > 0}
         kredit[skupina] = zbyva_kreditu
     return dluhy, kredit

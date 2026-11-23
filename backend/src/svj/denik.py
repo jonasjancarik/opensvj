@@ -136,6 +136,7 @@ def zauctuj(
                 splatnost=date.fromisoformat(r.dimenze["splatnost"])
                 if r.dimenze.get("splatnost")
                 else None,
+                urceno_na=int(r.dimenze["urceno_na"]) if r.dimenze.get("urceno_na") else None,
             )
         )
     session.add(zapis)
@@ -204,6 +205,7 @@ def storno(
                 popis=r.popis,
                 parovaci_symbol=r.parovaci_symbol,
                 splatnost=r.splatnost,
+                urceno_na=r.urceno_na,
             )
         )
     session.add(novy)

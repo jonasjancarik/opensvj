@@ -7,20 +7,21 @@ aplikace si párování zapamatuje pro další platby ze stejného protiúčtu.
 """
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import Any
 
 from sqlalchemy import ColumnElement, and_, exists, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, faktury
+from . import denik, faktury, pocatecni
 from .db import (
     BankovniPohyb,
     BankovniUcet,
     BankovniVypis,
     ParovaniPohybu,
     PravidloParovani,
+    RadekZapisu,
     Zapis,
 )
 from .domena import gpc, katalog, rb_csv
@@ -44,6 +45,11 @@ OPERACE = {
         "dan-z-prijmu-uhrada": [],
     },
 }
+
+
+# Nepovinné vstupy: u úhrady předpisu může vlastník určit, na který dluh platí
+# (§ 1933 odst. 1 OZ); hodnota je řádek zápisu, kterým dluh vznikl.
+VOLITELNE = {"uhrada-predpisu": ["dluh"]}
 
 
 class ChybaBanky(ValueError):
@@ -498,7 +504,36 @@ def _vstupy(
         if len(hodnota) > 128:
             raise ChybaBanky(f"Údaj „{POPISKY[pole]}“ je příliš dlouhý.")
         vstupy[pole] = hodnota
+    for pole in VOLITELNE.get(operace, []):
+        hodnota = str(zadane.get(pole) or "").strip()
+        if hodnota:
+            vstupy[pole] = hodnota
     return vstupy, krok
+
+
+def _urceny_dluh(session: Session, pohyb: BankovniPohyb, jednotka: str, dluh: str) -> RadekZapisu:
+    """Řádek dluhu jednotky, který vlastník platbou určil; musí být z roku platby a platit."""
+    radek = session.get(RadekZapisu, int(dluh)) if dluh.isdigit() else None
+    if (
+        radek is None
+        or radek.strana != "md"
+        or radek.role not in pocatecni.ROLE_VLASTNIKU
+        or radek.jednotka != jednotka
+        or radek.zapis.rok != pohyb.datum.year
+        or not session.scalar(select(exists().where(Zapis.id == radek.zapis_id, denik.platny())))
+    ):
+        raise ChybaBanky("Určený dluh u této jednotky v roce platby není.")
+    return radek
+
+
+def s_urcenim_dluhu(radky: list[katalog.Radek], dluh: RadekZapisu) -> list[katalog.Radek]:
+    """Platba jde na účet určeného dluhu (třeba nedoplatek z vyúčtování) a odkazuje na něj."""
+    return [
+        replace(r, role=dluh.role, dimenze={**r.dimenze, "urceno_na": str(dluh.id)})
+        if r.strana == "d" and r.role in pocatecni.ROLE_VLASTNIKU
+        else r
+        for r in radky
+    ]
 
 
 POPISKY = {
@@ -549,6 +584,9 @@ def zauctuj_pohyb(
         radky = faktury.s_parovacim_symbolem(
             katalog.sestav(operace, vstupy, krok), stav.faktura.cislo
         )
+    if vstupy.get("dluh"):
+        dluh = _urceny_dluh(session, pohyb, vstupy["jednotka"], vstupy.pop("dluh"))
+        radky = s_urcenim_dluhu(katalog.sestav(operace, vstupy, krok), dluh)
     vypis = pohyb.vypis
     popis = " · ".join(
         x for x in (operace.nazev, pohyb.nazev, f"VS {pohyb.vs}" if pohyb.vs else "") if x
@@ -577,12 +615,20 @@ def zauctuj_pohyb(
         pohyb_id=pohyb.id,
         zapis_id=zapis.id,
         operace=operace_id,
-        vstupy={k: v for k, v in zadane.items() if k in OPERACE[pohyb.smer][operace_id]},
+        vstupy={
+            k: v
+            for k, v in zadane.items()
+            if v and (k in OPERACE[pohyb.smer][operace_id] or k in VOLITELNE.get(operace_id, []))
+        },
         zauctoval=zauctoval,
     )
     session.add(parovani)
     if zapamatovat and (pohyb.protiucet or pohyb.vs) and operace_id != "uhrada-faktury":
-        _zapamatuj(session, pohyb, operace_id, parovani.vstupy, zauctoval)
+        # Určený dluh platí jen pro tuto platbu, další platby ho nepřebírají.
+        pamatovat = {
+            k: v for k, v in parovani.vstupy.items() if k in OPERACE[pohyb.smer][operace_id]
+        }
+        _zapamatuj(session, pohyb, operace_id, pamatovat, zauctoval)
     session.flush()
     return parovani
 

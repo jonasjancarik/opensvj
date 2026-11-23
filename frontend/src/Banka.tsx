@@ -12,7 +12,8 @@ type Ucet = {
   datum_vypisu: string | null
   pohyby_do: string | null
 }
-type Moznost = { id: string; nazev: string; stav: string; pole: string[] }
+type Moznost = { id: string; nazev: string; stav: string; pole: string[]; volitelna: string[] }
+type DluhJednotky = { radek: number; popis: string; splatnost: string | null; zbyva: number }
 type Navrh = { operace: string; vstupy: Record<string, string>; duvod: string }
 type Zauctovani = {
   operace: string
@@ -314,7 +315,9 @@ function PolozkaPohybu({
     setPracuji(true)
     setChyba(null)
     try {
-      const hodnoty = Object.fromEntries(vybrana.pole.map((pole) => [pole, vstupy[pole] ?? '']))
+      const hodnoty = Object.fromEntries(
+        [...vybrana.pole, ...vybrana.volitelna].map((pole) => [pole, vstupy[pole] ?? '']),
+      )
       poZauctovani(
         await api<Pohyb>(`/api/banka/pohyby/${p.id}`, {
           method: 'POST',
@@ -427,7 +430,10 @@ function PolozkaPohybu({
               ) : (
                 <select
                   value={vstupy[pole] ?? ''}
-                  onChange={(e) => setVstupy({ ...vstupy, [pole]: e.target.value })}
+                  onChange={(e) =>
+                    // Určený dluh patří k jednotce; po změně jednotky neplatí.
+                    setVstupy({ ...vstupy, [pole]: e.target.value, ...(pole === 'jednotka' && { dluh: '' }) })
+                  }
                 >
                   <option value="">Vyberte…</option>
                   {pole === 'jednotka'
@@ -445,6 +451,14 @@ function PolozkaPohybu({
               )}
             </label>
           ))}
+          {vybrana?.volitelna.includes('dluh') && vstupy.jednotka && (
+            <VyberDluhu
+              rok={Number(p.datum.slice(0, 4))}
+              jednotka={vstupy.jednotka}
+              value={vstupy.dluh ?? ''}
+              onChange={(v) => setVstupy({ ...vstupy, dluh: v })}
+            />
+          )}
           {(p.protiucet || p.vs) && vybrana && vybrana.pole.length > 0 && operace !== 'uhrada-faktury' && (
             <label className="zaskrtavatko">
               <input
@@ -475,9 +489,54 @@ function popisVstupu(vstupy: Record<string, string>, data: Banka) {
         ? `jednotka ${v}`
         : k === 'faktura'
           ? `doklad FP ${v}`
-          : v,
+          : k === 'dluh'
+            ? 'na dluh, který určil vlastník'
+            : v,
   )
   return casti.length ? ` (${casti.join(', ')})` : ''
+}
+
+/**
+ * Na který dluh vlastník platí, když to při platbě řekl (§ 1933 OZ). Bez určení jde platba
+ * na nejstarší dluh.
+ */
+function VyberDluhu({
+  rok,
+  jednotka,
+  value,
+  onChange,
+}: {
+  rok: number
+  jednotka: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  const [dluhy, setDluhy] = useState<DluhJednotky[] | null>(null)
+  useEffect(() => {
+    let platne = true
+    api<DluhJednotky[]>(`/api/banka/dluhy/${rok}?${new URLSearchParams({ jednotka })}`)
+      .then((d) => platne && setDluhy(d))
+      .catch(() => platne && setDluhy([]))
+    return () => {
+      platne = false
+    }
+  }, [rok, jednotka])
+  if (!dluhy || dluhy.length < 2) return null
+  return (
+    <label>
+      Na který dluh vlastník platí
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Neurčil, na nejstarší dluh</option>
+        {dluhy.map((d) => (
+          <option key={d.radek} value={String(d.radek)}>
+            {d.popis}
+            {d.splatnost ? `, splatné ${new Date(d.splatnost).toLocaleDateString('cs-CZ')}` : ''}
+            {`, zbývá ${kc(d.zbyva)}`}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
 function VyberFaktury({

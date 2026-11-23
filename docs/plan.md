@@ -27,8 +27,7 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
 
 ## 1. Opravy správnosti
 
-- Dlužníci: ukázat předepsaný úrok z prodlení (311400); přiřazovat platbu k dluhu, který
-  určil vlastník, a jinak podle § 1933 OZ; odepsané dluhy vést na podrozvaze.
+- Dlužníci: odepsané dluhy vést na podrozvaze.
 
 ## 2. Základy, na kterých stojí další oblasti
 
