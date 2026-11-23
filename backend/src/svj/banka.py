@@ -38,14 +38,40 @@ OPERACE = {
         "prijem-nesparovany": [],
         "uhrada-uroku-z-prodleni": ["jednotka"],
         "uhrada-odepsane-pohledavky": ["jednotka"],
+        "urok-a-srazkova-dan": [],
+        "pojistne-plneni": [],
+        "najem-uhrada": ["najemce"],
+        "dotace-prijeti": ["poskytovatel"],
     },
     "vydaj": {
         "uhrada-faktury": ["faktura"],
         "poplatek-banky": [],
         "prevod-mezi-ucty": ["druhy_ucet"],
         "dan-z-prijmu-uhrada": [],
+        "vraceni-preplatku": ["jednotka", "zdroj"],
+        "zaloha-dodavateli": ["sluzba", "protistrana"],
+        "prijmy-vlastniku-vyplata": ["jednotka"],
     },
 }
+
+# Operace, ve kterých se částka pohybu jmenuje jinak než `castka`.
+CASTKA_JAKO = {"urok-a-srazkova-dan": "urok"}
+
+# Odkud je vracený přeplatek vlastníka: účet pohledávek, na kterém přeplatek je.
+ZDROJE_PREPLATKU = {
+    "pohledavky_vyuctovani": "Přeplatek z vyúčtování",
+    "pohledavky_vlastnici": "Přeplatek na zálohách",
+    "pohledavky_vyuctovani_minule": "Přeplatek z vyúčtování dřívějších let",
+}
+
+
+def moznosti_pole(profil: Profil, pole: str) -> dict[str, str] | None:
+    """Hodnoty, ze kterých se v poli vybírá (hodnota → popis); None u pole bez výběru."""
+    if pole == "sluzba":
+        return {k: u.get("nazev", k) for k, u in profil.sluzby.items()}
+    if pole == "zdroj":
+        return ZDROJE_PREPLATKU
+    return None
 
 
 # Nepovinné vstupy: u úhrady předpisu může vlastník určit, na který dluh platí
@@ -504,11 +530,16 @@ def _vstupy(
             continue
         if len(hodnota) > 128:
             raise ChybaBanky(f"Údaj „{POPISKY[pole]}“ je příliš dlouhý.")
+        mozne = moznosti_pole(profil, pole)
+        if mozne is not None and hodnota not in mozne:
+            raise ChybaBanky(f"Vyberte „{POPISKY[pole]}“ z nabídky.")
         vstupy[pole] = hodnota
     for pole in VOLITELNE.get(operace, []):
         hodnota = str(zadane.get(pole) or "").strip()
         if hodnota:
             vstupy[pole] = hodnota
+    if operace in CASTKA_JAKO:
+        vstupy[CASTKA_JAKO[operace]] = vstupy.pop("castka")
     return vstupy, krok
 
 
@@ -543,6 +574,10 @@ POPISKY = {
     "druhy_ucet": "druhý účet",
     "faktura": "faktura",
     "drivejsi_vlastnik": "dřívější vlastník",
+    "najemce": "nájemce",
+    "poskytovatel": "kdo dotaci poskytl",
+    "sluzba": "služba",
+    "zdroj": "odkud přeplatek je",
 }
 
 

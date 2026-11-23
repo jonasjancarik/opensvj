@@ -303,3 +303,37 @@ def test_uhrada_odepsaneho_dluhu(session):
         ("md", "221100", 1_038_000, "POJISTENI"),
     ]
     assert dluznici.odepsane(session)["1001/5"].zbyva == 1_500_000 - 1_038_000
+
+
+def test_dalsi_operace_z_katalogu(session):
+    """Přeplatek jde vrátit jen z nabízeného účtu pohledávek; úrok od banky se zaúčtuje
+    s částkou pohybu, i když se vstup operace jmenuje jinak."""
+    from svj.db import RadekZapisu
+
+    _nahraj(session)
+    p = _pohyby(session)
+    with pytest.raises(banka.ChybaBanky, match="z nabídky"):
+        banka.zauctuj_pohyb(
+            session, PROFIL, p["102"].id, "vraceni-preplatku",
+            {"jednotka": "1001/1", "zdroj": "banka.provozni"}, zauctoval="x",
+        )  # fmt: skip
+    vraceni = banka.zauctuj_pohyb(
+        session, PROFIL, p["102"].id, "vraceni-preplatku",
+        {"jednotka": "1001/1", "zdroj": "pohledavky_vyuctovani"}, zauctoval="x",
+    )  # fmt: skip
+    urok = banka.zauctuj_pohyb(
+        session, PROFIL, p["101"].id, "urok-a-srazkova-dan", {}, zauctoval="x"
+    )
+    session.commit()
+
+    def radky(zapis_id):
+        return sorted(
+            (r.strana, r.ucet, r.castka)
+            for r in session.scalars(select(RadekZapisu).where(RadekZapisu.zapis_id == zapis_id))
+        )
+
+    assert radky(vraceni.zapis_id) == [("d", "221100", 484_000), ("md", "311200", 484_000)]
+    assert radky(urok.zapis_id) == [
+        ("d", PROFIL.ucet("vynosy.uroky"), 1_038_000),
+        ("md", "221100", 1_038_000),
+    ]

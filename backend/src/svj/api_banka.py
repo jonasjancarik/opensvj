@@ -52,6 +52,8 @@ class Moznost(BaseModel):
     stav: str
     pole: list[str]
     volitelna: list[str] = []  # nepovinné vstupy (dluh, který vlastník platbou určil)
+    # U polí s výběrem (služba, odkud je přeplatek) hodnota → popis.
+    moznosti: dict[str, dict[str, str]] = {}
 
 
 class DluhJednotky(BaseModel):
@@ -284,6 +286,9 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
                         stav=ops[i].stav,
                         pole=pole,
                         volitelna=banka.VOLITELNE.get(i, []),
+                        moznosti={
+                            p: m for p in pole if (m := banka.moznosti_pole(prof, p)) is not None
+                        },
                     )
                     for i, pole in mozne.items()
                 ]

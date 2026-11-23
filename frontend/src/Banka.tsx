@@ -12,7 +12,14 @@ type Ucet = {
   datum_vypisu: string | null
   pohyby_do: string | null
 }
-type Moznost = { id: string; nazev: string; stav: string; pole: string[]; volitelna: string[] }
+type Moznost = {
+  id: string
+  nazev: string
+  stav: string
+  pole: string[]
+  volitelna: string[]
+  moznosti: Record<string, Record<string, string>>
+}
 type DluhJednotky = { radek: number; popis: string; splatnost: string | null; zbyva: number }
 type Navrh = { operace: string; vstupy: Record<string, string>; duvod: string }
 type Zauctovani = {
@@ -284,7 +291,14 @@ const POPIS_POLE: Record<string, string> = {
   protistrana: 'Dodavatel',
   faktura: 'Kterou fakturu platba platí',
   drivejsi_vlastnik: 'Dřívější vlastník',
+  najemce: 'Nájemce',
+  poskytovatel: 'Kdo dotaci poskytl',
+  sluzba: 'Služba',
+  zdroj: 'Odkud přeplatek je',
 }
+
+// Pole, do kterých se píše; předvyplní se jménem z platby.
+const TEXTOVA_POLE = ['protistrana', 'najemce', 'poskytovatel']
 
 function PolozkaPohybu({
   pohyb: p,
@@ -299,7 +313,7 @@ function PolozkaPohybu({
   const moznosti = data.moznosti[smer]
   const [operace, setOperace] = useState(p.navrh?.operace ?? '')
   const [vstupy, setVstupy] = useState<Record<string, string>>(() => ({
-    protistrana: p.nazev,
+    ...Object.fromEntries(TEXTOVA_POLE.map((pole) => [pole, p.nazev])),
     ...p.navrh?.vstupy,
   }))
   const [zapamatovat, setZapamatovat] = useState(!p.navrh)
@@ -423,11 +437,23 @@ function PolozkaPohybu({
                       </option>
                     ))}
                 </select>
-              ) : pole === 'protistrana' ? (
+              ) : TEXTOVA_POLE.includes(pole) ? (
                 <input
-                  value={vstupy.protistrana ?? ''}
-                  onChange={(e) => setVstupy({ ...vstupy, protistrana: e.target.value })}
+                  value={vstupy[pole] ?? ''}
+                  onChange={(e) => setVstupy({ ...vstupy, [pole]: e.target.value })}
                 />
+              ) : vybrana.moznosti[pole] ? (
+                <select
+                  value={vstupy[pole] ?? ''}
+                  onChange={(e) => setVstupy({ ...vstupy, [pole]: e.target.value })}
+                >
+                  <option value="">Vyberte…</option>
+                  {Object.entries(vybrana.moznosti[pole]).map(([hodnota, nazev]) => (
+                    <option key={hodnota} value={hodnota}>
+                      {nazev}
+                    </option>
+                  ))}
+                </select>
               ) : (
                 <select
                   value={vstupy[pole] ?? ''}
@@ -495,6 +521,9 @@ function PolozkaPohybu({
 }
 
 function popisVstupu(vstupy: Record<string, string>, data: Banka) {
+  const nazvy = Object.values(data.moznosti)
+    .flat()
+    .map((m) => m.moznosti)
   const casti = Object.entries(vstupy).map(([k, v]) =>
     k === 'druhy_ucet'
       ? (data.ucty.find((u) => u.ucel === v)?.nazev ?? v)
@@ -504,7 +533,7 @@ function popisVstupu(vstupy: Record<string, string>, data: Banka) {
           ? `doklad FP ${v}`
           : k === 'dluh'
             ? 'na dluh, který určil vlastník'
-            : v,
+            : (nazvy.find((m) => m[k]?.[v])?.[k][v] ?? v),
   )
   return casti.length ? ` (${casti.join(', ')})` : ''
 }
