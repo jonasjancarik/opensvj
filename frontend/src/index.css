@@ -1,36 +1,34 @@
-@import '@fontsource-variable/geist';
-@import '@fontsource-variable/source-serif-4/opsz.css';
-@import '@fontsource-variable/source-serif-4/opsz-italic.css';
+@import '@fontsource-variable/archivo';
 
 /* ---------- Barvy a písmo ---------- */
 :root {
-  --pozadi: #f3efe6;
-  --plocha: #fffdf8;
-  --plocha-2: #f8f4ec;
-  --text: #1f1d18;
-  --tlumeny: #6d675b;
-  --okraj: #e3dccd;
-  --okraj-silny: #d2c9b6;
-  --akcent: #2d5d4d;
-  --akcent-hover: #244c3f;
-  --na-akcentu: #fbfaf5;
-  --akcent-mekky: #e2ebe4;
+  --pozadi: #e6e5e2;
+  --plocha: #f7f6f4;
+  --plocha-2: #eeedea;
+  --text: #26251e;
+  --tlumeny: #5f5d55;
+  --okraj: #d6d5d0;
+  --okraj-silny: #c2c1bb;
+  --akcent: #2456d6;
+  --akcent-hover: #1b43ab;
+  --na-akcentu: #ffffff;
+  --akcent-mekky: #dbe3f8;
   --chyba: #a8372b;
-  --chyba-mekka: #f7e4df;
-  --varovani: #8f5f00;
-  --varovani-mekka: #f6ebd3;
+  --chyba-mekka: #f5e1dd;
+  --varovani: #8a5a00;
+  --varovani-mekka: #f3e8cf;
   --uspech: #2c7349;
-  --uspech-mekka: #e0eee4;
-  --stin: 0 1px 2px rgb(60 48 24 / 0.06), 0 6px 20px -8px rgb(60 48 24 / 0.14);
-  --stin-velky: 0 2px 4px rgb(60 48 24 / 0.05), 0 24px 48px -16px rgb(60 48 24 / 0.22);
-  --okno: #cfd6d0;
+  --uspech-mekka: #dcebe1;
+  --stin: 0 1px 2px rgb(30 30 25 / 0.06), 0 6px 20px -8px rgb(30 30 25 / 0.14);
+  --stin-velky: 0 2px 4px rgb(30 30 25 / 0.05), 0 24px 48px -16px rgb(30 30 25 / 0.22);
+  --okno: #c5cad3;
   --okno-svetlo: #f0b54a;
-  --fasada: #ece3d2;
-  --fasada-linka: #d9cdb6;
+  --fasada: #f7f6f4;
+  --fasada-linka: #c9c8c2;
   --radius: 14px;
   --radius-maly: 8px;
-  --pismo: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --pismo-nadpis: 'Source Serif 4 Variable', ui-serif, Georgia, serif;
+  --pismo: 'Archivo Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pismo-nadpis: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
 
   color-scheme: light dark;
   font-family: var(--pismo);
@@ -44,17 +42,17 @@
 /* Tmavá paleta: podle systému, pokud si uživatel nevybral jinak, nebo vybraná ručně. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-vzhled='svetly']) {
-    --pozadi: #111412;
-    --plocha: #191d1a;
-    --plocha-2: #1e2320;
-    --text: #ebe7dc;
-    --tlumeny: #9f9b8f;
-    --okraj: #2a302c;
-    --okraj-silny: #39413b;
-    --akcent: #8fc7aa;
-    --akcent-hover: #a6d6bc;
-    --na-akcentu: #0f1a14;
-    --akcent-mekky: rgb(143 199 170 / 0.12);
+    --pozadi: #15161a;
+    --plocha: #1c1e23;
+    --plocha-2: #22252b;
+    --text: #e6e5e1;
+    --tlumeny: #9a9a94;
+    --okraj: #2c2f36;
+    --okraj-silny: #3b3f48;
+    --akcent: #8fb0ff;
+    --akcent-hover: #a9c2ff;
+    --na-akcentu: #0e1730;
+    --akcent-mekky: rgb(143 176 255 / 0.14);
     --chyba: #f09a88;
     --chyba-mekka: rgb(240 154 136 / 0.12);
     --varovani: #e8bb63;
@@ -63,24 +61,24 @@
     --uspech-mekka: rgb(142 211 166 / 0.12);
     --stin: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.5);
     --stin-velky: 0 2px 4px rgb(0 0 0 / 0.3), 0 30px 60px -20px rgb(0 0 0 / 0.7);
-    --okno: #262c29;
+    --okno: #2a2e37;
     --okno-svetlo: #f4b94f;
-    --fasada: #1d2420;
-    --fasada-linka: #2c352f;
+    --fasada: #1f2228;
+    --fasada-linka: #30343c;
   }
 }
 :root[data-vzhled='tmavy'] {
-  --pozadi: #111412;
-  --plocha: #191d1a;
-  --plocha-2: #1e2320;
-  --text: #ebe7dc;
-  --tlumeny: #9f9b8f;
-  --okraj: #2a302c;
-  --okraj-silny: #39413b;
-  --akcent: #8fc7aa;
-  --akcent-hover: #a6d6bc;
-  --na-akcentu: #0f1a14;
-  --akcent-mekky: rgb(143 199 170 / 0.12);
+  --pozadi: #15161a;
+  --plocha: #1c1e23;
+  --plocha-2: #22252b;
+  --text: #e6e5e1;
+  --tlumeny: #9a9a94;
+  --okraj: #2c2f36;
+  --okraj-silny: #3b3f48;
+  --akcent: #8fb0ff;
+  --akcent-hover: #a9c2ff;
+  --na-akcentu: #0e1730;
+  --akcent-mekky: rgb(143 176 255 / 0.14);
   --chyba: #f09a88;
   --chyba-mekka: rgb(240 154 136 / 0.12);
   --varovani: #e8bb63;
@@ -89,10 +87,10 @@
   --uspech-mekka: rgb(142 211 166 / 0.12);
   --stin: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.5);
   --stin-velky: 0 2px 4px rgb(0 0 0 / 0.3), 0 30px 60px -20px rgb(0 0 0 / 0.7);
-  --okno: #262c29;
+  --okno: #2a2e37;
   --okno-svetlo: #f4b94f;
-  --fasada: #1d2420;
-  --fasada-linka: #2c352f;
+  --fasada: #1f2228;
+  --fasada-linka: #30343c;
 }
 :root[data-vzhled='svetly'] { color-scheme: light; }
 :root[data-vzhled='tmavy'] { color-scheme: dark; }
@@ -114,9 +112,9 @@ a { color: var(--akcent); text-underline-offset: 3px; text-decoration-thickness:
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--akcent); outline-offset: 2px; border-radius: 4px; }
 
-h1, h2, h3 { font-family: var(--pismo-nadpis); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+h1, h2, h3 { font-family: var(--pismo-nadpis); font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
 h1 {
-  font-size: clamp(1.9rem, 1.4rem + 1.6vw, 2.6rem); line-height: 1.12; margin: 0 0 0.6rem; letter-spacing: -0.018em;
+  font-size: clamp(1.9rem, 1.4rem + 1.6vw, 2.6rem); line-height: 1.08; margin: 0 0 0.6rem; letter-spacing: -0.025em; font-weight: 500;
 }
 h2 { font-size: 1.35rem; line-height: 1.25; margin: 2.25rem 0 0.6rem; }
 h3 { font-size: 1.05rem; margin: 0; }
@@ -334,7 +332,7 @@ dialog.potvrzeni {
   border-radius: 18px; background: var(--plocha); color: var(--text); box-shadow: var(--stin-velky);
   animation: okno 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-dialog.potvrzeni::backdrop { background: rgb(20 18 12 / 0.4); backdrop-filter: blur(3px); }
+dialog.potvrzeni::backdrop { background: rgb(20 20 24 / 0.4); backdrop-filter: blur(3px); }
 dialog.potvrzeni h2 { margin: 0 0 0.5rem; font-size: 1.3rem; }
 dialog.potvrzeni p { margin: 0 0 1.25rem; color: var(--tlumeny); }
 .potvrzeni-tlacitka { justify-content: flex-end; margin: 0; }
@@ -363,7 +361,7 @@ dialog.potvrzeni p { margin: 0 0 1.25rem; color: var(--tlumeny); }
 .prihlaseni-citat {
   position: absolute; top: clamp(2rem, 8vh, 5rem); left: clamp(1.5rem, 5vw, 4rem); right: 2rem;
   font-family: var(--pismo-nadpis); font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem); line-height: 1.3;
-  color: var(--text); max-width: 20ch; font-style: italic; opacity: 0.85;
+  color: var(--text); max-width: 18ch; font-weight: 500; letter-spacing: -0.02em;
 }
 .odeslano-ikona {
   display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 14px; margin-bottom: 1.25rem;
@@ -383,7 +381,7 @@ dialog.potvrzeni p { margin: 0 0 1.25rem; color: var(--tlumeny); }
 .dum-klika { fill: var(--okno-svetlo); }
 .dum-zem { fill: var(--okraj-silny); }
 .dum-truhlik rect { fill: var(--akcent); }
-.dum-truhlik .kvet { fill: #e07a6a; }
+.dum-truhlik .kvet { fill: #e0705f; }
 .dum-terc { fill: transparent; }
 svg a { cursor: pointer; outline: none; }
 svg a .dum-okno { transition: filter 0.2s, stroke-width 0.2s; stroke: var(--text); stroke-width: 0; }
@@ -401,7 +399,7 @@ svg a:hover .dum-okno, svg a:focus-visible .dum-okno { stroke-width: 2.5; filter
 }
 .uvod .nadtitulek { font-size: 0.85rem; color: var(--tlumeny); font-weight: 500; margin: 0 0 0.4rem; }
 .uvod h1 { font-size: clamp(2.4rem, 1.6rem + 3vw, 3.8rem); margin-bottom: 0.75rem; }
-.uvod h1 em { font-style: italic; color: var(--akcent); font-weight: 500; }
+.uvod h1 em { font-style: normal; color: var(--tlumeny); }
 .uvod p { margin: 0; max-width: 56ch; color: var(--tlumeny); font-size: 1.02rem; }
 .uvod-dum { display: grid; justify-items: center; gap: 0.35rem; margin: 0 0 -1.5rem; }
 .uvod-dum svg { height: 11rem; width: auto; max-width: 18rem; overflow: visible; }
