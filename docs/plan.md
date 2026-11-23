@@ -27,10 +27,10 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
 
 ## 1. Základy, na kterých stojí další oblasti
 
-- **Zaúčtování operací z katalogu v rozhraní:** většinu operací z katalogu (úvěr, dotace,
-  pojistné plnění, majetek, předpis úroku z prodlení, odměny) dnes nejde zaúčtovat jinak
-  než z kódu. Chybí formulář pro interní doklad podle operace z katalogu a u bankovního
-  pohybu nabídka dalších operací. Bez toho zůstanou další oblasti jen v katalogu.
+- **Zbylé operace z katalogu v rozhraní:** interní doklad a Banka už nabízejí většinu
+  operací. Chybí výdaj bez faktury (platba a náhradní doklad), vyrovnání dohadné položky
+  po doručení faktury, mimořádná záloha pro všechny jednotky podle podílů a pokladna.
+  Operace úvěru a pořízení majetku přijdou s jejich oblastmi níže.
 - **Auditní záznam** obecně pro změny v aplikaci (vlastníci, rozhodnutí, předpisy, uzávěrka,
   znovuotevření roku) a upozornění „Změněno po schválení“ podle zásady výše.
 - **Podíly s platností v čase:** změna podílů prohlášením vlastníka během roku, předpisy

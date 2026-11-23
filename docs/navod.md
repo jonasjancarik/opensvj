@@ -35,6 +35,11 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
 - Když vlastník při platbě řekl, na který dluh platí (třeba nedoplatek z vyúčtování
   místo záloh), vybere se ten dluh u platby v poli Na který dluh vlastník platí. Platba
   se pak zaúčtuje na jeho účet a na stránce Dlužníci jde nejdřív na něj (§ 1933 OZ).
+- Kromě plateb vlastníků a faktur jde platbu zaúčtovat jako úrok od banky, pojistné
+  plnění, nájemné ze společných částí, přijatou dotaci, úhradu dříve odepsaného dluhu,
+  vrácení přeplatku vlastníkovi (s výběrem, jestli jde o přeplatek z vyúčtování, nebo
+  na zálohách), zálohu dodavateli energie nebo vody a výplatu podílu na příjmech ze
+  společných částí.
 - U odchozí platby za fakturu se vybírá z nezaplacených faktur. Aplikace ji navrhne podle
   VS faktury, potom podle účtu dodavatele a částky. Platbu vyšší, než kolik z faktury
   zbývá, odmítne.
@@ -240,3 +245,12 @@ Stránka Deník ukazuje zápisy roku s řádky. Zaúčtovaný zápis nejde změn
 chybu opraví storno, tedy protizápis ke stejnému dni s uvedeným důvodem. Po stornu jde
 stejnou věc (předpis měsíce, platbu, počáteční stavy, fakturu) zaúčtovat znovu. Fakturu
 s úhradou jde stornovat až po stornu úhrady.
+
+Účetní případy, které nemají vlastní stránku, se zaúčtují interním dokladem: na stránce
+Deník tlačítko Zaúčtovat interní doklad. Nabízí časové rozlišení (náklad příštích období,
+s položkou správy, aby ho vyúčtování záloh započítalo do správného roku), dohadnou
+položku k 31. 12., zařazení a odpisy majetku, zásoby, dotace, nájemné ze společných
+částí, převody do fondu oprav, vyčlenění pochybných dluhů, opravné položky, odměny
+výboru, přeúčtování mezi službami a vyjasnění nespárované platby. Před zaúčtováním
+formulář ukáže, na které účty a jakými částkami se zápis zapíše. Operace, pro kterou
+v profilu SVJ chybí účet, se nenabízí a formulář ji vypíše.
