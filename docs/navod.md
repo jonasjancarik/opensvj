@@ -202,7 +202,12 @@ Stránka Uzávěrka má pět částí:
 - rozvaha a výsledovka ve zkráceném rozsahu, v tisících Kč i přesně,
 - inventura: zůstatky rozvahových účtů s rozpisem po jednotkách nebo fakturách a tisk
   inventurních soupisů se zákonnými náležitostmi,
-- daň z příjmů: jestli SVJ musí podat přiznání (§ 38mb ZDP) a jak se který výnos daní,
+- daň z příjmů: jestli SVJ musí podat přiznání (§ 38mb ZDP), jak se který výnos daní
+  a návrh výpočtu daně po řádcích přiznání. Úroky z prodlení se daní až po zaplacení,
+  takže nezaplacené letošní základ snižují a loňské zaplacené letos ho zvyšují. Daň jde
+  tlačítkem zaúčtovat k 31. 12. jako náklad na správu domu; udělejte to před vyúčtováním
+  záloh na správu, které ji pak rozdělí mezi vlastníky. Zaplacení daně a úhradu úroku
+  z prodlení jde vybrat u platby na stránce Banka,
 - návrh přílohy k účetní závěrce s vyznačenými místy k doplnění.
 
 Ruční odškrtnutí vidí celý výbor i s tím, kdo bod odškrtl a kdy, a zůstává celá historie

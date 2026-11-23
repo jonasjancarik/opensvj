@@ -18,7 +18,7 @@ Každý soubor pokrývá jednu oblast:
 | `uvery-dotace.yaml` | úvěr na opravy a jeho splácení, dotace |
 | `prijmy-vlastniku.yaml` | nájemné ze společných částí a jiné příjmy vlastníků, které SVJ vybírá |
 | `organy.yaml` | odměny členů výboru |
-| `uzaverka.yaml` | uzavření a otevření roku, storno |
+| `uzaverka.yaml` | uzavření a otevření roku, daň z příjmů, storno |
 
 ## Jak vypadá operace
 

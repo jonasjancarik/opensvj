@@ -62,9 +62,29 @@ class VynosProDan(BaseModel):
     poznamka: str
 
 
+class PolozkaSpravy(BaseModel):
+    kod: str
+    nazev: str
+
+
+class ZauctovaniDane(BaseModel):
+    polozka: str
+
+
+class RadekDane(BaseModel):
+    popis: str
+    castka: int
+    radek: str
+
+
 class Dan(BaseModel):
     musi_podat: bool
     vynosy: list[VynosProDan]
+    vypocet: list[RadekDane]
+    zaklad: int
+    dan: int
+    zauctovano: int | None
+    polozky_spravy: list[PolozkaSpravy]
 
 
 class OddilPrilohy(BaseModel):
@@ -155,7 +175,17 @@ def prehled(rok: int, _: Prihlaseny) -> Uzaverka:
             )
             for x in soupisy
         ],
-        dan=Dan(musi_podat=dan.musi_podat, vynosy=[VynosProDan(**v.__dict__) for v in dan.vynosy]),
+        dan=Dan(
+            musi_podat=dan.musi_podat,
+            vynosy=[VynosProDan(**v.__dict__) for v in dan.vynosy],
+            vypocet=[RadekDane(**r.__dict__) for r in dan.vypocet],
+            zaklad=dan.zaklad,
+            dan=dan.dan,
+            zauctovano=dan.zauctovano,
+            polozky_spravy=[
+                PolozkaSpravy(kod=k, nazev=p.get("nazev", k)) for k, p in prof.sprava.items()
+            ],
+        ),
         priloha=[OddilPrilohy(**o.__dict__) for o in priloha],
         uzavreni=Uzavreni(stav=st.stav, dalsi=st.dalsi, zapisy=zapisy, proc_nejde=proc),
     )
@@ -166,7 +196,7 @@ def _proved(rok: int, akce) -> Uzaverka:
     with sezeni()() as s:
         try:
             akce(s, prof)
-        except (uzavreni.ChybaUzavreni, denik.ChybaUctovani) as e:
+        except (uzavreni.ChybaUzavreni, uzaverka.ChybaDane, denik.ChybaUctovani) as e:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
         s.commit()
@@ -186,6 +216,15 @@ def uzavri(rok: int, uzivatel: Zapisujici) -> Uzaverka:
         lambda s, prof: uzavreni.uzavri(
             s, prof, predpisy.nacti(prof, s), rok, zauctoval=uzivatel.email
         ),
+    )
+
+
+@router.post("/{rok}/dan")
+def zauctuj_dan(rok: int, z: ZauctovaniDane, uzivatel: Zapisujici) -> Uzaverka:
+    """Zaúčtuje k 31. 12. daň z příjmů podle návrhu výpočtu."""
+    return _proved(
+        rok,
+        lambda s, prof: uzaverka.zauctuj_dan(s, prof, rok, z.polozka, zauctoval=uzivatel.email),
     )
 
 

@@ -161,10 +161,22 @@ z dohod, je plátcem daně z těchto příjmů a musí se přihlásit do evidenc
   SVJ musí podat přiznání, a odkáže na § 38mb písm. b) ZDP.
 - U úroků z prodlení připomene, že se daní až po zaplacení. U nájmu a pachtu upozorní,
   že jde o příjem vlastníků.
-- Přiznání aplikace nesestaví a daň nespočítá. Neodliší ani předepsané a zaplacené
-  sankce, takže řádky 30 a 111 je nutné spočítat ručně. Čerpání fondu ze zisku (648)
-  označí jako zdaňovaný výnos. Ve skutečnosti se do základu daně nezahrnuje, ale
-  přiznání se kvůli němu podat musí.
+- Čerpání fondu ze zisku (648) označí jako příjem, který se do základu daně nezahrnuje
+  (řádek 140), ale kvůli kterému se přiznání podat musí.
+- Sestaví návrh výpočtu po řádcích přiznání: 100, 120 a 140, zdaňované výnosy, řádky 111
+  a 30, základ daně, základ zaokrouhlený na tisíce dolů a daň 21 %. U úroků z prodlení od
+  vlastníků pozná ze zůstatků pohledávky 311400, kolik vlastníci zaplatili. Platby počítá
+  nejdřív na zůstatek z minulých let, takže loňské úroky zaplacené letos jdou na řádek 30
+  a letošní nezaplacené na řádek 111. U jiných pokut a sankcí na účtech 641 a 642 zaplacení
+  nepozná a připomene, že nezaplacené je potřeba odečíst ručně.
+- Návrh počítá s tím, že se zdaňovanými příjmy nesouvisí žádný náklad. Přiznání aplikace
+  nesestaví; vyplní ho a podá účetní.
+- Daň jde tlačítkem zaúčtovat k 31. 12. (operace `dan-z-prijmu-predpis`, 591/341) na položku
+  správy. Vyúčtování záloh na správu ji pak rozdělí mezi vlastníky jako ostatní náklady na
+  správu, což dá stejné zůstatky jako zápisy 311/649 a 324/311 z knihy. Když je
+  vyúčtování záloh na správu už zaúčtované, aplikace daň nezaúčtuje a řekne, že je potřeba
+  vyúčtování stornovat a zaúčtovat znovu. Zaplacení daně (`dan-z-prijmu-uhrada`) se vybere
+  u platby na stránce Banka.
 
 ## Příklad
 

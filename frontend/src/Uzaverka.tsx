@@ -26,8 +26,18 @@ type Soupis = {
 type Vynos = {
   popis: string
   castka: number
-  zdaneni: 'nepredmetne' | 'srazkova' | 'predmetne' | 'nezname'
+  zdaneni: 'nepredmetne' | 'srazkova' | 'nezahrnuje' | 'predmetne' | 'nezname'
   poznamka: string
+}
+type RadekDane = { popis: string; castka: number; radek: string }
+type DanZPrijmu = {
+  musi_podat: boolean
+  vynosy: Vynos[]
+  vypocet: RadekDane[]
+  zaklad: number
+  dan: number
+  zauctovano: number | null
+  polozky_spravy: { kod: string; nazev: string }[]
 }
 type Data = {
   rok: number
@@ -41,7 +51,7 @@ type Data = {
   vysledovka: RadekVykazu[]
   vysledek: number
   soupisy: Soupis[]
-  dan: { musi_podat: boolean; vynosy: Vynos[] }
+  dan: DanZPrijmu
   priloha: { nadpis: string; odstavce: string[] }[]
   uzavreni: {
     stav: 'otevrene' | 'uzavrene' | null
@@ -69,6 +79,7 @@ const STAV: Record<Kontrola['stav'], string> = {
 const ZDANENI: Record<Vynos['zdaneni'], string> = {
   nepredmetne: 'nedaní se',
   srazkova: 'daň už srazila banka',
+  nezahrnuje: 'do základu se nezahrnuje, přiznání ale podat musí',
   predmetne: 'daní se',
   nezname: 'nevíme, ověřte',
 }
@@ -194,7 +205,7 @@ export function Uzaverka() {
       {zalozka === 'kontroly' && <Kontroly data={data} setData={setData} />}
       {zalozka === 'vykazy' && <Vykazy data={data} />}
       {zalozka === 'inventura' && <Inventura data={data} tisk={() => setTisk('soupisy')} />}
-      {zalozka === 'dan' && <Dan data={data} />}
+      {zalozka === 'dan' && <Dan data={data} setData={setData} />}
       {zalozka === 'priloha' && <Priloha data={data} tisk={() => setTisk('priloha')} />}
     </>
   )
@@ -495,22 +506,22 @@ function TiskSoupisu({ data, zpet }: { data: Data; zpet: () => void }) {
   )
 }
 
-function Dan({ data }: { data: Data }) {
-  const { musi_podat, vynosy } = data.dan
+function Dan({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const { musi_podat, vynosy, vypocet, dan } = data.dan
   return (
     <>
       <p className={musi_podat ? 'upozorneni' : 'uspech'}>
         {musi_podat
-          ? `Za rok ${data.rok} má SVJ výnosy, které se daní nebo o kterých aplikace neví, jak se daní. Daňové přiznání k dani z příjmů právnických osob nejspíš podat musí; ověřte to s účetní.`
+          ? `Za rok ${data.rok} má SVJ příjmy, které jsou předmětem daně, takže musí podat daňové přiznání k dani z příjmů právnických osob, i kdyby z něj žádná daň nevyšla. Podle návrhu výpočtu níže vychází daň ${kc(dan)}. Ověřte to s účetní.`
           : vynosy.length === 0
             ? `Za rok ${data.rok} zatím nejsou žádné výnosy, které by se danily. Pokud to tak zůstane, daňové přiznání SVJ podávat nemusí.`
             : `Za rok ${data.rok} má SVJ jen výnosy, které se nedaní, nebo úroky, ze kterých daň srazila banka. Daňové přiznání podávat nemusí (§ 38mb písm. b) zákona o daních z příjmů).`}
       </p>
       <p className="tlumene">
         Příspěvky vlastníků, úhrady za služby, dotace a pojistné plnění z pojištění domu nejsou
-        předmětem daně. Daní se hlavně úroky z prodlení a pokuty, které vlastníci zaplatí, příjmy
-        z prodeje majetku SVJ a čerpání fondů ze zisku. Kdo začne mít takové příjmy, musí se
-        k dani zaregistrovat.
+        předmětem daně. Daní se hlavně úroky z prodlení a pokuty, které vlastníci zaplatí, a příjmy
+        z prodeje majetku SVJ. Čerpání fondu ze zisku se do základu daně nezahrnuje, přiznání se
+        kvůli němu ale podat musí. Kdo začne mít takové příjmy, musí se k dani zaregistrovat.
       </p>
       {vynosy.length === 0 ? (
         <p className="tlumene">Za rok {data.rok} zatím nejsou zaúčtované žádné výnosy.</p>
@@ -544,7 +555,103 @@ function Dan({ data }: { data: Data }) {
           </table>
         </div>
       )}
+      {musi_podat && (
+        <>
+          <h3>Návrh výpočtu daně</h3>
+          <p className="tlumene">
+            Čísla řádků odpovídají daňovému přiznání. Návrh počítá s tím, že se zdaňovanými příjmy
+            nesouvisejí žádné náklady, což u SVJ bývá pravidlem. Úroky z prodlení se daní až v
+            roce, kdy je vlastník zaplatí. Přiznání sestaví a podá účetní nebo daňový poradce.
+          </p>
+          <div className="tabulka-posun">
+            <table>
+              <thead>
+                <tr>
+                  <th>Řádek</th>
+                  <th>Co</th>
+                  <th className="cislo">Částka</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vypocet.map((r) => (
+                  <tr key={r.popis} className={r.radek === '290' ? 'soucet-vykazu' : undefined}>
+                    <td>{r.radek}</td>
+                    <td>{r.popis}</td>
+                    <td className="cislo">{kc(r.castka)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <ZauctovaniDane data={data} setData={setData} />
+        </>
+      )}
     </>
+  )
+}
+
+function ZauctovaniDane({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const { dan, zauctovano, polozky_spravy } = data.dan
+  const [polozka, setPolozka] = useState(polozky_spravy[0]?.kod ?? '')
+  const [pracuji, setPracuji] = useState(false)
+  const [chyba, setChyba] = useState<string | null>(null)
+
+  if (zauctovano !== null) {
+    return zauctovano === dan ? (
+      <p className="uspech">
+        Daň {kc(dan)} je zaúčtovaná k 31. 12. {data.rok}. Její zaplacení finančnímu úřadu
+        zaúčtujete u platby na stránce Banka.
+      </p>
+    ) : (
+      <p className="upozorneni">
+        Zaúčtovaná daň {kc(zauctovano)} se liší od výpočtu, podle kterého vychází {kc(dan)}.
+        Stornujte zápis „Daň z příjmů za rok {data.rok}“ v Deníku a zaúčtujte daň znovu.
+      </p>
+    )
+  }
+  if (dan <= 0 || data.uzavreni.stav !== 'otevrene') return null
+
+  async function zauctovat(e: FormEvent) {
+    e.preventDefault()
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setData(
+        await api<Data>(`/api/uzaverka/${data.rok}/dan`, { method: 'POST', json: { polozka } }),
+      )
+    } catch (e) {
+      setChyba((e as Error).message)
+    } finally {
+      setPracuji(false)
+    }
+  }
+
+  return (
+    <form className="upozorneni" onSubmit={zauctovat}>
+      <p>
+        Daň se zaúčtuje k 31. 12. {data.rok} jako náklad na správu domu. Zaúčtujte ji dřív, než
+        vyúčtujete zálohy na správu: vyúčtování ji rozdělí mezi vlastníky stejně jako ostatní
+        náklady na správu, takže výsledek hospodaření zůstane nulový.
+      </p>
+      <div className="radek">
+        {polozky_spravy.length > 1 && (
+          <label>
+            Zaplatí se z položky{' '}
+            <select value={polozka} onChange={(e) => setPolozka(e.target.value)}>
+              {polozky_spravy.map((p) => (
+                <option key={p.kod} value={p.kod}>
+                  {p.nazev}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button type="submit" disabled={pracuji || !polozka}>
+          {pracuji ? 'Zaúčtovávám…' : `Zaúčtovat daň ${kc(dan)}`}
+        </button>
+        {chyba && <span className="chyba">{chyba}</span>}
+      </div>
+    </form>
   )
 }
 

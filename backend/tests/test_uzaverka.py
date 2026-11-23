@@ -1,11 +1,14 @@
 """Uzávěrka roku: kontrolní seznam, inventurní soupisy, daň z příjmů a příloha."""
 
+from dataclasses import replace
 from datetime import date
+
+import pytest
 
 from svj import denik, pocatecni, predpisy, uzaverka, vyuctovani_spravy
 from svj.domena import katalog
 from tests.test_banka import PROFIL
-from tests.test_pocatecni import _otevri_2026, _stav
+from tests.test_pocatecni import POLOZKY, ROZVAHOVE, _otevri_2026, _stav
 from tests.test_vyuctovani_spravy import _faktura
 
 NAST = predpisy.nacti(PROFIL)
@@ -160,3 +163,110 @@ def test_operace_z_knihy_jdou_zauctovat_a_vykazat(session):
     rozvaha, _ = uzaverka.vykazy_roku(session, 2026, KONEC)
     assert rozvaha.celkem["aktiva"] == rozvaha.celkem["pasiva"]
     assert rozvaha.radky[("aktiva", "B.II")] == 100_000 + 5_000_000  # 311400 a 378200
+
+
+def _urok(session, op, castka, datum, **vstupy):
+    denik.zauctuj(
+        session,
+        PROFIL,
+        katalog.nacti()[op],
+        {"jednotka": "1001/3", "castka": castka, **vstupy},
+        datum=datum,
+        popis=op,
+        doklad="ID",
+        zauctoval="x",
+    )
+
+
+def test_dan_sankce_se_dani_az_po_zaplaceni(session):
+    """Nezaplacené letošní úroky z prodlení základ snižují (ř. 111), loňské zaplacené letos
+    ho zvyšují (ř. 30). Platby jdou nejdřív na loňský zůstatek."""
+    _otevri_2026(session)
+    zust = {**ROZVAHOVE, "311400": 300_000, "955100": ROZVAHOVE["955100"] - 300_000}
+    polozky = [*POLOZKY, pocatecni.Polozka("311400", 300_000, "1001/3", "Úrok z prodlení 2025")]
+    pocatecni.zauctuj(session, PROFIL, _stav(zustatky=zust, polozky=polozky), zauctoval="x")
+    _urok(session, "urok-z-prodleni", "20000.00", date(2026, 3, 1))
+    _urok(session, "uhrada-uroku-z-prodleni", "18000.00", date(2026, 5, 1), ucet="provozni")
+    session.commit()
+
+    d = uzaverka.dan(session, PROFIL, 2026)
+    radky = {r.radek: r.castka for r in d.vypocet if r.radek}
+    assert radky["111"] == -500_000  # 20 000 předepsáno, 15 000 z letošních zaplaceno
+    assert radky["30"] == 300_000  # loňských 3 000 zaplaceno letos
+    assert radky["250"] == 1_800_000  # = co vlastník letos zaplatil
+    assert (d.zaklad, d.dan) == (1_800_000, 378_000)  # 18 000 Kč × 21 % = 3 780 Kč
+    assert d.musi_podat is True
+    urok = next(v for v in d.vynosy if "641100" in v.popis)
+    assert "zůstává nezaplaceno 5 000,00 Kč" in urok.poznamka
+
+
+def test_dan_loni_predepsane_sankce_zaplacene_letos(session):
+    """Bez letošního předpisu se loňský úrok zaplacený letos pořád daní."""
+    _otevri_2026(session)
+    zust = {**ROZVAHOVE, "311400": 300_000, "955100": ROZVAHOVE["955100"] - 300_000}
+    polozky = [*POLOZKY, pocatecni.Polozka("311400", 300_000, "1001/3", "Úrok z prodlení 2025")]
+    pocatecni.zauctuj(session, PROFIL, _stav(zustatky=zust, polozky=polozky), zauctoval="x")
+    _urok(session, "uhrada-uroku-z-prodleni", "3000.00", date(2026, 5, 1), ucet="provozni")
+    session.commit()
+    d = uzaverka.dan(session, PROFIL, 2026)
+    assert {r.radek: r.castka for r in d.vypocet}["30"] == 300_000
+    assert d.musi_podat is True and d.dan == 63_000  # 3 000 Kč × 21 % = 630 Kč
+
+
+def test_cerpani_fondu_ze_zisku_se_do_zakladu_nezahrnuje(session):
+    _otevri_2026(session)
+    session.commit()
+    profil = replace(PROFIL, role={**PROFIL.role, "vynosy.cerpani_fondu": "648100"})
+    denik.zauctuj(
+        session,
+        profil,
+        katalog.nacti()["urok-a-srazkova-dan"],
+        {},
+        datum=date(2026, 6, 30),
+        popis="čerpání fondu",
+        doklad="ID",
+        zauctoval="x",
+        radky=[
+            katalog.Radek("md", "banka.provozni", 5_000_000, {}),
+            katalog.Radek("d", "vynosy.cerpani_fondu", 5_000_000, {}),
+        ],
+    )
+    session.commit()
+    d = uzaverka.dan(session, profil, 2026)
+    assert [v.zdaneni for v in d.vynosy] == ["nezahrnuje"]
+    radky = {r.radek: r.castka for r in d.vypocet if r.radek}
+    assert radky["140"] == 5_000_000 and radky["250"] == 0
+    assert d.musi_podat is True and d.dan == 0
+
+
+def test_zauctovani_dane_jde_do_vyuctovani_spravy(session):
+    _otevri_2026(session)
+    _urok(session, "urok-z-prodleni", "12000.00", date(2026, 3, 1))
+    _urok(session, "uhrada-uroku-z-prodleni", "12000.00", date(2026, 5, 1), ucet="provozni")
+    session.commit()
+    zapis = uzaverka.zauctuj_dan(session, PROFIL, 2026, "SPRAVA", zauctoval="x")
+    session.commit()
+    assert zapis.datum == KONEC
+    assert {(r.ucet, r.strana, r.castka, r.sluzba) for r in zapis.radky} == {
+        ("591200", "md", 252_000, "SPRAVA"),
+        ("341100", "d", 252_000, "SPRAVA"),
+    }
+    assert uzaverka.dan(session, PROFIL, 2026).zauctovano == 252_000
+    with pytest.raises(uzaverka.ChybaDane, match="už je zaúčtovaná"):
+        uzaverka.zauctuj_dan(session, PROFIL, 2026, "SPRAVA", zauctoval="x")
+    sprava = next(
+        p for p in vyuctovani_spravy.spocitej(session, PROFIL, 2026).polozky if p.kod == "SPRAVA"
+    )
+    assert sprava.naklady == 252_000
+
+
+def test_dan_nejde_zauctovat_po_vyuctovani_spravy(session):
+    _otevri_2026(session)
+    _urok(session, "urok-z-prodleni", "12000.00", date(2026, 3, 1))
+    _urok(session, "uhrada-uroku-z-prodleni", "12000.00", date(2026, 5, 1), ucet="provozni")
+    for m in range(3, 13):
+        predpisy.vygeneruj(session, PROFIL, NAST, 2026, m, zauctoval="x", dnes=KONEC)
+    vyuctovani_spravy.zauctuj(session, PROFIL, NAST, 2026, zauctoval="x", dnes=KONEC)
+    session.commit()
+    with pytest.raises(uzaverka.ChybaDane, match="Stornujte ho v Deníku"):
+        uzaverka.zauctuj_dan(session, PROFIL, 2026, "SPRAVA", zauctoval="x")

@@ -25,6 +25,7 @@
 tr.soucet-vykazu td { font-weight: 600; background: var(--plocha-2); }
 .zdaneni-predmetne, .zdaneni-nezname { color: var(--chyba); font-weight: 600; }
 .zdaneni-srazkova, .zdaneni-nepredmetne { color: var(--tlumeny); }
+.zdaneni-nezahrnuje { font-weight: 600; }
 
 .karta-prilohy {
   max-width: 72ch; padding: 1rem 1.25rem; border: 1px solid var(--okraj);

@@ -87,6 +87,7 @@ role:
   naklady.ostatni: "518300"
   naklady.banka: "549100"
   naklady.dan_srazkova: "591100"
+  naklady.dan_z_prijmu: "591200"
   naklady.prevod_do_fo: "549300"
   vynosy.predpis: "602000"
   vynosy.pacht: "602100"   # jen pro variantu vynos-svj; podle NV § 16 odst. 2 je to příjem vlastníků
@@ -114,6 +115,7 @@ role:
   zavazky_odmeny: "379100"
   zavazky_pojistne: "336100"
   zavazky_dan_odmeny: "342100"
+  zavazky_dan_z_prijmu: "341100"
   narok_dotace: "346100"
   pohledavky_uver: "378100"
   pohledavky_dotace: "378200"
@@ -148,6 +150,7 @@ nazvy_uctu:
   "314400": Záloha na elektřinu výtahu
   "314999": Ostatní poskytnuté zálohy
   "321100": Dodavatelé
+  "341100": Daň z příjmů
   "378300": Pohledávky za nájemci společných částí
   "378900": Nevyjasněné výdaje
   "379200": Příjmy vlastníků ze společných částí

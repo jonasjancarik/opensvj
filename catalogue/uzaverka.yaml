@@ -49,6 +49,53 @@
   platnost: {od: 2014-01-01}
   priklady: []
 
+- id: dan-z-prijmu-predpis
+  nazev: Předpis daně z příjmů za rok
+  kdy: K 31. 12. roku, za který SVJ podává přiznání a vyjde mu daň (stránka Uzávěrka, Daň z příjmů).
+  stav: overit
+  doklad: ID
+  vstupy: {polozka: položka správy, ze které daň zaplatí vlastníci, castka: daň za rok}
+  zapisy:
+    - md: naklady.dan_z_prijmu
+      d: zavazky_dan_z_prijmu
+      castka: "{castka}"
+      dimenze: {sluzba: "{polozka}"}
+  pravidla:
+    - Daň se zaúčtuje do roku, za který se platí, ne až do roku zaplacení (kniha s. 82 a 91).
+    - U zálohových příspěvků by daň udělala ztrátu. Náklad má proto položku správy, takže ho vyúčtování záloh na správu rozdělí na jednotky stejně jako ostatní náklady na správu; tím se zvýší příspěvky vlastníků (311/649) a uhradí z jejich záloh (324/311) a výsledek zůstane nulový (kniha s. 93–94).
+    - Předpis daně proto patří před vyúčtování záloh na správu.
+    - U nezálohových příspěvků daň jen sníží zisk; ty aplikace zatím nepodporuje.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 82, 91 a 93–94"}
+    - {typ: zakon, odkaz: "ZDP § 21 odst. 1"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Daň 2 520 Kč ze smluvní pokuty, rozúčtovaná se správou domu
+      vstupy: {polozka: SPRAVA, castka: "2520.00"}
+      ocekavane:
+        - [md, naklady.dan_z_prijmu, "2520.00", {sluzba: SPRAVA}]
+        - [d, zavazky_dan_z_prijmu, "2520.00", {sluzba: SPRAVA}]
+
+- id: dan-z-prijmu-uhrada
+  nazev: Zaplacení daně z příjmů
+  kdy: SVJ zaplatí daň finančnímu úřadu, obvykle v roce po roce, za který se platí.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, castka: zaplacená daň}
+  zapisy:
+    - md: zavazky_dan_z_prijmu
+      d: "banka.{ucet}"
+      castka: "{castka}"
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 91"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Platba daně z provozního účtu
+      vstupy: {ucet: provozni, castka: "2520.00"}
+      ocekavane:
+        - [md, zavazky_dan_z_prijmu, "2520.00", {}]
+        - [d, banka.provozni, "2520.00", {}]
+
 - id: storno
   nazev: Storno zaúčtovaného zápisu
   kdy: Zjistí se chyba v zaúčtovaném zápisu otevřeného roku, nebo se doklad stane neprůkazným.

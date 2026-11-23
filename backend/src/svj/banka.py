@@ -35,11 +35,13 @@ OPERACE = {
         "uhrada-dluhu-drivejsiho": ["jednotka", "drivejsi_vlastnik"],
         "prevod-mezi-ucty": ["druhy_ucet"],
         "prijem-nesparovany": [],
+        "uhrada-uroku-z-prodleni": ["jednotka"],
     },
     "vydaj": {
         "uhrada-faktury": ["faktura"],
         "poplatek-banky": [],
         "prevod-mezi-ucty": ["druhy_ucet"],
+        "dan-z-prijmu-uhrada": [],
     },
 }
 

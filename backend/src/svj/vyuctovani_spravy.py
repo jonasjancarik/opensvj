@@ -32,6 +32,7 @@ KLICE = {"podil": "podle podílů na společných částech", "jednotka": "každ
 NAZVY_NAKLADU = {
     "naklady.banka": "Bankovní poplatky",
     "naklady.dan_srazkova": "Srážková daň z úroků",
+    "naklady.dan_z_prijmu": "Daň z příjmů bez určené položky",
     "naklady.prevod_do_fo": "Převod výnosů do fondu oprav",
     "naklady.opravy": "Opravy bez určené položky",
     "naklady.sprava": "Správa bez určené položky",

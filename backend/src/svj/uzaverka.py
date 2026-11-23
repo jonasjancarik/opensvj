@@ -23,6 +23,7 @@ from . import (
 )
 from .db import BankovniPohyb, BankovniUcet, BankovniVypis, Faktura, RadekZapisu, Zapis
 from .domena import katalog, vykazy
+from .domena.penize import kc, na_text
 from .domena.profil import Profil
 
 # Názvy řádků zkrácené rozvahy a výkazu zisku a ztráty pro nevýdělečné organizace
@@ -513,14 +514,14 @@ def soupisy(session: Session, profil: Profil, rok: int, k_datu: date) -> list[So
 
 # ---------- Daň z příjmů ----------
 
-
-@dataclass
-class VynosProDan:
-    popis: str
-    castka: int
-    zdaneni: str  # nepredmetne | srazkova | predmetne | nezname
-    poznamka: str = ""
-
+# Jak se výnos daní:
+# - nepredmetne: není předmětem daně (§ 18 odst. 2 písm. f) ZDP), řádek 100 přiznání,
+# - srazkova: daň srazila banka (§ 36 odst. 5 ZDP), řádek 120,
+# - nezahrnuje: je předmětem daně, ale do základu se nezahrnuje (§ 23 odst. 4 písm. e)
+#   a g) ZDP), řádek 140; přiznání se kvůli němu podat musí,
+# - predmetne: daní se,
+# - nezname: aplikace neví; v návrhu výpočtu se počítá jako zdaňovaný.
+SAZBA_DANE = 21  # % (§ 21 odst. 1 ZDP)
 
 # Podle role výnosového účtu (kniha s. 85–87; ZDP § 18 odst. 2 písm. f), § 36 odst. 5).
 DAN_PODLE_ROLE = {
@@ -534,6 +535,7 @@ DAN_PODLE_ROLE = {
     "vynosy.dotace": ("nepredmetne", "Dotace"),
     "vynosy.uroky": ("srazkova", "Úroky z bankovních účtů (daň srazila banka)"),
     "vynosy.urok_z_prodleni": ("predmetne", "Úroky z prodlení od vlastníků"),
+    "vynosy.cerpani_fondu": ("nezahrnuje", "Čerpání fondu ze zisku minulých let"),
     "vynosy.pacht": (
         "predmetne",
         "Pacht nebo nájem společných částí účtovaný jako výnos SVJ",
@@ -546,29 +548,113 @@ DAN_PODLE_SKUPINY = {
     "642": ("predmetne", "Ostatní pokuty a penále"),
     "644": ("srazkova", "Úroky"),
     "646": ("predmetne", "Výnosy z prodeje majetku"),
-    "648": ("predmetne", "Čerpání fondů"),
+    "648": ("nezahrnuje", "Čerpání fondů"),
     "649": ("nepredmetne", "Příspěvky vlastníků"),
     "65": ("predmetne", "Prodej majetku"),
     "69": ("nepredmetne", "Dotace"),
 }
+# Sankce, které se daní až po zaplacení (§ 23 odst. 3 písm. a) bod 6 a písm. b) bod 1 ZDP),
+# a pohledávka, ze které aplikace pozná, kolik z nich vlastníci zaplatili.
+SANKCE = {"vynosy.urok_z_prodleni": "pohledavky_vlastnici_sankce"}
+SANKCE_BEZ_POHLEDAVKY = ("641", "642")
 POZNAMKY_DANE = {
     "vynosy.pacht": "Nájemné a pacht ze společných částí jsou příjmem vlastníků, ne SVJ "
     "(NV 366/2013 § 16 odst. 2; kniha s. 77–79), a SVJ je pak nedaní. "
     "Katalog pro ně má operace najem-predpis a prijmy-vlastniku. Vyjasněte s účetní.",
-    "vynosy.urok_z_prodleni": "Daní se až po zaplacení (§ 23 odst. 3 ZDP), ne už při vyúčtování.",
+    "vynosy.urok_z_prodleni": "Daní se až po zaplacení (§ 23 odst. 3 ZDP), ne už při předpisu.",
+    "vynosy.cerpani_fondu": "Do základu daně se nezahrnuje, pokud kryje náklady, které nebyly "
+    "daňově uznatelné (§ 23 odst. 4 písm. e) a g) ZDP). Přiznání se kvůli němu podat musí.",
 }
+POZNAMKA_SANKCE_BEZ_POHLEDAVKY = (
+    "Sankce se daní až v roce, kdy je dlužník zaplatí. Aplikace nepozná, jestli už zaplacená "
+    "je; když ne, snižte o ni základ daně (řádek 111 přiznání)."
+)
+
+
+@dataclass
+class VynosProDan:
+    popis: str
+    castka: int
+    zdaneni: str  # nepredmetne | srazkova | nezahrnuje | predmetne | nezname
+    poznamka: str = ""
+
+
+@dataclass
+class RadekDane:
+    """Řádek návrhu výpočtu daně; `radek` je číslo řádku přiznání, pokud mu odpovídá."""
+
+    popis: str
+    castka: int
+    radek: str = ""
 
 
 @dataclass
 class Dan:
     musi_podat: bool
     vynosy: list[VynosProDan]
+    vypocet: list[RadekDane] = field(default_factory=list)
+    zaklad: int = 0  # základ daně zaokrouhlený na celé tisíce Kč dolů (řádek 270)
+    dan: int = 0  # řádek 290
+    zauctovano: int | None = None  # daň zaúčtovaná k 31. 12. (operace dan-z-prijmu-predpis)
+
+
+@dataclass
+class Sankce:
+    """Sankce z jedné pohledávky: kolik se letos předepsalo a kolik se z kterého roku zaplatilo."""
+
+    predepsano: int  # výnos roku
+    nezaplaceno_letos: int  # předepsané letos, nezaplacené k 31. 12. (řádek 111)
+    zaplaceno_z_minula: int  # z minulých let, zaplacené letos (řádek 30)
+
+
+def _sankce(session: Session, rok: int, ucet_pohledavky: str, predepsano: int) -> Sankce:
+    """Rozdělí sankce na zaplacené a nezaplacené ze zůstatků pohledávky.
+
+    Platby se započítávají nejdřív na nejstarší dluh (§ 1933 OZ), takže letos zaplacené jdou
+    nejdřív na zůstatek z minulých let a nezaplacený zbytek k 31. 12. je hlavně letošní.
+    """
+    zust = denik.zustatky(session, rok).get(ucet_pohledavky, 0)
+    na_zacatku = int(
+        session.scalar(
+            select(
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (RadekZapisu.strana == "md", RadekZapisu.castka),
+                            else_=-RadekZapisu.castka,
+                        )
+                    ),
+                    0,
+                )
+            )
+            .join(Zapis)
+            .where(
+                Zapis.rok == rok,
+                Zapis.operace == pocatecni.OPERACE,
+                RadekZapisu.ucet == ucet_pohledavky,
+                denik.nestornovany(),
+            )
+        )
+    )
+    na_zacatku = max(na_zacatku, 0)
+    zaplaceno = max(na_zacatku + predepsano - zust, 0)
+    z_minula = min(zaplaceno, na_zacatku)
+    letos = min(zaplaceno - z_minula, max(predepsano, 0))
+    return Sankce(predepsano, max(predepsano, 0) - letos, z_minula)
 
 
 def dan(session: Session, profil: Profil, rok: int) -> Dan:
+    """Zařadí výnosy roku podle zdanění a sestaví návrh výpočtu daně.
+
+    Návrh počítá s tím, že se zdaňovanými výnosy nesouvisí žádný daňově uznatelný náklad,
+    což u SVJ bývá pravidlem (Durec s. 90). Přiznání sestaví a podá účetní.
+    """
     zust = denik.zustatky(session, rok)
     role_uctu = profil.role_uctu()
     vynosy: list[VynosProDan] = []
+    souhrn = {"nepredmetne": 0, "srazkova": 0, "nezahrnuje": 0, "predmetne": 0, "nezname": 0}
+    rad111 = rad30 = 0
+    sankce_predepsane = False
     for ucet, z in sorted(zust.items()):
         if ucet[0] != "6" or z == 0:
             continue
@@ -580,8 +666,94 @@ def dan(session: Session, profil: Profil, rok: int) -> Dan:
                 (DAN_PODLE_SKUPINY[k] for k in (ucet[:3], ucet[:2]) if k in DAN_PODLE_SKUPINY),
                 ("nezname", "Výnos, o kterém aplikace neví, jak se daní"),
             )
-        vynosy.append(VynosProDan(f"{popis} ({ucet})", -z, zdaneni, POZNAMKY_DANE.get(role, "")))
-    return Dan(any(v.zdaneni in ("predmetne", "nezname") for v in vynosy), vynosy)
+        castka = -z
+        poznamka = POZNAMKY_DANE.get(role, "")
+        if role in SANKCE:
+            sankce_predepsane = True
+            s = _sankce(session, rok, profil.ucet(SANKCE[role]), castka)
+            rad111 += s.nezaplaceno_letos
+            rad30 += s.zaplaceno_z_minula
+            if s.nezaplaceno_letos:
+                poznamka += f" K 31. 12. z nich zůstává nezaplaceno {kc(s.nezaplaceno_letos)}."
+        elif ucet[:3] in SANKCE_BEZ_POHLEDAVKY and role not in DAN_PODLE_ROLE:
+            poznamka = POZNAMKA_SANKCE_BEZ_POHLEDAVKY
+        souhrn[zdaneni] += castka
+        vynosy.append(VynosProDan(f"{popis} ({ucet})", castka, zdaneni, poznamka.strip()))
+
+    # Sankce z minulých let zaplacené letos se daní, i když letos žádný výnos nemají.
+    if not sankce_predepsane:
+        for role, pohledavka in SANKCE.items():
+            if role in profil.role and pohledavka in profil.role:
+                rad30 += _sankce(session, rok, profil.ucet(pohledavka), 0).zaplaceno_z_minula
+
+    zdanovane = souhrn["predmetne"] + souhrn["nezname"]
+    zaklad_presny = max(zdanovane - rad111 + rad30, 0)
+    zaklad = zaklad_presny // 100_000 * 100_000  # na celé tisíce Kč dolů
+    dan_castka = zaklad * SAZBA_DANE // 100
+    vypocet = [
+        RadekDane("Příjmy, které nejsou předmětem daně", souhrn["nepredmetne"], "100"),
+        RadekDane("Úroky, ze kterých daň srazila banka", souhrn["srazkova"], "120"),
+        RadekDane("Příjmy, které se do základu daně nezahrnují", souhrn["nezahrnuje"], "140"),
+        RadekDane("Výnosy, které se daní", zdanovane),
+        RadekDane("Snížení o sankce předepsané letos, ale nezaplacené", -rad111, "111"),
+        RadekDane("Zvýšení o sankce z minulých let zaplacené letos", rad30, "30"),
+        RadekDane("Základ daně", zaklad_presny, "250"),
+        RadekDane("Základ daně zaokrouhlený na celé tisíce Kč dolů", zaklad, "270"),
+        RadekDane(f"Daň {SAZBA_DANE} %", dan_castka, "290"),
+    ]
+    musi_podat = rad30 > 0 or any(
+        v.zdaneni in ("predmetne", "nezahrnuje", "nezname") for v in vynosy
+    )
+    zapis = zauctovana_dan(session, rok)
+    zauctovano = None
+    if zapis is not None:
+        zauctovano = sum(r.castka for r in zapis.radky if r.strana == "md")
+    return Dan(musi_podat, vynosy, vypocet, zaklad, dan_castka, zauctovano)
+
+
+OPERACE_DANE = "dan-z-prijmu-predpis"
+
+
+class ChybaDane(ValueError):
+    pass
+
+
+def _klic_dane(rok: int) -> str:
+    return f"{OPERACE_DANE}:{rok}"
+
+
+def zauctovana_dan(session: Session, rok: int) -> Zapis | None:
+    return denik.aktivni(session, _klic_dane(rok))
+
+
+def zauctuj_dan(session: Session, profil: Profil, rok: int, polozka: str, zauctoval: str) -> Zapis:
+    """Zaúčtuje k 31. 12. daň z návrhu výpočtu na položku správy, ze které ji zaplatí vlastníci."""
+    if polozka not in profil.sprava:
+        raise ChybaDane(f"Položka správy {polozka} v profilu není.")
+    if zauctovana_dan(session, rok) is not None:
+        raise ChybaDane(
+            f"Daň za rok {rok} už je zaúčtovaná. Opravit ji jde stornem zápisu v Deníku."
+        )
+    if denik.aktivni(session, vyuctovani_spravy.klic(rok)) is not None:
+        raise ChybaDane(
+            f"Vyúčtování záloh na správu za rok {rok} už je zaúčtované, takže by daň mezi "
+            "vlastníky nerozdělilo. Stornujte ho v Deníku, zaúčtujte daň a zálohy vyúčtujte "
+            "znovu."
+        )
+    castka = dan(session, profil, rok).dan
+    if castka <= 0:
+        raise ChybaDane(f"Daň za rok {rok} vychází nulová, není co zaúčtovat.")
+    return denik.zauctuj(
+        session,
+        profil,
+        katalog.nacti()[OPERACE_DANE],
+        {"polozka": polozka, "castka": na_text(castka)},
+        datum=date(rok, 12, 31),
+        popis=f"Daň z příjmů za rok {rok}",
+        doklad="ID",
+        zauctoval=zauctoval,
+        idempotencni_klic=_klic_dane(rok),
+    )
 
 
 # ---------- Příloha k účetní závěrce ----------
