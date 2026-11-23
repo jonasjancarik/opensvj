@@ -592,7 +592,7 @@ function Dan({ data, setData }: { data: Data; setData: (d: Data) => void }) {
 
 function ZauctovaniDane({ data, setData }: { data: Data; setData: (d: Data) => void }) {
   const { dan, zauctovano, polozky_spravy } = data.dan
-  const [polozka, setPolozka] = useState(polozky_spravy[0]?.kod ?? '')
+  const [polozka, setPolozka] = useState(polozky_spravy.length === 1 ? polozky_spravy[0].kod : '')
   const [pracuji, setPracuji] = useState(false)
   const [chyba, setChyba] = useState<string | null>(null)
 
@@ -636,8 +636,9 @@ function ZauctovaniDane({ data, setData }: { data: Data; setData: (d: Data) => v
       <div className="radek">
         {polozky_spravy.length > 1 && (
           <label>
-            Zaplatí se z položky{' '}
+            Z které položky správy ji vlastníci zaplatí{' '}
             <select value={polozka} onChange={(e) => setPolozka(e.target.value)}>
+              <option value="">Vyberte položku</option>
               {polozky_spravy.map((p) => (
                 <option key={p.kod} value={p.kod}>
                   {p.nazev}
