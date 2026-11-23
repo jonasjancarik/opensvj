@@ -1,24 +1,24 @@
 /* Prezentační web OpenSVJ. Barvy a písma jsou stejné jako v aplikaci. */
 :root {
-  --pozadi: #f3efe6;
-  --pozadi-2: #e9e2d3;
-  --plocha: #fffdf8;
-  --text: #1f1d18;
-  --tlumeny: #5f594e;
-  --okraj: #d2c9b6;
-  --akcent: #2d5d4d;
-  --akcent-tmavy: #1f4337;
-  --akcent-mekky: #dbe7de;
-  --na-akcentu: #fbfaf5;
+  --pozadi: #dfdedb;
+  --pozadi-2: #d3d2ce;
+  --plocha: #f4f3f0;
+  --text: #26251e;
+  --tlumeny: #5f5d55;
+  --okraj: #c2c1bb;
+  --akcent: #2456d6;
+  --akcent-tmavy: #17358c;
+  --akcent-mekky: #c9d5f5;
+  --na-akcentu: #ffffff;
   --svetlo: #f0b54a;
-  --varovani: #8f5f00;
+  --varovani: #8a5a00;
   --uspech: #2c7349;
-  --okno: #c3ccc5;
-  --fasada: #fffaf0;
-  --fasada-linka: #d9cdb6;
+  --okno: #b9bfca;
+  --fasada: #f4f3f0;
+  --fasada-linka: #bdbcb6;
   --kraj: clamp(20px, 2.6vw, 40px);
-  --pismo: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --pismo-nadpis: 'Source Serif 4', ui-serif, Georgia, serif;
+  --pismo: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pismo-nadpis: 'Archivo', ui-sans-serif, system-ui, sans-serif;
   /* Pět velikostí písma pro celou stránku. */
   --maly: 0.875rem;
   --zaklad: 1.0625rem;
@@ -35,7 +35,7 @@ body {
   font-family: var(--pismo); font-size: var(--zaklad); line-height: 1.5;
   -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
 }
-h1, h2 { font-family: var(--pismo-nadpis); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; margin: 0; }
+h1, h2 { font-family: var(--pismo-nadpis); font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
 h1, h2 { font-size: var(--nadpis); }
 p { margin: 0; text-wrap: pretty; }
 a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
@@ -54,7 +54,7 @@ button { font: inherit; cursor: pointer; }
 .tlacitko:hover, [data-ui] button:not(.odkaz):not(.mesic):hover { background: var(--akcent-tmavy); }
 .tlacitko:active, [data-ui] button:not(.odkaz):not(.mesic):active { transform: translateY(1px) scale(0.98); }
 .tlacitko.svetle { background: var(--na-akcentu); color: var(--akcent-tmavy); }
-.tlacitko.svetle:hover { background: #fff; }
+.tlacitko.svetle:hover { background: #e8edfb; }
 button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- Úvod: vlevo sdělení, vpravo dům ---------- */
@@ -68,7 +68,7 @@ button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); te
   font-family: var(--pismo-nadpis); font-weight: 600; font-size: 1.25rem;
 }
 .uvod-sdeleni { display: grid; gap: 1.1rem; justify-items: start; }
-.uvod-sdeleni h1 { font-size: var(--velky); line-height: 1.05; }
+.uvod-sdeleni h1 { font-size: var(--velky); line-height: 1.02; font-weight: 400; letter-spacing: -0.03em; }
 .uvod-sdeleni p { max-width: 44ch; }
 .uvod-akce { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; margin-top: 0.6rem; }
 .radek { display: block; overflow: hidden; padding-bottom: 0.08em; }
@@ -111,7 +111,7 @@ button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); te
 .d-jednotka:hover .d-vyber, .d-jednotka:focus-visible .d-vyber { stroke-width: 1.2; }
 .d-jednotka.vybrana .d-vyber { stroke-width: 2.4; }
 .d-truhlik { fill: var(--akcent); }
-.d-kvet { fill: #d9705f; }
+.d-kvet { fill: #e0705f; }
 .d-terc { fill: transparent; }
 .dum-jednotka {
   display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: center; width: 100%;
@@ -134,24 +134,26 @@ main > section { margin-top: clamp(6rem, 12vw, 11rem); }
   padding: 0 var(--kraj); align-items: start;
 }
 #umi-hledat {
-  width: 100%; height: 1.9em; padding: 0 0.55em; border: 0; border-radius: 14px;
+  width: 100%; height: 2.2em; padding: 0 var(--odsazeni); border: 0; border-radius: 14px;
   background: var(--pozadi-2); color: var(--text);
   font-family: var(--pismo-nadpis); font-weight: 600; font-size: var(--nadpis); letter-spacing: -0.015em;
 }
 #umi-hledat::placeholder { color: var(--text); opacity: 1; }
 #umi-hledat:focus { outline: 2px solid var(--akcent); outline-offset: 2px; }
 #umi-hledat:focus::placeholder { opacity: 0.35; }
-#umi-polozky { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+.umi-seznam { --odsazeni: clamp(1.1rem, 1.7vw, 1.6rem); }
+#umi-polozky { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
 #umi-polozky li { border-radius: 14px; transition: background-color 0.25s; }
 #umi-polozky li > button {
-  display: block; width: 100%; padding: 0.12em 0.32em 0.16em; border: 0; background: none; color: var(--text);
-  text-align: left; font-family: var(--pismo-nadpis); font-weight: 600; font-size: var(--velky);
-  letter-spacing: -0.02em; line-height: 1.12; border-radius: 14px;
+  display: block; width: 100%; padding: 0.5rem var(--odsazeni); border: 0; background: none; color: var(--text);
+  text-align: left; font-family: var(--pismo-nadpis); font-weight: 400; font-size: var(--velky);
+  letter-spacing: -0.03em; line-height: 1.12; border-radius: 14px;
   transition: transform 0.2s var(--prechod);
 }
 #umi-polozky li > button:hover { transform: translateX(6px); }
-#umi-polozky li > p { display: none; padding: 0 1.1rem 1.1rem; max-width: 46ch; }
-#umi-polozky li.aktivni { background: var(--akcent); color: var(--na-akcentu); }
+#umi-polozky li > p { display: none; padding: 0.35rem var(--odsazeni) 0; max-width: 44ch; }
+#umi-polozky li.aktivni { background: var(--akcent); color: var(--na-akcentu); padding: 0.9rem 0 1.6rem; margin: 0.5rem 0; }
+#umi-polozky li.aktivni:first-child { margin-top: 0; }
 #umi-polozky li.aktivni > button { color: inherit; }
 #umi-polozky li.aktivni > button:hover { transform: none; }
 #umi-polozky li.aktivni > p { display: block; }
@@ -201,10 +203,10 @@ main > section.postup { margin-top: 0; }
   padding: 28px;
 }
 .pole h2 { position: absolute; top: 28px; left: 28px; right: 28px; font-weight: 600; }
-.pole > p { font-family: var(--pismo-nadpis); font-weight: 500; font-size: var(--nadpis); line-height: 1.15; letter-spacing: -0.01em; max-width: 13em; }
+.pole > p { font-family: var(--pismo-nadpis); font-weight: 400; font-size: var(--nadpis); line-height: 1.12; letter-spacing: -0.02em; max-width: 13em; }
 .pole-1 { background: var(--plocha); }
 .pole-2 { background: var(--pozadi-2); }
-.pole-3 { background: #a9c4b3; }
+.pole-3 { background: #a9bbec; }
 .pole-4 { background: var(--akcent-tmavy); color: var(--na-akcentu); }
 .platba {
   position: absolute; top: 30%; left: 50%; width: min(260px, calc(100% - 40px)); transform: translateX(-50%);
@@ -220,7 +222,7 @@ main > section.postup { margin-top: 0; }
 .platba-navrh { margin-top: 0.4rem; padding: 0.5rem 0.65rem; border-radius: 8px; background: var(--akcent-mekky); color: var(--akcent-tmavy); font-size: 0.8125rem; }
 .platba-volba { margin-top: 0.3rem; padding: 0.45rem 0.65rem; border: 1px solid var(--okraj); border-radius: 8px; font-size: 0.8125rem; }
 .platba-tlacitko { margin-top: 0.5rem; justify-self: start; padding: 0.5rem 1rem; border-radius: 999px; background: var(--akcent); color: var(--na-akcentu); font-weight: 550; }
-.platba-hotovo { margin-top: 0.3rem; padding: 0.45rem 0.65rem; border-radius: 8px; background: #e0eee4; color: var(--uspech); font-size: 0.8125rem; }
+.platba-hotovo { margin-top: 0.3rem; padding: 0.45rem 0.65rem; border-radius: 8px; background: #dcebe1; color: var(--uspech); font-size: 0.8125rem; }
 .pole-4 .platba { border-left-width: 1px; border-left-color: var(--okraj); }
 .platba table { width: 100%; margin-top: 0.3rem; border-collapse: collapse; font-size: 0.8125rem; }
 .platba td { padding: 0.3rem 0; border-top: 1px solid var(--okraj); }
@@ -233,11 +235,11 @@ main > section.postup { margin-top: 0; }
   padding: 24px; border-radius: 14px; background: var(--pozadi-2); text-decoration: none;
   transition: background-color 0.2s;
 }
-a.dlazdice:hover { background: #dfd6c3; }
+a.dlazdice:hover { background: #c7c6c1; }
 .dlazdice strong { font-family: var(--pismo-nadpis); font-weight: 600; font-size: var(--nadpis); line-height: 1.12; letter-spacing: -0.015em; }
 
 .dlazdice-hlavni { grid-column: span 2; background: var(--akcent); color: var(--na-akcentu); }
-.dlazdice-hlavni h2 { font-size: var(--velky); max-width: 9em; }
+.dlazdice-hlavni h2 { font-size: var(--velky); max-width: 9em; font-weight: 400; letter-spacing: -0.03em; line-height: 1.02; }
 .dlazdice-hlavni p { max-width: 46ch; }
 
 /* ---------- Závěr ---------- */
@@ -246,7 +248,7 @@ a.dlazdice:hover { background: #dfd6c3; }
   min-height: 90svh; padding: var(--kraj); background: var(--akcent); color: var(--na-akcentu);
 }
 .zaver-text { grid-column: 1 / span 6; align-self: end; display: grid; gap: 1.25rem; }
-.zaver-text h2 { font-size: var(--obri); line-height: 0.95; letter-spacing: -0.03em; }
+.zaver-text h2 { font-size: var(--obri); line-height: 0.95; letter-spacing: -0.035em; font-weight: 400; }
 .zaver-text p { max-width: 42ch; }
 .zaver-okno {
   grid-column: 8 / span 5; display: grid; gap: 1rem; justify-items: start; padding: 1.4rem;
@@ -256,7 +258,7 @@ a.dlazdice:hover { background: #dfd6c3; }
 .zaver-okno button.vedlejsi { padding: 0.45rem 0.9rem !important; font-size: 0.875rem !important; background: rgb(255 255 255 / 0.12) !important; }
 .zaver-okno button.vedlejsi:hover { background: rgb(255 255 255 / 0.2) !important; }
 .zaver-okno pre {
-  width: 100%; margin: 0; padding: 1rem 1.1rem; overflow-x: auto; border-radius: 10px; background: #16302a;
+  width: 100%; margin: 0; padding: 1rem 1.1rem; overflow-x: auto; border-radius: 10px; background: #0f2463;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.875rem; line-height: 1.7;
 }
 .zaver-okno p { font-size: 0.94rem; opacity: 0.85; }
@@ -292,7 +294,7 @@ a.dlazdice:hover { background: #dfd6c3; }
   .umi { grid-template-columns: 1fr; }
   #umi-hledat { height: 56px; font-size: 1.25rem; }
   #umi-polozky li > button { font-size: clamp(1.9rem, 8.5vw, 3rem); }
-  .umi-nahled { position: static; margin: 0 0.6rem 0.6rem; border-radius: 10px; }
+  .umi-nahled { position: static; margin: 1.4rem var(--odsazeni) 0; border-radius: 10px; }
   .rok { min-height: 86svh; }
   .rok-pruh { left: var(--kraj); bottom: 6vh; width: 130vw; font-size: 15vw; }
   .rok-mesice { grid-template-columns: repeat(12, 1fr); }
