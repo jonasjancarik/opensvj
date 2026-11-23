@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenSVJ – účetnictví domu, ve kterém se dá vyznat</title>
+    <meta
+      name="description"
+      content="OpenSVJ vede účetnictví společenství vlastníků jednotek: bankovní výpisy, předpisy záloh, dlužníky, vyúčtování i roční uzávěrku. Zdrojový kód je na GitHubu."
+    />
+    <meta property="og:title" content="OpenSVJ – účetnictví domu, ve kterém se dá vyznat" />
+    <meta
+      property="og:description"
+      content="Aplikace pro výbor a účetní SVJ: banka, předpisy záloh, dlužníci, vyúčtování a uzávěrka."
+    />
+    <meta property="og:image" content="img/aplikace.jpg" />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#f3efe6" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400..650&family=Source+Serif+4:opsz,wght@8..60,500..600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styl.css" />
+    <script>
+      document.documentElement.classList.add('js')
+    </script>
+  </head>
+  <body>
+    <header class="uvod">
+      <div class="uvod-text">
+        <a class="znacka" href="#top" aria-label="OpenSVJ">
+          <svg viewBox="0 0 28 28" width="32" height="32" aria-hidden="true">
+            <path d="M10 6.5 Q14 2.5 18 6.5Z" fill="#d9cdb6" />
+            <rect x="4" y="6.5" width="20" height="2.4" rx="0.8" fill="#d9cdb6" />
+            <rect x="5.5" y="8.9" width="17" height="17.6" rx="0.6" fill="#fffdf8" />
+            <rect x="8.5" y="11.5" width="3.8" height="5" rx="0.5" fill="#cfd6d0" />
+            <rect x="15.7" y="11.5" width="3.8" height="5" rx="0.5" fill="#f0b54a" />
+            <rect x="8.5" y="19" width="3.8" height="5" rx="0.5" fill="#cfd6d0" />
+            <rect x="15.7" y="19" width="3.8" height="7.5" rx="0.5" fill="#2d5d4d" />
+          </svg>
+          <span>OpenSVJ</span>
+        </a>
+        <div class="uvod-sdeleni">
+          <h1>
+            <span class="radek"><span>Účetnictví domu,</span></span>
+            <span class="radek"><span>ve kterém se dá vyznat.</span></span>
+          </h1>
+          <p>
+            OpenSVJ vede podvojné účetnictví společenství vlastníků: z bankovních výpisů a faktur
+            počítá zálohy, hlídá dlužníky, vyúčtuje služby a připraví roční uzávěrku.
+          </p>
+          <a class="tlacitko" href="https://github.com/jonasjancarik/opensvj">Zdrojový kód na GitHubu</a>
+        </div>
+      </div>
+
+      <div class="uvod-dum">
+        <a class="odkaz-nahore" href="https://github.com/jonasjancarik/opensvj#readme">Dokumentace</a>
+        <div class="dum-ramec" data-ui>
+          <p class="dum-stav" aria-live="polite">
+            <strong id="dum-sviti">Svítí 4 z 12 oken.</strong>
+            <span id="dum-dluh">Po splatnosti je 165 685,00 Kč.</span>
+          </p>
+          <div id="dum" class="dum-kresba">
+            <noscript>
+              <img src="img/aplikace.jpg" width="1280" height="800" alt="Úvodní stránka aplikace OpenSVJ s přehledem hospodaření" />
+            </noscript>
+          </div>
+          <div class="dum-jednotka" id="dum-jednotka">
+            <div>
+              <strong id="j-oznaceni">Jednotka 1001/8</strong>
+              <span id="j-vlastnik">Eva Svobodová</span>
+            </div>
+            <span id="j-stav" class="j-stav">dluží 14 167,00 Kč</span>
+            <button type="button" id="j-zauctovat">Zaúčtovat platbu</button>
+          </div>
+          <p class="dum-napoveda">
+            Každé okno je jedna jednotka a rozsvítí se, když má vlastník zaplaceno. Vyberte tmavé
+            okno a zaúčtujte jeho platbu. <button type="button" class="odkaz" id="dum-znovu" hidden>Vrátit zpět</button>
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="umi" aria-labelledby="umi-nadpis" data-ui>
+        <h2 id="umi-nadpis" class="skryte">Co aplikace umí</h2>
+        <div class="umi-seznam">
+          <input id="umi-hledat" type="search" placeholder="Co aplikace umí" aria-label="Hledat v tom, co aplikace umí" autocomplete="off" />
+          <ul id="umi-polozky">
+            <li data-obrazek="prehled">
+              <button type="button" aria-expanded="true">Přehled</button>
+              <p>Úvodní stránka řekne, kolik je na účtech, kdo dluží a co je právě potřeba udělat.</p>
+            </li>
+            <li data-obrazek="banka">
+              <button type="button" aria-expanded="false">Banka</button>
+              <p>Nahrajete výpis a aplikace u každé platby navrhne, kam patří. Potvrzuje ji vždycky člověk.</p>
+            </li>
+            <li data-obrazek="predpisy">
+              <button type="button" aria-expanded="false">Předpisy záloh</button>
+              <p>Měsíční zálohy všech jednotek zaúčtujete jedním tlačítkem. Novou výši záloh zadáte s datem, od kdy platí.</p>
+            </li>
+            <li data-obrazek="dluznici">
+              <button type="button" aria-expanded="false">Dlužníci</button>
+              <p>U každé jednotky je vidět, kolik je po splatnosti a od kdy, i se zákonným úrokem z prodlení. Upomínku vytisknete nebo pošlete e-mailem.</p>
+            </li>
+            <li data-obrazek="vlastnici">
+              <button type="button" aria-expanded="false">Vlastníci</button>
+              <p>Kdo kterou jednotku vlastní a od kdy. Při prodeji zůstanou prodávajícímu dluhy, které na kupujícího nepřešly.</p>
+            </li>
+            <li data-obrazek="faktury">
+              <button type="button" aria-expanded="false">Faktury</button>
+              <p>Přijatou fakturu zadáte a aplikace ji zaúčtuje podle toho, za co je. V seznamu vidíte, co zbývá zaplatit.</p>
+            </li>
+            <li data-obrazek="vyuctovani">
+              <button type="button" aria-expanded="false">Vyúčtování</button>
+              <p>Roční náklady na služby a správu domu se rozdělí mezi jednotky přesně na haléře a porovnají se zálohami.</p>
+            </li>
+            <li data-obrazek="uzaverka">
+              <button type="button" aria-expanded="false">Uzávěrka roku</button>
+              <p>Kontrolní seznam, rozvaha, výsledovka, inventurní soupisy a návrh přílohy k účetní závěrce.</p>
+            </li>
+          </ul>
+          <p id="umi-nic" class="umi-nic" hidden>Tohle aplikace zatím neumí. Co chybí, je sepsané ve <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/spec/README.md">specifikaci</a>.</p>
+        </div>
+        <figure class="umi-nahled" id="umi-nahled">
+          <img data-obrazek="prehled" class="aktivni" src="img/prehled.webp" width="1600" height="1067" alt="Stránka Přehled: zůstatky účtů, dluhy vlastníků, faktury k zaplacení a seznam úkolů" />
+          <img data-obrazek="banka" src="img/banka.webp" width="1600" height="1067" loading="lazy" alt="Stránka Banka: zůstatky účtů a platba s návrhem zaúčtování" />
+          <img data-obrazek="predpisy" src="img/predpisy.webp" width="1600" height="1067" loading="lazy" alt="Stránka Předpisy: měsíce roku a které jsou zaúčtované" />
+          <img data-obrazek="dluznici" src="img/dluznici.webp" width="1600" height="1067" loading="lazy" alt="Stránka Dlužníci: tabulka jednotek s částkou po splatnosti" />
+          <img data-obrazek="vlastnici" src="img/vlastnici.webp" width="1600" height="1067" loading="lazy" alt="Stránka Vlastníci: jednotky, jejich vlastníci a kontakty" />
+          <img data-obrazek="faktury" src="img/faktury.webp" width="1600" height="1067" loading="lazy" alt="Stránka Faktury: formulář nové faktury a seznam faktur" />
+          <img data-obrazek="vyuctovani" src="img/vyuctovani.webp" width="1600" height="1067" loading="lazy" alt="Stránka Vyúčtování: náklady a zálohy domu po službách" />
+          <img data-obrazek="uzaverka" src="img/uzaverka.webp" width="1600" height="1067" loading="lazy" alt="Stránka Uzávěrka: kontrolní seznam s hotovými a chybějícími body" />
+        </figure>
+      </section>
+
+      <section class="rok" id="rok" aria-labelledby="rok-nadpis">
+        <div class="rok-text">
+          <h2 id="rok-nadpis">Zbývá <span id="rok-slovo">prosinec</span></h2>
+          <p>
+            Zálohy se předepisují měsíc po měsíci a každý měsíc jen jednou. Zaúčtujte ten poslední
+            a rok je předepsaný celý.
+          </p>
+        </div>
+        <div class="rok-pruh" data-ui role="group" aria-label="Měsíční předpisy roku 2026">
+          <div class="rok-popis"><strong id="rok-pocet">9</strong> <span>z 12 měsíců</span></div>
+          <div class="rok-mesice" id="rok-mesice"></div>
+        </div>
+      </section>
+
+      <section class="postup" aria-labelledby="postup-nadpis">
+        <div class="pole pole-1">
+          <h2 id="postup-nadpis">Cesta jedné platby</h2>
+          <div class="platba" data-ui>
+            <div class="platba-castka">+14 167,00 Kč <span>11. 11. 2026</span></div>
+            <div class="platba-kdo">Eva Svobodová</div>
+            <div class="platba-udaje">účet 1023456789/5500 · VS 100100801</div>
+          </div>
+          <p>Nejdřív nahrajete výpis z banky.</p>
+        </div>
+        <div class="pole pole-2">
+          <div class="platba" data-ui>
+            <div class="platba-castka">+14 167,00 Kč <span>11. 11. 2026</span></div>
+            <div class="platba-kdo">Eva Svobodová</div>
+            <div class="platba-udaje">účet 1023456789/5500 · VS 100100801</div>
+            <div class="platba-navrh">Návrh: úhrada předpisu, jednotka 1001/8. Stejně jako dřív platby z tohoto účtu.</div>
+          </div>
+          <p>Pak aplikace navrhne, kam platba patří.</p>
+        </div>
+        <div class="pole pole-3">
+          <div class="platba" data-ui>
+            <div class="platba-castka">+14 167,00 Kč <span>11. 11. 2026</span></div>
+            <div class="platba-kdo">Eva Svobodová</div>
+            <div class="platba-volba">Úhrada předpisu vlastníkem</div>
+            <div class="platba-volba">Jednotka 1001/8</div>
+            <div class="platba-tlacitko">Zaúčtovat</div>
+          </div>
+          <p>Potom návrh potvrdí člověk.</p>
+        </div>
+        <div class="pole pole-4">
+          <div class="platba" data-ui>
+            <div class="platba-castka">+14 167,00 Kč <span>11. 11. 2026</span></div>
+            <div class="platba-kdo">Eva Svobodová</div>
+            <div class="platba-hotovo">Zaúčtováno, zápis 233/2026</div>
+            <table>
+              <tr><td>MD 221100</td><td>14 167,00</td></tr>
+              <tr><td>D 311100 · 1001/8</td><td>14 167,00</td></tr>
+            </table>
+          </div>
+          <p>Nakonec je zápis v deníku a nejde přepsat.</p>
+        </div>
+      </section>
+
+      <section class="zdroje" aria-labelledby="zdroje-nadpis">
+        <div class="dlazdice dlazdice-hlavni">
+          <h2 id="zdroje-nadpis">Každé pravidlo má zdroj</h2>
+          <p>
+            Jak se která operace účtuje, popisuje katalog 56 operací. U každé je paragraf nebo
+            literatura, ze které vychází, a příklad, který při každé změně kódu ověřují testy.
+          </p>
+        </div>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/2012-89"><strong>Občanský zákoník</strong><span>§ 1158–1222: bytové spoluvlastnictví, přechod dluhů při prodeji jednotky</span></a>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/2013-67"><strong>Zákon 67/2013 Sb.</strong><span>služby spojené s užíváním bytů, jejich vyúčtování a lhůty</span></a>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/1991-563"><strong>Zákon o účetnictví</strong><span>doklady, inventura a účetní závěrka</span></a>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/2002-504"><strong>Vyhláška 504/2002 Sb.</strong><span>účtová osnova, zkrácená rozvaha a výkaz zisku a ztráty</span></a>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/2013-351"><strong>Nařízení 351/2013 Sb.</strong><span>zákonný úrok z prodlení u dluhů vlastníků</span></a>
+        <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/1992-586"><strong>Zákon o daních z příjmů</strong><span>které výnosy SVJ se daní a kdy se podává přiznání</span></a>
+      </section>
+
+      <section class="zaver" aria-labelledby="zaver-nadpis">
+        <div class="zaver-text">
+          <h2 id="zaver-nadpis">Zkuste ji<br />u sebe.</h2>
+          <p>
+            Aplikace je ve vývoji a zkouší se na účetnictví jednoho skutečného domu. Součástí je
+            vymyšlené SVJ Ukázková 12 s rokem dat, na kterém si všechno projdete.
+          </p>
+        </div>
+        <div class="zaver-okno" data-ui>
+          <div class="okno-hlavicka">
+            <strong>Spuštění na vlastním počítači</strong>
+            <button type="button" id="kopirovat" class="vedlejsi">Zkopírovat</button>
+          </div>
+          <pre id="prikazy"><code>git clone https://github.com/jonasjancarik/opensvj.git
+cd opensvj
+cp .env.example .env
+docker compose up -d
+pnpm install</code></pre>
+          <p>Potřebujete Docker, uv a pnpm. Zbytek postupu včetně ukázkových dat je v README.</p>
+          <a class="tlacitko svetle" href="https://github.com/jonasjancarik/opensvj#readme">Otevřít na GitHubu</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pata">
+      <span>Účetnictví pro SVJ</span>
+      <nav aria-label="Odkazy">
+        <a href="https://github.com/jonasjancarik/opensvj">GitHub</a>
+        <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/navod.md">Návod</a>
+        <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/prirucka/README.md">Příručka účetnictví SVJ</a>
+        <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/spec/README.md">Specifikace</a>
+      </nav>
+      <span>2026</span>
+    </footer>
+
+    <script src="web.js"></script>
+  </body>
+</html>
