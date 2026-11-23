@@ -29,6 +29,21 @@ export type Jednotka = {
   polozky: Polozka[]
   vlastnici: Adresat[]
 }
+type Odpis = {
+  datum: string
+  castka: number
+  polozka: string
+  rozhodnuti: string
+  dluhy: string[]
+  zbyva: number
+}
+type OdepsanaJednotka = {
+  jednotka: string
+  odepsano: number
+  uhrazeno: number
+  zbyva: number
+  odpisy: Odpis[]
+}
 export type Data = {
   rok: number
   dnes: string
@@ -42,6 +57,8 @@ export type Data = {
   zdroj_sazeb: string
   celkem_po_splatnosti: number
   jednotky: Jednotka[]
+  odepsane: OdepsanaJednotka[]
+  polozky_spravy: { kod: string; nazev: string }[]
 }
 
 export const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
@@ -163,6 +180,8 @@ export function Dluznici() {
                         )}
                         {j.po_splatnosti > 0 && <PoznamkaKUroku data={data} j={j} />}
                         {j.urok > 0 && <PredpisUroku data={data} j={j} setData={setData} />}
+                        <OdepsanyDluh data={data} j={j} />
+                        {j.po_splatnosti > 0 && <OdpisDluhu data={data} j={j} setData={setData} />}
                         <div className="radek">
                           {j.po_splatnosti > 0 && (
                             <button className="vedlejsi" onClick={() => setUpominka(j)}>
@@ -182,7 +201,172 @@ export function Dluznici() {
           </tbody>
         </table>
       </div>
+      <OdepsaneDluhy data={data} />
     </>
+  )
+}
+
+function OdepsanyDluh({ data, j }: { data: Data; j: Jednotka }) {
+  const o = data.odepsane.find((x) => x.jednotka === j.jednotka)
+  if (!o) return null
+  return (
+    <p className="tlumene">
+      {o.zbyva > 0
+        ? `Odepsaný dluh, který zbývá zaplatit: ${kc(o.zbyva)}. `
+        : `Odepsaný dluh ${kc(o.odepsano)} už je zaplacený. `}
+      Podrobnosti jsou v části Odepsané dluhy pod tabulkou.
+    </p>
+  )
+}
+
+function OdpisDluhu({
+  data,
+  j,
+  setData,
+}: {
+  data: Data
+  j: Jednotka
+  setData: (d: Data) => void
+}) {
+  const [otevreno, setOtevreno] = useState(false)
+  const [castka, setCastka] = useState(() => kc(j.po_splatnosti).replace(' Kč', ''))
+  const [polozka, setPolozka] = useState(() =>
+    data.polozky_spravy.length === 1 ? data.polozky_spravy[0].kod : '',
+  )
+  const [rozhodnuti, setRozhodnuti] = useState('')
+  const [pracuji, setPracuji] = useState(false)
+  const [chyba, setChyba] = useState<string | null>(null)
+  const halire = naHalire(castka)
+  const lzeOdepsat = !!halire && halire > 0 && !!polozka && !!rozhodnuti.trim()
+
+  async function odepsat(e: FormEvent) {
+    e.preventDefault()
+    if (!lzeOdepsat) return
+    setPracuji(true)
+    setChyba(null)
+    try {
+      setData(
+        await api<Data>(`/api/dluznici/${data.rok}/odpis`, {
+          method: 'POST',
+          json: { jednotka: j.jednotka, castka: halire, polozka, rozhodnuti },
+        }),
+      )
+    } catch (e) {
+      setChyba((e as Error).message)
+      setPracuji(false)
+    }
+  }
+
+  if (!otevreno)
+    return (
+      <div className="radek">
+        <button className="vedlejsi" onClick={() => setOtevreno(true)}>
+          Odepsat nedobytný dluh
+        </button>
+      </div>
+    )
+  return (
+    <form className="upozorneni odpis-dluhu" onSubmit={odepsat}>
+      <p>
+        Dluh, který už nejde vymoci (třeba po skončeném insolvenčním řízení), se odepisuje
+        na základě rozhodnutí výboru nebo shromáždění. Odepisuje se od nejstaršího dluhu.
+        Odpis je náklad na správu domu, takže ho vyúčtování záloh rozdělí mezi všechny
+        vlastníky ve vybrané položce. Dluh tím nezaniká: aplikace ho dál vede mezi
+        odepsanými, a když ho dlužník později zaplatí, vyúčtování vlastníkům zase vrátí, co
+        za odpis zaplatili.
+      </p>
+      <label>
+        Kdo a kdy o odpisu rozhodl
+        <input
+          value={rozhodnuti}
+          onChange={(e) => setRozhodnuti(e.target.value)}
+          placeholder="např. usnesení výboru ze dne 5. 5. 2026"
+          maxLength={200}
+        />
+      </label>
+      <label>
+        Do které položky správy odpis patří
+        <select value={polozka} onChange={(e) => setPolozka(e.target.value)}>
+          {data.polozky_spravy.length > 1 && <option value="">Vyberte položku</option>}
+          {data.polozky_spravy.map((p) => (
+            <option key={p.kod} value={p.kod}>
+              {p.nazev}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="radek">
+        <label>
+          Odepsat{' '}
+          <input
+            value={castka}
+            onChange={(e) => setCastka(e.target.value)}
+            inputMode="decimal"
+            size={12}
+          />{' '}
+          Kč
+        </label>
+        <button type="submit" disabled={pracuji || !lzeOdepsat}>
+          {pracuji ? 'Odepisuji…' : 'Odepsat dluh'}
+        </button>
+        <button type="button" className="vedlejsi" onClick={() => setOtevreno(false)}>
+          Zrušit
+        </button>
+        {chyba && <span className="chyba">{chyba}</span>}
+      </div>
+    </form>
+  )
+}
+
+function OdepsaneDluhy({ data }: { data: Data }) {
+  if (data.odepsane.length === 0) return null
+  return (
+    <section className="odepsane-dluhy">
+      <h2>Odepsané dluhy</h2>
+      <p className="tlumene">
+        Odepsaný dluh se v účetnictví už nevykazuje jako pohledávka, ale nezaniká. Když ho
+        dlužník nebo jeho dědic zaplatí, zaúčtujte platbu na stránce Banka jako „Úhrada
+        dříve odepsaného dluhu“.
+      </p>
+      <div className="tabulka-posun">
+        <table className="dluznici">
+          <thead>
+            <tr>
+              <th>Jednotka</th>
+              <th>Odepsáno</th>
+              <th>Co se odepsalo</th>
+              <th className="cislo">Částka</th>
+              <th className="cislo">Zbývá zaplatit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.odepsane.flatMap((o) =>
+              o.odpisy.map((x, i) => (
+                <tr key={`${o.jednotka}-${i}`} className={x.zbyva ? undefined : 'bez-dluhu'}>
+                  <td>{i === 0 ? o.jednotka : ''}</td>
+                  <td>
+                    {datum(x.datum)}
+                    <span className="tlumene">
+                      <br />
+                      {x.rozhodnuti}
+                    </span>
+                  </td>
+                  <td>
+                    {x.dluhy.join(', ')}
+                    <span className="tlumene">
+                      <br />
+                      položka {x.polozka}
+                    </span>
+                  </td>
+                  <td className="cislo">{kc(x.castka)}</td>
+                  <td className="cislo">{x.zbyva ? kc(x.zbyva) : 'zaplaceno'}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 

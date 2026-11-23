@@ -25,11 +25,7 @@ změna schválené věci:
 
 Auditní záznam proto vzniká dřív než schvalování a podpisy, které na něm stojí.
 
-## 1. Opravy správnosti
-
-- Dlužníci: odepsané dluhy vést na podrozvaze.
-
-## 2. Základy, na kterých stojí další oblasti
+## 1. Základy, na kterých stojí další oblasti
 
 - **Zaúčtování operací z katalogu v rozhraní:** většinu operací z katalogu (úvěr, dotace,
   pojistné plnění, majetek, předpis úroku z prodlení, odměny) dnes nejde zaúčtovat jinak
@@ -42,7 +38,7 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
 - **Převod jednotky uprostřed měsíce:** vyúčtování na dvě vlastnická období a potvrzení
   o dluzích k datu převodu.
 
-## 3. Účetní oblasti
+## 2. Účetní oblasti
 
 - **Úvěr:** výpočet podílů jednotek na jistině, splátka jako složka měsíčního předpisu,
   ve vyúčtování záloh na správu odlišit náklady kryté zálohou na úvěr (955300) od běžného
@@ -58,7 +54,7 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
 - **Účetní období a archiv:** hospodářský rok a první období delší než 12 měsíců; export
   deníku, hlavní knihy a dokladů pro archiv (PDF a CSV); hlídání lhůt úschovy.
 
-## 4. Doklady, schvalování a závěrka
+## 3. Doklady, schvalování a závěrka
 
 - **Podklady a přílohy:** soubory k fakturám, rozhodnutím (zápisy ze shromáždění)
   a ostatním dokladům, neměnné se SHA-256; stav podkladu `chybi → vyzadan → doplnen`
@@ -75,7 +71,7 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
 - **Dobropisy** k přijatým fakturám.
 - **Další formáty výpisů:** camt.053 a MT940.
 
-## 5. Až nakonec
+## 4. Až nakonec
 
 - Upozornění pro výbor e-mailem (blížící se lhůty, nové faktury, dluhy).
 - Automatický zápis vrácených e-mailů (bounce) do zásilek.

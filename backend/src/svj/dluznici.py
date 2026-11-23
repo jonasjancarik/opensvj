@@ -6,6 +6,11 @@ z minulých let, potom měsíční předpisy a další pohledávky podle splatno
 v aplikaci vždy obsahuje všechny dluhy po splatnosti, takže pořadí podle upomenutí
 (§ 1933 odst. 1 OZ) dává totéž. Součet nezaplacených položek minus přeplatek je vždy
 rovný saldu jednotky z `predpisy.saldo`.
+
+Odepsaný dluh se z pohledávek odúčtuje, ale nezaniká. Aplikace ho dál vede po jednotkách
+přes všechny roky (`odepsane`), dokud ho dlužník nezaplatí. Formální podrozvahové účty
+vyhláška 504 (§ 37 odst. 4) vyžaduje jen u pohledávek odepsaných po stoprocentní opravné
+položce; ty SVJ obvykle netvoří.
 """
 
 import calendar
@@ -17,7 +22,9 @@ from sqlalchemy.orm import Session
 
 from . import denik, pocatecni, predpisy, vyuctovani_spravy
 from .db import RadekZapisu, Zapis
+from .domena import katalog
 from .domena import urok as urok_z_prodleni
+from .domena.penize import halire, kc, na_text
 from .domena.profil import Profil
 
 POPIS_ROLE = {
@@ -316,3 +323,198 @@ def k_prevodu(
         )
         vysledek.append((jednotka, role, nezaplacene, kredit[(jednotka, role)]))
     return vysledek
+
+
+OPERACE_ODPISU = "odpis-nedobytne-pohledavky"
+OPERACE_UHRADY_ODPISU = "uhrada-odepsane-pohledavky"
+ROLE_ODPISU = "naklady.odpis_pohledavky"
+ROLE_UHRADY_ODPISU = "vynosy.odepsane_pohledavky"
+
+
+class ChybaOdpisu(ValueError):
+    pass
+
+
+@dataclass
+class Odpis:
+    datum: date
+    castka: int = 0
+    polozka: str = ""  # položka správy, do jejíchž nákladů odpis šel
+    rozhodnuti: str = ""
+    dluhy: list[str] = field(default_factory=list)  # co přesně se odepsalo
+    zbyva: int = 0  # co z odpisu dlužník ještě nezaplatil
+
+
+@dataclass
+class Odepsane:
+    jednotka: str
+    odpisy: list[Odpis] = field(default_factory=list)  # od nejstaršího
+    uhrazeno: int = 0
+
+    @property
+    def odepsano(self) -> int:
+        return sum(o.castka for o in self.odpisy)
+
+    @property
+    def zbyva(self) -> int:
+        return sum(o.zbyva for o in self.odpisy)
+
+
+def odepsane(session: Session) -> dict[str, Odepsane]:
+    """Odepsané dluhy po jednotkách přes všechny roky a co z nich dlužníci zaplatili.
+    Úhrady se započítávají na nejstarší odpis."""
+    radky = session.execute(
+        select(
+            Zapis.id,
+            Zapis.datum,
+            Zapis.operace,
+            RadekZapisu.strana,
+            RadekZapisu.role,
+            RadekZapisu.jednotka,
+            RadekZapisu.sluzba,
+            RadekZapisu.popis,
+            RadekZapisu.castka,
+        )
+        .join(Zapis)
+        .where(
+            Zapis.operace.in_((OPERACE_ODPISU, OPERACE_UHRADY_ODPISU)),
+            RadekZapisu.jednotka.is_not(None),
+            denik.nestornovany(),
+        )
+        .order_by(Zapis.datum, Zapis.id, RadekZapisu.id)
+    ).all()
+    vysledek: dict[str, Odepsane] = {}
+    odpisy: dict[int, Odpis] = {}
+    for zapis_id, datum, operace, strana, role, jednotka, sluzba, popis, castka in radky:
+        o = vysledek.setdefault(jednotka, Odepsane(jednotka))
+        if operace == OPERACE_UHRADY_ODPISU:
+            if role == ROLE_UHRADY_ODPISU:
+                o.uhrazeno += castka if strana == "d" else -castka
+            continue
+        if zapis_id not in odpisy:
+            odpisy[zapis_id] = Odpis(datum)
+            o.odpisy.append(odpisy[zapis_id])
+        odpis = odpisy[zapis_id]
+        if role == ROLE_ODPISU and strana == "md":
+            odpis.castka += castka
+            odpis.polozka = sluzba or ""
+            odpis.rozhodnuti = popis or ""
+        elif role in pocatecni.ROLE_VLASTNIKU and strana == "d" and popis:
+            odpis.dluhy.append(popis)
+    for o in vysledek.values():
+        zaplaceno = o.uhrazeno
+        for odpis in o.odpisy:
+            odpis.zbyva = odpis.castka - min(odpis.castka, zaplaceno)
+            zaplaceno -= odpis.castka - odpis.zbyva
+    return {j: o for j, o in vysledek.items() if o.odpisy}
+
+
+def zauctuj_odpis(
+    session: Session,
+    profil: Profil,
+    nastaveni: predpisy.Nastaveni,
+    rok: int,
+    *,
+    jednotka: str,
+    castka: int,
+    polozka: str,
+    rozhodnuti: str,
+    zauctoval: str,
+    dnes: date | None = None,
+) -> Zapis:
+    """Odepíše nedobytný dluh jednotky, od nejstaršího. Každá odepsaná část odkazuje
+    na dluh, ze kterého je, takže ji pozdější platby neberou za nezaplacenou."""
+    dnes = dnes or date.today()
+    rozhodnuti = rozhodnuti.strip()
+    if jednotka not in profil.jednotky:
+        raise ChybaOdpisu(f"Jednotku {jednotka} SVJ nemá.")
+    if polozka not in profil.sprava:
+        raise ChybaOdpisu("Vyberte položku správy, do jejíchž nákladů odpis patří.")
+    if not rozhodnuti:
+        raise ChybaOdpisu("Napište, kdo a kdy o odpisu rozhodl.")
+    if len(rozhodnuti) > 200:
+        raise ChybaOdpisu("Popis rozhodnutí je příliš dlouhý, zkraťte ho na 200 znaků.")
+    if castka <= 0:
+        raise ChybaOdpisu("Odepisovaná částka musí být kladná.")
+    if rok > dnes.year:
+        raise ChybaOdpisu(f"Rok {rok} ještě nezačal.")
+    if denik.aktivni(session, vyuctovani_spravy.klic(rok)) is not None:
+        raise ChybaOdpisu(
+            f"Vyúčtování záloh na správu za rok {rok} už je zaúčtované, takže by odpis mezi "
+            "vlastníky nerozdělilo. Stornujte ho v Deníku, odepište dluh a zálohy vyúčtujte "
+            "znovu."
+        )
+    dluh = next(d for d in prehled(session, profil, nastaveni, rok, dnes) if d.jednotka == jednotka)
+    if castka > dluh.saldo:
+        raise ChybaOdpisu(
+            f"Jednotka {jednotka} dluží jen {kc(dluh.saldo)}."
+            if dluh.saldo > 0
+            else f"Jednotka {jednotka} nic nedluží."
+        )
+    radky = [
+        katalog.Radek(
+            "md",
+            ROLE_ODPISU,
+            castka,
+            {"jednotka": jednotka, "sluzba": polozka, "popis": rozhodnuti},
+        )
+    ]
+    zbyva = castka
+    for p in dluh.polozky:
+        cast = min(p.zbyva, zbyva)
+        if cast <= 0:
+            continue
+        dimenze = {"jednotka": jednotka, "popis": p.popis[:200]}
+        if p.radek is not None:
+            dimenze["urceno_na"] = str(p.radek)
+        radky.append(katalog.Radek("d", p.role, cast, dimenze))
+        zbyva -= cast
+        if not zbyva:
+            break
+    return denik.zauctuj(
+        session,
+        profil,
+        katalog.nacti()[OPERACE_ODPISU],
+        {
+            "jednotka": jednotka,
+            "castka": na_text(castka),
+            "polozka": polozka,
+            "rozhodnuti": rozhodnuti,
+        },
+        datum=dnes if rok == dnes.year else date(rok, 12, 31),
+        popis=f"Odpis nedobytného dluhu jednotky {jednotka}",
+        doklad="ID",
+        zauctoval=zauctoval,
+        radky=radky,
+    )
+
+
+def radky_uhrady_odpisu(
+    session: Session, operace: katalog.Operace, vstupy: dict[str, str], krok: str | None = None
+) -> list[katalog.Radek]:
+    """Řádky platby dříve odepsaného dluhu: výnos jde do položky správy, do které šel
+    odpis (od nejstaršího odpisu), aby ji vyúčtování záloh na správu zase snížilo."""
+    jednotka = vstupy["jednotka"]
+    castka = halire(vstupy["castka"])
+    o = odepsane(session).get(jednotka)
+    if o is None or o.zbyva <= 0:
+        raise ChybaOdpisu(f"Jednotka {jednotka} nemá odepsaný dluh, který by zbýval zaplatit.")
+    if castka > o.zbyva:
+        raise ChybaOdpisu(
+            f"Platba je vyšší než odepsaný dluh jednotky {jednotka}, který zbývá zaplatit "
+            f"({kc(o.zbyva)})."
+        )
+    podle_polozky: dict[str, int] = {}
+    zbyva = castka
+    for odpis in o.odpisy:
+        cast = min(odpis.zbyva, zbyva)
+        if cast:
+            podle_polozky[odpis.polozka] = podle_polozky.get(odpis.polozka, 0) + cast
+            zbyva -= cast
+    return [
+        r
+        for polozka, cast in podle_polozky.items()
+        for r in katalog.sestav(
+            operace, {**vstupy, "polozka": polozka, "castka": na_text(cast)}, krok
+        )
+    ]

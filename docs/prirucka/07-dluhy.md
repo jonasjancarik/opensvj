@@ -199,7 +199,7 @@ vymáhat zbytek po prodávajícím.
   nepočítá do dluhů, které při prodeji přecházejí na kupujícího. Stránka ukazuje, kolik
   z něj zbývá zaplatit, a spočtený úrok dál počítá jen za dobu po posledním předpisu.
   Úrok z částí, které vlastník zaplatil pozdě, aplikace nepočítá.
-- Podrozvahovou evidenci odepsaných dluhů aplikace nemá.
+- Nedobytný dluh jde odepsat na stránce Dlužníci (s rozhodnutím a položkou správy). Aplikace ho pak vede mezi odepsanými dluhy, dokud ho dlužník nezaplatí; platbu zaúčtujete v Bance jako „Úhrada dříve odepsaného dluhu“.
 
 ## Příklad
 

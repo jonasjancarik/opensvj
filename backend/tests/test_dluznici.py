@@ -2,6 +2,8 @@
 
 from datetime import date
 
+import pytest
+
 from svj import denik, dluznici, pocatecni, predpisy
 from svj.domena import katalog
 from tests.test_banka import PROFIL
@@ -150,3 +152,85 @@ def test_platba_na_dluh_urceny_vlastnikem(session):
     ]
     saldo = {s.jednotka: s.saldo for s in predpisy.saldo(session, PROFIL, 2026)}
     assert d.saldo == saldo["1001/1"]
+
+
+def _odpis(session, castka, **kw):
+    return dluznici.zauctuj_odpis(
+        session, PROFIL, NAST, 2026, jednotka="1001/1", castka=castka, polozka="SPRAVA",
+        rozhodnuti="Usnesení výboru 5. 5. 2026, skončené insolvenční řízení", zauctoval="x",
+        dnes=date(2026, 5, 10), **kw,
+    )  # fmt: skip
+
+
+def test_odpis_nedobytneho_dluhu_a_jeho_uhrada(session):
+    """Odpis jde na nejstarší dluhy jednotky a odkazuje na ně, takže pozdější platba
+    zaplatí zbylé dluhy. Odepsaný dluh zůstává v evidenci, dokud ho dlužník nezaplatí;
+    odpis zvýší náklady položky správy a jeho úhrada je zase sníží."""
+    from svj import uzaverka, vyuctovani_spravy
+    from svj.db import RadekZapisu, Zapis
+
+    _otevri_2026(session)
+    pocatecni.zauctuj(session, PROFIL, _stav(), zauctoval="x")
+    for m in (3, 4):
+        predpisy.vygeneruj(session, PROFIL, NAST, 2026, m, zauctoval="x", dnes=date(2026, 5, 1))
+    brezen = predpisy.mesicni_celkem(PROFIL, NAST, 2026, 3)["1001/1"]
+    duben = predpisy.mesicni_celkem(PROFIL, NAST, 2026, 4)["1001/1"]
+    with pytest.raises(dluznici.ChybaOdpisu, match="dluží jen"):
+        _odpis(session, 50_000_000 + brezen + duben + 1)
+    # Odepíše se nedoplatek z vyúčtování 2025 a 100 Kč z března, vlastník pak doplatí březen.
+    _odpis(session, 50_010_000)
+    _platba(session, "1001/1", brezen - 10_000, date(2026, 5, 10))
+    session.commit()
+
+    d = next(
+        x
+        for x in dluznici.prehled(session, PROFIL, NAST, 2026, date(2026, 5, 10))
+        if x.jednotka == "1001/1"
+    )
+    assert [(p.popis, p.zbyva) for p in d.polozky] == [("Zálohy za duben 2026", duben)]
+    saldo = {s.jednotka: s.saldo for s in predpisy.saldo(session, PROFIL, 2026)}
+    assert d.saldo == saldo["1001/1"]
+    odepsane_radky = session.execute(
+        RadekZapisu.__table__.select()
+        .with_only_columns(RadekZapisu.ucet, RadekZapisu.castka)
+        .join(Zapis.__table__)
+        .where(Zapis.operace == dluznici.OPERACE_ODPISU, RadekZapisu.strana == "d")
+    ).all()
+    assert sorted(odepsane_radky) == [("311100", 10_000), ("311200", 50_000_000)]
+
+    o = dluznici.odepsane(session)["1001/1"]
+    assert (o.odepsano, o.uhrazeno, o.zbyva) == (50_010_000, 0, 50_010_000)
+    assert o.odpisy[0].dluhy == ["Vyúčtování 2025", "Zálohy za březen 2026"]
+    assert o.odpisy[0].polozka == "SPRAVA"
+
+    op = katalog.nacti()[dluznici.OPERACE_UHRADY_ODPISU]
+    vstupy = {"ucet": "provozni", "jednotka": "1001/1", "castka": "1000.00"}
+    with pytest.raises(dluznici.ChybaOdpisu, match="vyšší"):
+        dluznici.radky_uhrady_odpisu(session, op, {**vstupy, "castka": "500100.01"})
+    radky = dluznici.radky_uhrady_odpisu(session, op, vstupy)
+    denik.zauctuj(
+        session, PROFIL, op, vstupy, datum=date(2026, 6, 1), popis="platba dědice",
+        doklad="BV", zauctoval="x", radky=radky,
+    )  # fmt: skip
+    session.commit()
+
+    o = dluznici.odepsane(session)["1001/1"]
+    assert (o.uhrazeno, o.zbyva) == (100_000, 49_910_000)
+    sprava = next(p for p in vyuctovani_spravy.spocitej(session, PROFIL, 2026).polozky
+                  if p.kod == "SPRAVA")  # fmt: skip
+    assert (sprava.naklady, sprava.vynosy) == (50_010_000, 100_000)
+    vynosy = {v.popis: (v.castka, v.zdaneni) for v in uzaverka.dan(session, PROFIL, 2026).vynosy}
+    assert (100_000, "nepredmetne") in vynosy.values()
+
+
+def test_odpis_nejde_po_vyuctovani_spravy(session):
+    from svj import vyuctovani_spravy
+
+    _otevri_2026(session)
+    pocatecni.zauctuj(session, PROFIL, _stav(), zauctoval="x")
+    for m in range(3, 13):
+        predpisy.vygeneruj(session, PROFIL, NAST, 2026, m, zauctoval="x", dnes=date(2027, 3, 1))
+    vyuctovani_spravy.zauctuj(session, PROFIL, NAST, 2026, zauctoval="x", dnes=date(2027, 3, 1))
+    session.commit()
+    with pytest.raises(dluznici.ChybaOdpisu, match="Stornujte ho v Deníku"):
+        _odpis(session, 10_000)

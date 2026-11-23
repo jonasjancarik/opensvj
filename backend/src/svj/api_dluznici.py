@@ -43,6 +43,28 @@ class Jednotka(BaseModel):
     vlastnici: list[Adresat]  # k dnešku; prázdné, když je aplikace nezná
 
 
+class Odpis(BaseModel):
+    datum: date
+    castka: int
+    polozka: str  # název položky správy
+    rozhodnuti: str
+    dluhy: list[str]
+    zbyva: int
+
+
+class OdepsanaJednotka(BaseModel):
+    jednotka: str
+    odepsano: int
+    uhrazeno: int
+    zbyva: int
+    odpisy: list[Odpis]
+
+
+class PolozkaSpravy(BaseModel):
+    kod: str
+    nazev: str
+
+
 class Dluznici(BaseModel):
     rok: int
     dnes: date
@@ -56,6 +78,8 @@ class Dluznici(BaseModel):
     zdroj_sazeb: str
     celkem_po_splatnosti: int
     jednotky: list[Jednotka]
+    odepsane: list[OdepsanaJednotka]  # odepsané dluhy přes všechny roky
+    polozky_spravy: list[PolozkaSpravy]
 
 
 @router.get("/{rok}")
@@ -68,6 +92,7 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         posledni = s.scalar(select(func.max(BankovniPohyb.datum)))
         kdo = adresati(s, dnes)
+        odepsane = dluznici.odepsane(s)
         nezauctovane = s.scalar(
             select(func.count())
             .select_from(BankovniPohyb)
@@ -114,6 +139,29 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
         zdroj_sazeb=urok_z_prodleni.ZDROJ,
         celkem_po_splatnosti=sum(j.po_splatnosti for j in jednotky),
         jednotky=jednotky,
+        odepsane=[
+            OdepsanaJednotka(
+                jednotka=o.jednotka,
+                odepsano=o.odepsano,
+                uhrazeno=o.uhrazeno,
+                zbyva=o.zbyva,
+                odpisy=[
+                    Odpis(
+                        datum=x.datum,
+                        castka=x.castka,
+                        polozka=prof.sprava.get(x.polozka, {}).get("nazev", x.polozka),
+                        rozhodnuti=x.rozhodnuti,
+                        dluhy=x.dluhy,
+                        zbyva=x.zbyva,
+                    )
+                    for x in o.odpisy
+                ],
+            )
+            for o in odepsane.values()
+        ],
+        polozky_spravy=[
+            PolozkaSpravy(kod=k, nazev=u.get("nazev", k)) for k, u in prof.sprava.items()
+        ],
     )
 
 
@@ -150,6 +198,38 @@ def predepis_urok(rok: int, z: PredpisUroku, uzivatel: Zapisujici) -> Dluznici:
                 zauctoval=uzivatel.email,
             )
         except denik.ChybaUctovani as e:
+            s.rollback()
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
+        s.commit()
+    return prehled(rok, None)
+
+
+class OdpisDluhu(BaseModel):
+    jednotka: str
+    castka: int  # haléře
+    polozka: str
+    rozhodnuti: str
+
+
+@router.post("/{rok}/odpis")
+def odepis(rok: int, z: OdpisDluhu, uzivatel: Zapisujici) -> Dluznici:
+    """Odepíše nedobytný dluh jednotky; aplikace ho dál vede mezi odepsanými."""
+    prof = profil.nacti(nastaveni().profil)
+    nast = predpisy.nacti_s(prof, sezeni)
+    with sezeni()() as s:
+        try:
+            dluznici.zauctuj_odpis(
+                s,
+                prof,
+                nast,
+                rok,
+                jednotka=z.jednotka,
+                castka=z.castka,
+                polozka=z.polozka,
+                rozhodnuti=z.rozhodnuti,
+                zauctoval=uzivatel.email,
+            )
+        except (dluznici.ChybaOdpisu, denik.ChybaUctovani) as e:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
         s.commit()

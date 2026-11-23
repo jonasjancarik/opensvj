@@ -43,3 +43,32 @@ def test_predpis_uroku_a_dluhy_jednotky(session, klient):
     assert r.status_code == 200, r.text
     j = next(x for x in r.json()["jednotky"] if x["jednotka"] == "1001/1")
     assert j["sankce"] == 12_345 and j["urok_do"] == date.today().isoformat()
+
+
+def test_odpis_dluhu(session, klient):
+    rok = date.today().year
+    session.add(Obdobi(rok=rok, stav="otevrene"))
+    session.flush()
+    nast = predpisy.nacti(PROFIL)
+    predpisy.vygeneruj(session, PROFIL, nast, rok, 3, zauctoval="x", dnes=date(rok, 5, 1))
+    session.commit()
+
+    r = klient.post(
+        f"/api/dluznici/{rok}/odpis",
+        json={"jednotka": "1001/1", "castka": 10_000, "polozka": "SPRAVA", "rozhodnuti": " "},
+    )
+    assert r.status_code == 422 and "rozhodl" in r.json()["detail"]
+    r = klient.post(
+        f"/api/dluznici/{rok}/odpis",
+        json={
+            "jednotka": "1001/1",
+            "castka": 10_000,
+            "polozka": "SPRAVA",
+            "rozhodnuti": "Usnesení výboru",
+        },
+    )
+    assert r.status_code == 200, r.text
+    [o] = r.json()["odepsane"]
+    assert (o["jednotka"], o["zbyva"]) == ("1001/1", 10_000)
+    assert o["odpisy"][0]["polozka"] == "Správa nemovitosti"
+    assert o["odpisy"][0]["dluhy"] == [f"Zálohy za březen {rok}"]

@@ -14,7 +14,7 @@ from typing import Any
 from sqlalchemy import ColumnElement, and_, exists, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, faktury, pocatecni
+from . import denik, dluznici, faktury, pocatecni
 from .db import (
     BankovniPohyb,
     BankovniUcet,
@@ -37,6 +37,7 @@ OPERACE = {
         "prevod-mezi-ucty": ["druhy_ucet"],
         "prijem-nesparovany": [],
         "uhrada-uroku-z-prodleni": ["jednotka"],
+        "uhrada-odepsane-pohledavky": ["jednotka"],
     },
     "vydaj": {
         "uhrada-faktury": ["faktura"],
@@ -584,6 +585,11 @@ def zauctuj_pohyb(
         radky = faktury.s_parovacim_symbolem(
             katalog.sestav(operace, vstupy, krok), stav.faktura.cislo
         )
+    if operace_id == dluznici.OPERACE_UHRADY_ODPISU:
+        try:
+            radky = dluznici.radky_uhrady_odpisu(session, operace, vstupy, krok)
+        except dluznici.ChybaOdpisu as e:
+            raise ChybaBanky(str(e)) from e
     if vstupy.get("dluh"):
         dluh = _urceny_dluh(session, pohyb, vstupy["jednotka"], vstupy.pop("dluh"))
         radky = s_urcenim_dluhu(katalog.sestav(operace, vstupy, krok), dluh)

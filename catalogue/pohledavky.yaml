@@ -113,24 +113,50 @@
   kdy: Pohledávka je nedobytná (typicky skončené insolvenční řízení) a SVJ rozhodlo o odpisu.
   stav: navrh
   doklad: ID
-  vstupy: {jednotka: označení jednotky, castka: odepisovaná částka, rozhodnuti: odkaz na rozhodnutí}
+  vstupy: {jednotka: označení jednotky, castka: odepisovaná částka, polozka: položka správy, do jejíchž nákladů odpis patří, rozhodnuti: odkaz na rozhodnutí}
   zapisy:
     - md: naklady.odpis_pohledavky
       d: pohledavky_vlastnici
       castka: "{castka}"
-      dimenze: {jednotka: "{jednotka}"}
+      dimenze: {jednotka: "{jednotka}", sluzba: "{polozka}"}
   pravidla:
     - Pokud byla vytvořena opravná položka nebo vyčleněn zdroj krytí, ruší se současně (opravna-polozka-tvorba nebo pochybne-pohledavky-vycleneni se zápornou částkou).
-    - Odpisem dluh nezaniká; jen se přestane vykazovat. Náklad je třeba rozpočítat vlastníkům jako ostatní náklady na správu.
+    - Odpis je náklad na správu domu. Má proto položku správy a vyúčtování záloh na správu ho rozdělí mezi vlastníky jako ostatní náklady té položky.
+    - Odpisem dluh nezaniká; jen se přestane vykazovat. Odepsané dluhy aplikace dál eviduje po jednotkách (stránka Dlužníci), dokud je dlužník nezaplatí (uhrada-odepsane-pohledavky). Vyhláška 504 § 37 odst. 4 vyžaduje podrozvahové účty jen u pohledávek odepsaných po stoprocentní opravné položce.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 75 (kap. 10.1, odpis)"}
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Odpis po skončení insolvence
-      vstupy: {jednotka: "1001/3", castka: "42000.00", rozhodnuti: "shromáždění 2026"}
+      vstupy: {jednotka: "1001/3", castka: "42000.00", polozka: SPRAVA, rozhodnuti: "shromáždění 2026"}
       ocekavane:
-        - [md, naklady.odpis_pohledavky, "42000.00", {jednotka: "1001/3"}]
-        - [d, pohledavky_vlastnici, "42000.00", {jednotka: "1001/3"}]
+        - [md, naklady.odpis_pohledavky, "42000.00", {jednotka: "1001/3", sluzba: SPRAVA}]
+        - [d, pohledavky_vlastnici, "42000.00", {jednotka: "1001/3", sluzba: SPRAVA}]
+
+- id: uhrada-odepsane-pohledavky
+  nazev: Úhrada dříve odepsaného dluhu
+  kdy: Dlužník nebo jeho dědic zaplatí dluh, který SVJ dřív odepsalo jako nedobytný.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, jednotka: označení jednotky, polozka: položka správy, do které šel odpis, castka: zaplacená částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: vynosy.odepsane_pohledavky
+      castka: "{castka}"
+      dimenze: {jednotka: "{jednotka}", sluzba: "{polozka}"}
+  pravidla:
+    - Odepsaná pohledávka už v rozvaze není, platba je proto výnos SVJ (kniha s. 75).
+    - Výnos má stejnou položku správy jako odpis, takže ve vyúčtování záloh na správu sníží náklady té položky a vlastníci dostanou zpět, co dřív zaplatili za odpis.
+    - Jde o zaplacení příspěvků vlastníka na správu domu, a proto není předmětem daně (§ 18 odst. 2 písm. f) ZDP); ověřit s účetní.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 75 (kap. 10.1, odpis)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Dědic zaplatí část odepsaného dluhu
+      vstupy: {ucet: provozni, jednotka: "1001/3", polozka: SPRAVA, castka: "10000.00"}
+      ocekavane:
+        - [md, banka.provozni, "10000.00", {jednotka: "1001/3", sluzba: SPRAVA}]
+        - [d, vynosy.odepsane_pohledavky, "10000.00", {jednotka: "1001/3", sluzba: SPRAVA}]
 
 - id: dluh-zustava-prevodci
   nazev: Dluh, který při převodu jednotky nepřešel na nabyvatele

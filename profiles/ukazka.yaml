@@ -130,6 +130,7 @@ role:
   naklady.odpisy: "551100"
   naklady.opravne_polozky: "559100"
   vynosy.urok_z_prodleni: "641100"
+  vynosy.odepsane_pohledavky: "649300"
   vynosy.dotace: "691100"
   zdroj_majetku: "901100"
   uvery: "951100"

@@ -105,10 +105,16 @@ class DluhDrivejsiho(BaseModel):
     castka: int
 
 
+class OdepsanyDluh(BaseModel):
+    jednotka: str
+    zbyva: int
+
+
 class Banka(BaseModel):
     ucty: list[Ucet]
     jednotky: list[str]
     drivejsi: list[DluhDrivejsiho]  # dluhy dřívějších vlastníků pro jejich platby
+    odepsane: list[OdepsanyDluh]  # odepsané dluhy, které zbývá zaplatit
     faktury: list[OtevrenaFaktura]
     moznosti: dict[str, list[Moznost]]
     pohyby: list[Pohyb]
@@ -254,6 +260,11 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
             drivejsi=[
                 DluhDrivejsiho(jednotka=d.jednotka, vlastnik=d.vlastnik, castka=d.castka)
                 for d in predpisy.drivejsi_vlastnici(s, dnes.year)
+            ],
+            odepsane=[
+                OdepsanyDluh(jednotka=o.jednotka, zbyva=o.zbyva)
+                for o in dluznici.odepsane(s).values()
+                if o.zbyva > 0
             ],
             faktury=[
                 OtevrenaFaktura(

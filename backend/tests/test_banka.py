@@ -264,3 +264,42 @@ def test_platba_s_urcenym_dluhem(session):
     assert [(x.popis, x.zbyva) for x in d.polozky] == [("Vyúčtování 2023", 500_000 - 38_000)]
     pravidlo = session.scalar(select(PravidloParovani))
     assert "dluh" not in pravidlo.parametry
+
+
+def test_uhrada_odepsaneho_dluhu(session):
+    """Platbu dříve odepsaného dluhu aplikace zaúčtuje jako výnos do položky správy,
+    do které šel odpis; u jednotky bez odepsaného dluhu ji odmítne."""
+    from svj import dluznici, pocatecni, predpisy
+    from svj.db import RadekZapisu
+
+    stav = pocatecni.PocatecniStav(
+        rok=2025,
+        zustatky={"311200": 1_500_000, "955100": -1_500_000},
+        polozky=[pocatecni.Polozka("311200", 1_500_000, "1001/5", "Vyúčtování 2024")],
+    )
+    pocatecni.zauctuj(session, PROFIL, stav, zauctoval="x")
+    dluznici.zauctuj_odpis(
+        session, PROFIL, predpisy.nacti(PROFIL), 2025, jednotka="1001/5", castka=1_500_000,
+        polozka="POJISTENI", rozhodnuti="Usnesení výboru", zauctoval="x", dnes=date(2025, 1, 10),
+    )  # fmt: skip
+    _nahraj(session)
+    p = _pohyby(session)
+    with pytest.raises(banka.ChybaBanky, match="nemá odepsaný dluh"):
+        banka.zauctuj_pohyb(
+            session, PROFIL, p["101"].id, "uhrada-odepsane-pohledavky",
+            {"jednotka": "1001/6"}, zauctoval="x",
+        )  # fmt: skip
+    parovani = banka.zauctuj_pohyb(
+        session, PROFIL, p["101"].id, "uhrada-odepsane-pohledavky",
+        {"jednotka": "1001/5"}, zauctoval="x",
+    )  # fmt: skip
+    session.commit()
+
+    radky = session.scalars(
+        select(RadekZapisu).where(RadekZapisu.zapis_id == parovani.zapis_id)
+    ).all()
+    assert sorted((r.strana, r.ucet, r.castka, r.sluzba) for r in radky) == [
+        ("d", "649300", 1_038_000, "POJISTENI"),
+        ("md", "221100", 1_038_000, "POJISTENI"),
+    ]
+    assert dluznici.odepsane(session)["1001/5"].zbyva == 1_500_000 - 1_038_000

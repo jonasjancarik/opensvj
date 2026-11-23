@@ -48,6 +48,7 @@ type Banka = {
   ucty: Ucet[]
   jednotky: string[]
   drivejsi: { jednotka: string; vlastnik: string; castka: number }[]
+  odepsane: { jednotka: string; zbyva: number }[]
   faktury: OtevrenaFaktura[]
   moznosti: Record<'prijem' | 'vydaj', Moznost[]>
   pohyby: Pohyb[]
@@ -436,7 +437,13 @@ function PolozkaPohybu({
                   }
                 >
                   <option value="">Vyberte…</option>
-                  {pole === 'jednotka'
+                  {pole === 'jednotka' && operace === 'uhrada-odepsane-pohledavky'
+                    ? data.odepsane.map((o) => (
+                        <option key={o.jednotka} value={o.jednotka}>
+                          {o.jednotka} (odepsaný dluh {kc(o.zbyva)})
+                        </option>
+                      ))
+                    : pole === 'jednotka'
                     ? data.jednotky.map((j) => (
                         <option key={j} value={j}>
                           {j}
