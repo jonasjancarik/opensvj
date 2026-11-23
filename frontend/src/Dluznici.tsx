@@ -109,7 +109,7 @@ export function Dluznici() {
             {data.jednotky.map((j) => {
               return (
                 <Fragment key={j.jednotka}>
-                  <tr id={`jednotka-${j.jednotka}`}>
+                  <tr id={`jednotka-${j.jednotka}`} className={j.po_splatnosti ? undefined : 'bez-dluhu'}>
                     <td>{j.jednotka}</td>
                     <td className={j.po_splatnosti ? 'cislo dluh' : 'cislo'}>
                       {j.po_splatnosti ? kc(j.po_splatnosti) : '–'}

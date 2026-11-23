@@ -244,6 +244,12 @@ nav.hlavni a {
   transition: color 0.15s, background-color 0.15s;
 }
 nav.hlavni a:hover { color: var(--text); background: var(--plocha-2); }
+/* Skupiny v nabídce odděluje mezera s tečkou: běžný měsíc, konec roku, evidence. */
+nav.hlavni a.nova-skupina { margin-left: 1.1rem; }
+nav.hlavni a.nova-skupina::before {
+  content: ''; position: absolute; left: -0.65rem; top: 50%; width: 3px; height: 3px; margin-top: -1.5px;
+  border-radius: 50%; background: var(--okraj-silny);
+}
 nav.hlavni a[aria-current='page'] {
   color: var(--text); background: var(--plocha); box-shadow: var(--stin);
 }
@@ -506,6 +512,28 @@ details.katalog > p { margin: 0.25rem 0 1rem; }
 .pohyb-udaje .tlumene { font-size: 0.88rem; }
 .pohyb p { margin: 0.35rem 0 0; }
 .pohyb p.uspech { font-size: 0.9rem; padding: 0.45rem 0.75rem; }
+.pohyb-navrh {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1.25rem;
+  margin-top: 0.6rem; padding: 0.7rem 0.75rem 0.7rem 0.95rem; border-radius: var(--radius-maly);
+  background: var(--akcent-mekky);
+}
+.pohyb-navrh > p { display: grid; gap: 0.1rem; margin: 0; }
+.pohyb-navrh > p .tlumene { font-size: 0.85rem; }
+.pohyb-navrh > p.chyba { flex-basis: 100%; }
+.pohyb-navrh button { padding: 0.5rem 1rem; font-size: 0.9rem; }
+.vyber-souboru {
+  display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0.9rem 0.4rem 0.4rem;
+  border: 1px dashed var(--okraj-silny); border-radius: var(--radius-maly); background: var(--plocha-2);
+  font-weight: 400; font-size: 0.92rem; color: var(--tlumeny); cursor: pointer; max-width: 100%;
+}
+.vyber-souboru span {
+  padding: 0.35rem 0.8rem; border: 1px solid var(--okraj-silny); border-radius: 6px; background: var(--plocha);
+  color: var(--text); font-weight: 550; white-space: nowrap;
+}
+.vyber-souboru:hover span { border-color: var(--tlumeny); }
+input.skryte:focus-visible + .vyber-souboru { outline: 2px solid var(--akcent); outline-offset: 2px; }
+.nezalamovat { white-space: nowrap; }
+tr.bez-dluhu > td { color: var(--tlumeny); }
 .pohyb-formular {
   display: grid; gap: 0.7rem; margin-top: 0.7rem; padding-top: 0.85rem; border-top: 1px dashed var(--okraj);
   max-width: 34rem;

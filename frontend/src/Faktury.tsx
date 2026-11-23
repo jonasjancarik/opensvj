@@ -63,6 +63,8 @@ export function Faktury() {
   const rok = new Date().getFullYear()
   const [data, setData] = useState<Data | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
+  const [zadavam, setZadavam] = useState(false)
+  const [vsechny, setVsechny] = useState(false)
 
   useEffect(() => {
     api<Data>(`/api/faktury/${rok}`).then(setData).catch((e) => setChyba(e.message))
@@ -71,6 +73,9 @@ export function Faktury() {
   if (!data) return chyba ? <Chyba text={chyba} /> : <Nacitani />
 
   const otevrene = data.faktury.filter((f) => f.zbyva > 0 && f.stav !== 'stornovana')
+  // Zaplacených faktur přibývá celý rok; běžně stačí vidět ty, které na zaplacení čekají.
+  const vyrizene = data.faktury.length - otevrene.length
+  const videt = vsechny ? data.faktury : otevrene
 
   return (
     <>
@@ -83,11 +88,27 @@ export function Faktury() {
         Banka pak vyberete, kterou fakturu platba platí.
       </p>
 
-      <NovaFaktura data={data} poZadani={setData} />
+      {zadavam || data.faktury.length === 0 ? (
+        <NovaFaktura data={data} poZadani={setData} />
+      ) : (
+        <p>
+          <button onClick={() => setZadavam(true)}>Zadat fakturu</button>
+        </p>
+      )}
 
-      <h2>Faktury</h2>
+      <div className="nadpis-radek">
+        <h2>{vsechny ? 'Všechny faktury' : 'Faktury k zaplacení'}</h2>
+        {vyrizene > 0 && (
+          <label className="zaskrtavatko">
+            <input type="checkbox" checked={vsechny} onChange={(e) => setVsechny(e.target.checked)} />
+            Zobrazit i zaplacené ({vyrizene})
+          </label>
+        )}
+      </div>
       {data.faktury.length === 0 ? (
         <p className="tlumene">Zatím tu žádná faktura není.</p>
+      ) : videt.length === 0 ? (
+        <p className="tlumene">Všechny faktury jsou zaplacené.</p>
       ) : (
         <div className="tabulka-posun">
           <table className="faktury">
@@ -101,9 +122,9 @@ export function Faktury() {
               </tr>
             </thead>
             <tbody>
-              {data.faktury.map((f) => (
+              {videt.map((f) => (
                 <tr key={f.cislo} className={f.stav === 'stornovana' ? 'zrusena' : undefined}>
-                  <td>{datum(f.splatnost)}</td>
+                  <td className="nezalamovat">{datum(f.splatnost)}</td>
                   <td>
                     <strong>{f.dodavatel}</strong>
                     <span className="tlumene">

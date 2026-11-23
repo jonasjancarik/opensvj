@@ -18,20 +18,23 @@ import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
 import { Zasilky } from './Zasilky'
 
+// Pořadí podle toho, jak často se stránky používají: běžný měsíc, konec roku, evidence.
 const STRANKY = {
   prehled: 'Přehled',
+  banka: 'Banka',
+  faktury: 'Faktury',
   predpisy: 'Předpisy',
   dluznici: 'Dlužníci',
+  vyuctovani: 'Vyúčtování',
+  uzaverka: 'Uzávěrka',
   vlastnici: 'Vlastníci',
   meridla: 'Měřidla',
-  faktury: 'Faktury',
-  banka: 'Banka',
-  vyuctovani: 'Vyúčtování',
-  zasilky: 'Zásilky',
-  uzaverka: 'Uzávěrka',
-  denik: 'Deník',
   rozhodnuti: 'Rozhodnutí',
+  zasilky: 'Zásilky',
+  denik: 'Deník',
 } as const
+// Stránky, kterými v nabídce začíná nová skupina.
+const ZACATEK_SKUPINY: ReadonlySet<string> = new Set(['banka', 'vyuctovani', 'vlastnici'])
 // Stránky, které nejsou v menu (jednorázové nastavení); vedou na ně odkazy z jiných stránek.
 const SKRYTE = { pocatecni: 'Počáteční stavy', oznameni: 'Oznámení o zálohách' } as const
 type Stranka = keyof typeof STRANKY | keyof typeof SKRYTE
@@ -78,7 +81,12 @@ export default function App() {
         </a>
         <nav className="hlavni" aria-label="Hlavní nabídka">
           {Object.entries(STRANKY).map(([klic, nazev]) => (
-            <a key={klic} href={`#${klic}`} aria-current={stranka === klic ? 'page' : undefined}>
+            <a
+              key={klic}
+              href={`#${klic}`}
+              className={ZACATEK_SKUPINY.has(klic) ? 'nova-skupina' : undefined}
+              aria-current={stranka === klic ? 'page' : undefined}
+            >
               {nazev}
             </a>
           ))}

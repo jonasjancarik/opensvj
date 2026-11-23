@@ -280,7 +280,7 @@ def main() -> None:
             KDO,
         )
         nast = predpisy.nacti(profil, s)
-        stavy = {PROVOZNI: 42_000_000, FOND: 25_000_000}
+        stavy = {PROVOZNI: 42_000_000, FOND: 86_000_000}
         for m in range(1, DNES.month + 1):
             if m >= PRVNI_PREDPIS:
                 predpisy.vygeneruj(s, profil, nast, 2026, m, zauctoval=KDO, dnes=DNES)

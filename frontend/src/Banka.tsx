@@ -224,6 +224,8 @@ function NahraniVypisu({ ucty, poNahrani }: { ucty: Ucet[]; poNahrani: () => voi
       <div className="radek">
         <input
           key={klicPole}
+          id="soubor-vypisu"
+          className="skryte"
           type="file"
           accept=".gpc,.abo,.txt,.csv"
           aria-label="Soubor s výpisem"
@@ -233,6 +235,10 @@ function NahraniVypisu({ ucty, poNahrani }: { ucty: Ucet[]; poNahrani: () => voi
             setZprava(null)
           }}
         />
+        <label htmlFor="soubor-vypisu" className="vyber-souboru">
+          <span>Vybrat soubor</span>
+          {soubor ? soubor.name : 'Zatím není vybraný žádný soubor'}
+        </label>
         <button disabled={!soubor || pracuji} onClick={() => soubor && nahraj(soubor)}>
           {pracuji ? 'Nahrávám…' : 'Nahrát'}
         </button>
@@ -295,6 +301,8 @@ function PolozkaPohybu({
     ...p.navrh?.vstupy,
   }))
   const [zapamatovat, setZapamatovat] = useState(!p.navrh)
+  // Platbu s návrhem stačí potvrdit; formulář se otevře, až když ho někdo chce změnit.
+  const [upravuji, setUpravuji] = useState(!p.navrh)
   const [chyba, setChyba] = useState<string | null>(null)
   const [pracuji, setPracuji] = useState(false)
   const vybrana = moznosti.find((m) => m.id === operace)
@@ -349,6 +357,25 @@ function PolozkaPohybu({
           {popisVstupu(p.zauctovano.vstupy, data)} · zápis {p.zauctovano.zapis} ·{' '}
           {p.zauctovano.zauctoval}
         </p>
+      ) : p.navrh && !upravuji ? (
+        <div className="pohyb-navrh">
+          <p>
+            <strong>
+              {vybrana?.nazev ?? 'Návrh zaúčtování'}
+              {popisVstupu(p.navrh.vstupy, data)}
+            </strong>
+            <span className="tlumene">{p.navrh.duvod}</span>
+          </p>
+          <div className="radek">
+            <button disabled={!vybrana || pracuji} onClick={zauctuj}>
+              {pracuji ? 'Účtuji…' : 'Zaúčtovat'}
+            </button>
+            <button className="vedlejsi" disabled={pracuji} onClick={() => setUpravuji(true)}>
+              Změnit
+            </button>
+          </div>
+          {chyba && <p className="chyba">{chyba}</p>}
+        </div>
       ) : (
         <div className="pohyb-formular">
           {p.navrh && <p className="navrh">Návrh: {p.navrh.duvod}</p>}
