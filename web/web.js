@@ -1,4 +1,4 @@
-// Prezentační web OpenSVJ: seznam toho, co aplikace umí, a rok po měsících.
+// Prezentační web OpenSVJ: seznam toho, co aplikace umí, a drobné pohyby.
 
 // ---------- Co aplikace umí: seznam s hledáním a náhledem ----------
 function seznamSchopnosti() {
@@ -55,38 +55,6 @@ function seznamSchopnosti() {
   vyber(polozky[0])
 }
 
-// ---------- Rok po měsících ----------
-function rokPoMesicich() {
-  const misto = document.getElementById('rok-mesice')
-  const sekce = document.getElementById('rok')
-  if (!misto || !sekce) return
-  const NAZVY = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec']
-  // Ukázkový předpis platí od března; leden a únor jsou bez předpisu.
-  const mesice = NAZVY.map((nazev, i) => {
-    const b = document.createElement('button')
-    b.type = 'button'
-    b.className = 'mesic' + (i >= 2 && i <= 10 ? ' zauctovano' : '')
-    b.disabled = i !== 11
-    b.setAttribute('aria-label', i < 2 ? `${nazev}: bez předpisu` : `${nazev}: zaúčtováno`)
-    misto.appendChild(b)
-    return b
-  })
-  const prosinec = mesice[11]
-  function nastav(hotovo) {
-    sekce.classList.toggle('hotovo', hotovo)
-    prosinec.classList.toggle('zauctovano', hotovo)
-    prosinec.classList.toggle('lze', !hotovo)
-    prosinec.classList.toggle('posledni', hotovo)
-    prosinec.setAttribute('aria-label', hotovo ? 'prosinec: zaúčtováno, vrátit zpět' : 'Zaúčtovat prosinec')
-    document.getElementById('rok-pocet').textContent = hotovo ? '10' : '9'
-    document.getElementById('rok-nadpis').innerHTML = hotovo
-      ? 'Rok je <span id="rok-slovo">předepsaný</span>'
-      : 'Zbývá <span id="rok-slovo">prosinec</span>'
-  }
-  prosinec.addEventListener('click', () => nastav(!sekce.classList.contains('hotovo')))
-  nastav(false)
-}
-
 // ---------- Kopírování příkazů ----------
 function kopirovani() {
   const tl = document.getElementById('kopirovat')
@@ -110,7 +78,7 @@ function kopirovani() {
 // ---------- Příchod částí při posunu ----------
 function prichody() {
   const casti = document.querySelectorAll(
-    '#umi-hledat, #umi-polozky li, .umi-nahled, .rok-text > *, .rok-pruh, .pole h2, .pole > p, .platba, .dlazdice, .zaver-text > *, .zaver-okno, .pata > *',
+    '#umi-hledat, #umi-polozky li, .umi-nahled, .pole h2, .pole > p, .platba, .dlazdice, .zaver-text > *, .zaver-okno, .pata > *',
   )
   if (!('IntersectionObserver' in window)) return
   const pozorovatel = new IntersectionObserver(
@@ -132,6 +100,5 @@ function prichody() {
 }
 
 seznamSchopnosti()
-rokPoMesicich()
 kopirovani()
 prichody()

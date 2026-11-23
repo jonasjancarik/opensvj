@@ -45,14 +45,14 @@ img { display: block; max-width: 100%; height: auto; }
 .skryte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 button { font: inherit; cursor: pointer; }
-.tlacitko, [data-ui] button:not(.odkaz):not(.mesic) {
+.tlacitko, [data-ui] button:not(.odkaz) {
   display: inline-block; padding: 0.8rem 1.4rem; border: 0; border-radius: 999px;
   background: var(--akcent); color: var(--na-akcentu); font-weight: 550; font-size: 1rem;
   text-decoration: none; line-height: 1.2;
   transition: background-color 0.18s, transform 0.12s var(--prechod);
 }
-.tlacitko:hover, [data-ui] button:not(.odkaz):not(.mesic):hover { background: var(--akcent-tmavy); }
-.tlacitko:active, [data-ui] button:not(.odkaz):not(.mesic):active { transform: translateY(1px) scale(0.98); }
+.tlacitko:hover, [data-ui] button:not(.odkaz):hover { background: var(--akcent-tmavy); }
+.tlacitko:active, [data-ui] button:not(.odkaz):active { transform: translateY(1px) scale(0.98); }
 .tlacitko.svetle { background: var(--na-akcentu); color: var(--akcent-tmavy); }
 .tlacitko.svetle:hover { background: #e8edfb; }
 button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); text-decoration: underline; text-underline-offset: 3px; }
@@ -131,36 +131,8 @@ main > section { margin-top: clamp(6rem, 12vw, 11rem); }
 }
 .umi-nahled img.aktivni { opacity: 1; transform: none; }
 
-/* ---------- Rok po měsících: jeden ovládací prvek ve velkém ---------- */
-.rok {
-  position: relative; overflow: hidden; min-height: 92svh; padding: var(--kraj);
-  background: var(--akcent-mekky); color: var(--text);
-  transition: background-color 0.6s, color 0.6s;
-}
-.rok.hotovo { background: var(--akcent); color: var(--na-akcentu); }
-.rok-text { display: grid; gap: 0.8rem; max-width: 34rem; }
-.rok-pruh {
-  position: absolute; left: 22%; bottom: -9vh; width: 96vw; font-size: clamp(3.4rem, 9.2vw, 10rem);
-  display: grid; gap: 0.12em;
-}
-.rok-popis { line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
-.rok-popis span { font-size: 0.42em; font-weight: 450; letter-spacing: -0.01em; opacity: 0.75; }
-.rok-mesice { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0.07em; }
-.rok-mesice .mesic {
-  height: 2.9em; padding: 0; border: 0; border-radius: 0.14em; background: var(--plocha);
-  transition: background-color 0.4s, transform 0.2s var(--prechod);
-}
-.rok-mesice .mesic:disabled { cursor: default; }
-.rok-mesice .mesic.zauctovano { background: var(--akcent); }
-.rok.hotovo .rok-mesice .mesic.zauctovano { background: var(--na-akcentu); }
-.rok.hotovo .rok-mesice .mesic:not(.zauctovano) { background: var(--akcent-tmavy); }
-.rok-mesice .mesic.lze { background: var(--svetlo); animation: tep 2.2s ease-in-out infinite; }
-.rok-mesice .mesic.lze:hover, .rok-mesice .mesic.posledni:hover { transform: translateY(-0.08em); }
-@keyframes tep { 50% { opacity: 0.6; } }
-
 /* ---------- Cesta jedné platby: čtyři pole ---------- */
 .postup { display: grid; grid-template-columns: repeat(4, 1fr); }
-main > section.postup { margin-top: 0; }
 .pole {
   position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 84svh;
   padding: 28px;
@@ -255,10 +227,6 @@ a.dlazdice:hover { background: #c7c6c1; }
   #umi-hledat { height: 56px; font-size: 1.25rem; }
   #umi-polozky li > button { font-size: clamp(1.9rem, 8.5vw, 3rem); }
   .umi-nahled { position: static; margin: 1.4rem var(--odsazeni) 0; border-radius: 10px; }
-  .rok { min-height: 86svh; }
-  .rok-pruh { left: var(--kraj); bottom: 6vh; width: 130vw; font-size: 15vw; }
-  .rok-mesice { grid-template-columns: repeat(12, 1fr); }
-  .rok-mesice .mesic { height: 3.6em; }
   .postup { grid-template-columns: 1fr; }
   .pole { min-height: 0; padding: 28px 20px 40px; justify-content: flex-start; gap: 28px; }
   .pole h2 { position: static; }
