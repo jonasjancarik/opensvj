@@ -193,7 +193,8 @@ a ztráty, i když se nezveřejňuje. Zveřejňuje se v rozsahu, v jakém byla s
 - Do uzavřeného roku databáze nic nepustí. Do schválení závěrky jde rok s uvedením
   důvodu znovu otevřít (§ 17 odst. 7 ZoÚ); uzávěrkové zápisy i počáteční stavy dalšího
   roku se stornují a po opravě se rok uzavře znovu. Schválení závěrky aplikace zatím
-  neeviduje, takže znovuotevření po schválení nezakáže.
+  neeviduje. Až ho bude evidovat, nabídne po schválení opravu v běžném roce a znovuotevření
+  nechá jen s upozorněním na § 17 odst. 7 ZoÚ a se zápisem do auditního záznamu.
 - Zprávu o hospodaření aplikace zatím nemá. První rok se otevírá zadáním počátečních
   stavů.
 

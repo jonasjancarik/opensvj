@@ -70,7 +70,9 @@ Auditní záznam proto vzniká dřív než schvalování a podpisy, které na n�
   podpisového řádu (§ 33a odst. 10). Výdaj bez faktury proplacený členovi výboru
   s náhradním dokladem.
 - **Zpráva o hospodaření** a **evidence schválení závěrky** (orgán, datum, rozhodnutí,
-  otisk schválené verze). Znovuotevření schváleného roku zůstane možné podle zásady výše.
+  otisk schválené verze). Po schválení oprava v běžném roce: operace v katalogu (stav
+  `overit`, účet potvrdí účetní), odkaz na opravovaný rok a bod do přílohy. Znovuotevření
+  schváleného roku zůstane možné podle zásady výše.
 - **Dobropisy** k přijatým fakturám.
 - **Další formáty výpisů:** camt.053 a MT940.
 

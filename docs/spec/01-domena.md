@@ -415,7 +415,11 @@ se převádějí po položkách se splatností (sloupec `RadekZapisu.splatnost`)
 přitom započítávají jen v rámci účtu, takže zůstatek každého účtu navazuje. Do schválení
 závěrky jde rok znovu otevřít s důvodem; uzávěrkové zápisy i počáteční stavy dalšího
 roku se stornují. Přehledy a výkazy roku uzávěrkové zápisy nevidí, deník ano.
-Zpráva o hospodaření a schválení závěrky (po něm už rok otevřít nepůjde) zatím chybí.
+Zpráva o hospodaření a evidence schválení závěrky zatím chybí. Po schválení bude aplikace
+nabízet opravu v běžném roce: opravný zápis do roku, kdy se chyba zjistila, s odkazem na
+opravovaný rok a s bodem do přílohy. Znovuotevření schváleného roku zůstane možné, ale
+s upozorněním, že jde proti § 17 odst. 7 ZoÚ, se zápisem do auditního záznamu a se
+zneplatněním schválení.
 První rok se otevírá zadáním počátečních stavů.
 
 ## 6. Vyúčtování
