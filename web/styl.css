@@ -58,7 +58,7 @@ button { font: inherit; cursor: pointer; }
 button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- Úvod: vlevo sdělení, vpravo dům ---------- */
-.uvod { display: grid; grid-template-columns: 1fr 1fr; min-height: 100svh; }
+.uvod { position: relative; display: grid; grid-template-columns: 1fr 1fr; min-height: 100svh; }
 .uvod-text {
   display: flex; flex-direction: column; justify-content: space-between; gap: 3rem;
   padding: var(--kraj);
@@ -70,12 +70,12 @@ button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); te
 .uvod-sdeleni { display: grid; gap: 1.1rem; justify-items: start; }
 .uvod-sdeleni h1 { font-size: var(--velky); line-height: 1.05; }
 .uvod-sdeleni p { max-width: 44ch; }
-.uvod-sdeleni .tlacitko { margin-top: 0.6rem; }
+.uvod-akce { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; margin-top: 0.6rem; }
 .radek { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .radek > span { display: block; }
 .js .radek > span { animation: vyjed 0.9s var(--prechod) both; }
 .js .radek + .radek > span { animation-delay: 0.11s; }
-.js .uvod-sdeleni p, .js .uvod-sdeleni .tlacitko { animation: objev 0.7s 0.5s var(--prechod) both; }
+.js .uvod-sdeleni p, .js .uvod-akce { animation: objev 0.7s 0.5s var(--prechod) both; }
 .js .dum-ramec > * { animation: objev 0.7s var(--prechod) both; }
 .js .dum-ramec > :nth-child(2) { animation-delay: 0.1s; }
 .js .dum-ramec > :nth-child(3) { animation-delay: 0.2s; }
@@ -84,10 +84,14 @@ button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); te
 @keyframes objev { from { opacity: 0; transform: translateY(16px); } }
 
 .uvod-dum {
-  position: relative; display: grid; place-items: center; background: var(--pozadi-2);
+  display: grid; place-items: center; background: var(--pozadi-2);
   padding: calc(var(--kraj) + 2.5rem) var(--kraj) var(--kraj);
 }
-.odkaz-nahore { position: absolute; top: var(--kraj); right: var(--kraj); font-size: 0.95rem; }
+.odkaz-nahore {
+  position: absolute; top: var(--kraj); right: var(--kraj); display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; font-weight: 550; text-decoration: none;
+}
+.odkaz-nahore:hover span { text-decoration: underline; }
 .dum-ramec { display: grid; gap: 1.1rem; justify-items: center; width: min(100%, 28rem); }
 .dum-stav { display: grid; text-align: center; font-size: var(--zaklad); }
 .dum-stav strong { font-family: var(--pismo-nadpis); font-size: var(--nadpis); font-weight: 600; line-height: 1.15; }
@@ -115,6 +119,7 @@ button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); te
   font-size: 0.94rem;
 }
 .dum-jednotka > div { display: grid; }
+.dum-jednotka strong, .dum-jednotka .j-stav { white-space: nowrap; }
 .dum-jednotka > div span { color: var(--tlumeny); }
 .dum-jednotka .j-stav { grid-column: 1; font-weight: 600; color: var(--varovani); }
 .dum-jednotka .j-stav.ok { color: var(--uspech); }
@@ -278,9 +283,10 @@ a.dlazdice:hover { background: #dfd6c3; }
 /* ---------- Telefon a tablet ---------- */
 @media (max-width: 860px) {
   .uvod { grid-template-columns: 1fr; min-height: 0; }
-  .uvod-dum { order: -1; padding-top: calc(var(--kraj) + 3.5rem); }
-  .uvod-text { gap: 1.5rem; padding-top: 2rem; padding-bottom: 1rem; }
-  .uvod-text .znacka { position: absolute; top: var(--kraj); left: var(--kraj); }
+  .uvod-dum { padding-top: 2.5rem; }
+  .uvod-text { gap: 3.5rem; padding-bottom: 2.5rem; }
+  .dum-jednotka { padding: 0.9rem; column-gap: 0.6rem; }
+  .dum-jednotka button { padding: 0.65rem 0.9rem !important; }
   .uvod-sdeleni h1 { font-size: clamp(1.7rem, 7.4vw, 2.6rem); }
   .dum-kresba { width: min(62vw, 15rem); }
   .umi { grid-template-columns: 1fr; }

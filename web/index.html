@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenSVJ – účetnictví domu, ve kterém se dá vyznat</title>
+    <title>OpenSVJ – open source účetnictví pro SVJ, zdarma</title>
     <meta
       name="description"
-      content="OpenSVJ vede účetnictví společenství vlastníků jednotek: bankovní výpisy, předpisy záloh, dlužníky, vyúčtování i roční uzávěrku. Zdrojový kód je na GitHubu."
+      content="OpenSVJ je open source nástroj pro účetnictví společenství vlastníků jednotek, zdarma: bankovní výpisy, předpisy záloh, dlužníci, vyúčtování i roční uzávěrka."
     />
-    <meta property="og:title" content="OpenSVJ – účetnictví domu, ve kterém se dá vyznat" />
+    <meta property="og:title" content="OpenSVJ – open source účetnictví pro SVJ, zdarma" />
     <meta
       property="og:description"
-      content="Aplikace pro výbor a účetní SVJ: banka, předpisy záloh, dlužníci, vyúčtování a uzávěrka."
+      content="Open source nástroj pro výbor a účetní SVJ, zdarma: banka, předpisy záloh, dlužníci, vyúčtování a uzávěrka."
     />
     <meta property="og:image" content="img/aplikace.jpg" />
     <meta property="og:type" content="website" />
@@ -49,15 +49,19 @@
             <span class="radek"><span>ve kterém se dá vyznat.</span></span>
           </h1>
           <p>
-            OpenSVJ vede podvojné účetnictví společenství vlastníků: z bankovních výpisů a faktur
-            počítá zálohy, hlídá dlužníky, vyúčtuje služby a připraví roční uzávěrku.
+            <strong>Open source a zdarma.</strong> OpenSVJ vede podvojné účetnictví společenství
+            vlastníků: z bankovních výpisů a faktur počítá zálohy, hlídá dlužníky, vyúčtuje služby
+            a připraví roční uzávěrku.
           </p>
-          <a class="tlacitko" href="https://github.com/jonasjancarik/opensvj">Zdrojový kód na GitHubu</a>
+          <div class="uvod-akce">
+            <a class="tlacitko" href="#zacit">Jak začít</a>
+            <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/README.md">Dokumentace</a>
+          </div>
         </div>
       </div>
 
       <div class="uvod-dum">
-        <a class="odkaz-nahore" href="https://github.com/jonasjancarik/opensvj#readme">Dokumentace</a>
+        <a class="odkaz-nahore" href="https://github.com/jonasjancarik/opensvj"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>GitHub</span></a>
         <div class="dum-ramec" data-ui>
           <p class="dum-stav" aria-live="polite">
             <strong id="dum-sviti">Svítí 4 z 12 oken.</strong>
@@ -210,13 +214,13 @@
         <a class="dlazdice" href="https://www.zakonyprolidi.cz/cs/1992-586"><strong>Zákon o daních z příjmů</strong><span>které výnosy SVJ se daní a kdy se podává přiznání</span></a>
       </section>
 
-      <section class="zaver" aria-labelledby="zaver-nadpis">
+      <section class="zaver" id="zacit" aria-labelledby="zaver-nadpis">
         <div class="zaver-text">
           <h2 id="zaver-nadpis">Zkuste ji<br />u sebe.</h2>
           <p>
-            Aplikace je ve vývoji a zkouší se na účetnictví jednoho skutečného domu. Součástí je
-            vymyšlené SVJ Ukázková 12 s rokem dat, na kterém si všechno projdete. Kód je otevřený
-            pod licencí AGPL 3.0.
+            OpenSVJ je open source pod licencí AGPL 3.0: provozujete ho na vlastním serveru
+            a nic za něj neplatíte. Je ve vývoji a zkouší se na účetnictví jednoho skutečného
+            domu. Součástí je vymyšlené SVJ Ukázková 12 s rokem dat, na kterém si všechno projdete.
           </p>
         </div>
         <div class="zaver-okno" data-ui>
@@ -230,13 +234,13 @@ cp .env.example .env
 docker compose up -d
 pnpm install</code></pre>
           <p>Potřebujete Docker, uv a pnpm. Zbytek postupu včetně ukázkových dat je v README.</p>
-          <a class="tlacitko svetle" href="https://github.com/jonasjancarik/opensvj#readme">Otevřít na GitHubu</a>
+          <a class="tlacitko svetle" href="https://github.com/jonasjancarik/opensvj#vyzkoušení">Celý postup v README</a>
         </div>
       </section>
     </main>
 
     <footer class="pata">
-      <span>Účetnictví pro SVJ</span>
+      <span>Open source účetnictví pro SVJ</span>
       <nav aria-label="Odkazy">
         <a href="https://github.com/jonasjancarik/opensvj">GitHub</a>
         <a href="https://github.com/jonasjancarik/opensvj/blob/main/docs/navod.md">Návod</a>
