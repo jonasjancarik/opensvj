@@ -183,6 +183,8 @@ p.varovani-text { background: var(--varovani-mekka); }
   padding: 0.75rem 1rem; border-radius: var(--radius-maly); max-width: 68ch;
   background: var(--varovani-mekka); border: 1px solid color-mix(in srgb, var(--varovani) 25%, transparent);
 }
+.odpis-dluhu > label { display: grid; gap: 0.3rem; margin-bottom: 0.7rem; }
+.odpis-dluhu > label > input, .odpis-dluhu > label > select { width: 100%; }
 
 /* Štítky stavů v tabulkách */
 .stav, .stav-faktury { white-space: nowrap; }

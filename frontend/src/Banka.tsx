@@ -458,6 +458,12 @@ function PolozkaPohybu({
               )}
             </label>
           ))}
+          {operace === 'uhrada-odepsane-pohledavky' && data.odepsane.length === 0 && (
+            <p className="tlumene">
+              Žádná jednotka nemá odepsaný dluh, který by zbýval zaplatit. Nedobytné dluhy se
+              odepisují na stránce Dlužníci.
+            </p>
+          )}
           {vybrana?.volitelna.includes('dluh') && vstupy.jednotka && (
             <VyberDluhu
               rok={Number(p.datum.slice(0, 4))}
