@@ -596,6 +596,15 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
 .storno-formular label { display: grid; gap: 0.3rem; }
 .storno-formular p { font-size: 0.88rem; }
 
+.interni-doklad {
+  display: grid; gap: 0.7rem; max-width: 52rem; margin: 0.75rem 0 1.25rem; padding: 1rem 1.1rem;
+  border-radius: var(--radius-maly); background: var(--plocha-2); border: 1px solid var(--okraj);
+}
+.interni-doklad h2 { margin: 0; }
+.interni-doklad p { margin: 0; }
+.interni-doklad label { display: grid; gap: 0.3rem; align-content: start; }
+.interni-doklad-pole { display: grid; gap: 0.8rem 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+
 /* ---------- Faktury ---------- */
 .faktura-formular {
   display: grid; gap: 0.9rem 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); margin-top: 0.75rem;

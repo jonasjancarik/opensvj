@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from './auth'
 import { Chyba, Nacitani } from './ui'
 import { kc } from './penize'
+import { InterniDoklad } from './InterniDoklad'
 
 type Radek = {
   strana: 'md' | 'd'
@@ -36,6 +37,7 @@ export function Denik() {
   const [data, setData] = useState<Data | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
   const [otevreny, setOtevreny] = useState<number | null>(null)
+  const [zprava, setZprava] = useState<string | null>(null)
 
   useEffect(() => {
     api<Data>(`/api/denik/${rok}`).then(setData).catch((e) => setChyba(e.message))
@@ -51,6 +53,17 @@ export function Denik() {
         chybu opraví storno, které zápis vyruší. Potom jde stejnou věc (předpis, platbu, počáteční
         stavy) zaúčtovat znovu.
       </p>
+      <InterniDoklad
+        zauctovano={(cislo, r) => {
+          setZprava(
+            r === rok
+              ? `Zaúčtováno jako zápis ${cislo}.`
+              : `Zaúčtováno jako zápis ${cislo} v deníku roku ${r}.`,
+          )
+          if (r === rok) api<Data>(`/api/denik/${rok}`).then(setData)
+        }}
+      />
+      {zprava && <p className="uspech">{zprava}</p>}
       {data.zapisy.length === 0 && <p>Za rok {rok} zatím není nic zaúčtováno.</p>}
       <ul className="zapisy">
         {data.zapisy.map((z) => (
