@@ -108,7 +108,8 @@ a vlastního SVJ popisuje [Vývoj a provoz](docs/vyvoj.md).
 ## Co zatím chybí
 
 Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
-[Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí).
+[Co z toho aplikace umí](docs/spec/README.md#co-z-toho-aplikace-umí), pořadí další práce
+je v [plánu](docs/plan.md).
 
 - upozornění pro výbor (blížící se lhůty, nové faktury, dluhy) e-mailem,
 - vrácené e-maily (bounce) se do zásilek zatím nezapisují samy,

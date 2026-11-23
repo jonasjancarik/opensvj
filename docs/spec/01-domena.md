@@ -74,7 +74,7 @@ elektřina a plyn. Stav s časem neklesá a jeden den má nejvýš jeden odečet
 konečný stav starého měřidla a počáteční stav nového ve stejný den; nové si pamatuje,
 které nahradilo. Roční spotřeba bere odečet nejblíž 31. 12. předchozího roku (nebo dni
 osazení) a nejblíž 31. 12. roku (nebo dni odstranění), oba nejvýš 31 dní vedle; bez nich
-spotřebu nespočítá. Spotřeba zatím nevstupuje do žádného vyúčtování.
+spotřebu nespočítá. Roční spotřeba slouží jako klíč `meridla` ve vyúčtování služeb.
 
 Pro teplo a teplou vodu v první verzi stačí **převzít výsledky zúčtovatele po
 jednotkách** (`VysledekZuctovatele(rok, sluzba, jednotka, castka, zdroj)`), ne počítat
