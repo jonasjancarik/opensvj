@@ -263,6 +263,8 @@ a.dlazdice:hover { background: #dfd6c3; }
 }
 .pata nav { display: flex; flex-wrap: wrap; gap: 0.5rem 24px; }
 .pata nav a { color: var(--text); text-decoration: none; }
+.pata > span a { text-decoration: none; }
+.pata > span a:hover { text-decoration: underline; }
 .pata nav a:hover { text-decoration: underline; }
 .pata > span:last-child { text-align: right; }
 

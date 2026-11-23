@@ -116,3 +116,9 @@ Nejdůležitější mezery. Podrobný stav po oblastech je v tabulce
 - podklady a přílohy, podpisové záznamy, schvalování více lidmi a role,
 - dobropisy a jiné formáty výpisů než GPC a CSV Raiffeisenbank (camt.053, MT940),
 - export do Beancountu a pro programy účetních.
+
+## Licence
+
+OpenSVJ je svobodný software pod licencí [GNU AGPL 3.0](LICENSE). Smíte ho používat,
+upravovat a šířit; kdo upravenou verzi provozuje jako službu pro jiné, musí jim zpřístupnit
+i její zdrojový kód.
