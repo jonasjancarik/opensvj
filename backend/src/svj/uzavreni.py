@@ -24,7 +24,7 @@ from datetime import date
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, dluznici, pocatecni, predpisy, ulozene, uzaverka
+from . import audit, denik, dluznici, pocatecni, predpisy, ulozene, uzaverka
 from .db import Obdobi, RadekZapisu, Zapis
 from .domena import katalog
 from .domena.katalog import Radek
@@ -326,6 +326,7 @@ def uzavri(
         radky=[_radek(p.castka, p.role, p.dimenze) for p in otevreni]
         + _protistrana(otevreni, "pocatecni_rozvazny", opacne=True),
     )
+    audit.kdo(s, zauctoval)
     s.get(Obdobi, rok).stav = "uzavrene"
     s.flush()
     return stav(s, rok)
@@ -345,6 +346,8 @@ def znovu_otevri(s: Session, rok: int, *, duvod: str, zauctoval: str) -> Stav:
             f"Rok {rok + 1} je už také uzavřený. Chybu opravte v běžném roce a popište ji "
             "v příloze k závěrce."
         )
+    audit.kdo(s, zauctoval)
+    audit.duvod(s, duvod)
     s.get(Obdobi, rok).stav = "otevrene"
     s.flush()
     text = f"Znovu otevřený rok {rok}: {duvod}"

@@ -17,6 +17,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from . import audit
 from .nastaveni import nastaveni
 
 _bearer = HTTPBearer(auto_error=False)
@@ -110,11 +111,14 @@ def prihlaseny(
 Prihlaseny = Annotated[Uzivatel, Depends(prihlaseny)]
 
 
-def zapisujici(uzivatel: Prihlaseny) -> Uzivatel:
+async def zapisujici(uzivatel: Prihlaseny) -> Uzivatel:
+    # Asynchronní závislost běží v kontextu požadavku, takže uživatele pro auditní záznam
+    # uvidí i obsluha požadavku, kterou FastAPI spouští v jiném vlákně.
     if jen_cteni(uzivatel):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN, "Máte přístup jen pro čtení, změny ukládat nemůžete."
         )
+    audit.nastav_uzivatele(uzivatel.email, uzivatel.jmeno)
     return uzivatel
 
 

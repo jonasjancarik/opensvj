@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from './auth'
-import { potvrdit } from './potvrdit'
+import { potvrdit, potvrditSDuvodem } from './potvrdit'
 import { kc, naHalire } from './penize'
 import { SKUPINY } from './Predpisy'
+import { ZmenenoPoSchvaleni, type ZmenaPoSchvaleni } from './ui'
 
 type Klic = 'plocha' | 'osoby' | 'pevna' | 'podil' | 'jednotka'
 type SlozkaApi = { kod: string; nazev: string; role: string; klic: Klic; sazba: number | null }
@@ -13,7 +14,14 @@ type VerzeApi = {
   pevne: Record<string, Record<string, number>>
   osoby: Record<string, number>
 }
-type Verze = VerzeApi & { v_aplikaci: boolean; upravitelna: boolean; upravil: string; mesicne: Record<string, number> }
+type Schvaleni = { rozhodnuti: string; zmeneno_po_schvaleni: ZmenaPoSchvaleni | null }
+type Verze = VerzeApi & {
+  v_aplikaci: boolean
+  upravitelna: boolean
+  upravil: string
+  mesicne: Record<string, number>
+  schvaleni: Schvaleni | null
+}
 type Role = { role: string; nazev: string; skupina: 'fond_oprav' | 'sprava' | 'sluzby' }
 type Prehled = {
   dnes: string
@@ -134,15 +142,23 @@ export function UpravaPredpisu({ zmeneno }: { zmeneno: () => void }) {
   }
 
   async function smazat(v: Verze) {
-    const ano = await potvrdit({
-      nadpis: `Smazat předpis od ${datum(v.plati_od)}?`,
-      text: 'Od toho data bude dál platit předchozí předpis.',
-      ano: 'Smazat',
-    })
-    if (!ano) return
+    const nadpis = `Smazat předpis od ${datum(v.plati_od)}?`
+    const text = 'Od toho data bude dál platit předchozí předpis.'
+    let duvod = ''
+    if (v.schvaleni) {
+      const napsany = await potvrditSDuvodem({
+        nadpis,
+        text: `${text} Předpis schválil orgán SVJ (${v.schvaleni.rozhodnuti}), proto se smazání i s důvodem zapíše do historie změn.`,
+        popisDuvodu: 'Proč schválený předpis mažete',
+        ano: 'Smazat',
+      })
+      if (napsany === null) return
+      duvod = napsany
+    } else if (!(await potvrdit({ nadpis, text, ano: 'Smazat' }))) return
     setChyba(null)
     try {
-      setData(await api<Prehled>(`/api/verze-predpisu/${v.plati_od}`, { method: 'DELETE' }))
+      const q = duvod ? `?${new URLSearchParams({ duvod })}` : ''
+      setData(await api<Prehled>(`/api/verze-predpisu/${v.plati_od}${q}`, { method: 'DELETE' }))
       zmeneno()
     } catch (e) {
       setChyba((e as Error).message)
@@ -187,6 +203,14 @@ export function UpravaPredpisu({ zmeneno }: { zmeneno: () => void }) {
                 <td>
                   {v.zdroj || <span className="tlumene">bez podkladu</span>}
                   {v.v_aplikaci && <div className="tlumene">Zadáno v aplikaci{v.upravil && `, ${v.upravil}`}</div>}
+                  {v.schvaleni && <div className="tlumene">Schválil: {v.schvaleni.rozhodnuti}</div>}
+                  {v.schvaleni?.zmeneno_po_schvaleni && (
+                    <ZmenenoPoSchvaleni zmena={v.schvaleni.zmeneno_po_schvaleni}>
+                      <p>
+                        Schválení přestalo platit. Potvrďte ho znovu na stránce <a href="#rozhodnuti">Rozhodnutí</a>.
+                      </p>
+                    </ZmenenoPoSchvaleni>
+                  )}
                 </td>
                 <td className="cislo">{kc(soucet(v.mesicne))}</td>
                 <td>
@@ -233,6 +257,8 @@ function Editor({
   const [nahled, setNahled] = useState<Nahled | null>(null)
   const [chyba, setChyba] = useState<string | null>(null)
   const [pracuji, setPracuji] = useState(false)
+  const [duvod, setDuvod] = useState('')
+  const schvaleni = r.puvodni ? data.verze.find((v) => v.plati_od === r.puvodni)?.schvaleni : null
   const { verze, spatne } = useMemo(() => doApi(r), [r])
   const klic = JSON.stringify(verze)
 
@@ -299,7 +325,7 @@ function Editor({
       ulozeno(
         await api<Prehled>('/api/verze-predpisu', {
           method: 'PUT',
-          json: { puvodni: r.puvodni, verze },
+          json: { puvodni: r.puvodni, verze, duvod: schvaleni ? duvod.trim() : '' },
         }),
       )
     } catch (e) {
@@ -318,6 +344,18 @@ function Editor({
         Formulář je předvyplněný podle {r.puvodni ? 'uloženého' : 'posledního'} předpisu, stačí změnit, co se mění.
         Částky jednotek se dopočítají dole.
       </p>
+      {schvaleni && (
+        <div className="upozorneni">
+          <p>
+            Tento předpis schválil orgán SVJ ({schvaleni.rozhodnuti}). Změnu i s důvodem aplikace zapíše do historie
+            změn. Schválení pak přestane platit, dokud ho na stránce Rozhodnutí znovu nepotvrdíte.
+          </p>
+          <label className="potvrzeni-duvod">
+            Proč předpis po schválení měníte
+            <textarea rows={2} maxLength={500} value={duvod} onChange={(e) => setDuvod(e.target.value)} required />
+          </label>
+        </div>
+      )}
       <div className="faktura-formular">
         <label>
           Platí od
@@ -580,7 +618,10 @@ function Editor({
       )}
 
       <div className="radek">
-        <button type="submit" disabled={pracuji || !verze || !nahled || !!nahled.chyba}>
+        <button
+          type="submit"
+          disabled={pracuji || !verze || !nahled || !!nahled.chyba || (!!schvaleni && !duvod.trim())}
+        >
           {pracuji ? 'Ukládám…' : 'Uložit předpis'}
         </button>
         <button type="button" className="vedlejsi" onClick={() => setUprava(null)}>

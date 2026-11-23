@@ -375,10 +375,31 @@ class RozhodnutiPro(Zaklad):
     __tablename__ = "rozhodnuti_pro"
     klic: Mapped[str] = mapped_column(String(128), primary_key=True)
     rozhodnuti_id: Mapped[int] = mapped_column(ForeignKey("rozhodnuti.id", ondelete="CASCADE"))
+    # Otisk (SHA-256) podoby položky, kterou rozhodnutí schválilo; None = zapsáno dřív,
+    # než aplikace otisky ukládala.
+    otisk: Mapped[str | None] = mapped_column(String(64), nullable=True)
     upravil: Mapped[str] = mapped_column(String(128))
     upraveno: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class AuditniZaznam(Zaklad):
+    """Změna vlastníků, rozhodnutí, předpisu a dalších údajů mimo deník. Jen pro připisování."""
+
+    __tablename__ = "auditni_zaznam"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    kdy: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    transakce: Mapped[int] = mapped_column(BigInteger, server_default=func.txid_current())
+    kdo: Mapped[str] = mapped_column(String(128))
+    jmeno: Mapped[str] = mapped_column(String(128), default="")
+    druh: Mapped[str] = mapped_column(String(32))
+    klic: Mapped[str] = mapped_column(String(128))
+    akce: Mapped[str] = mapped_column(String(16))  # pridani | uprava | smazani
+    nazev: Mapped[str] = mapped_column(String(300))
+    duvod: Mapped[str] = mapped_column(Text, default="")
+    pred: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    po: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
 
 class VysledekZuctovatele(Zaklad):
@@ -453,3 +474,7 @@ class Zasilka(Zaklad):
     token_hash: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
     chyba: Mapped[str] = mapped_column(Text, default="")
     dokument: Mapped[Dokument] = relationship()
+
+
+# Posluchač, který zapisuje změny sledovaných údajů do auditního záznamu.
+from . import audit  # noqa: E402, F401

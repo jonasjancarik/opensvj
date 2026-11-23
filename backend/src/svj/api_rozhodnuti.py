@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from . import predpisy, rozhodnuti
+from .api_historie import ZmenaPoSchvaleni, zmena_po_schvaleni
 from .db import Rozhodnuti as RozhodnutiDb
 from .db import sezeni
 from .domena import profil
@@ -39,6 +40,8 @@ class Polozka(BaseModel):
     nazev: str
     popis: str
     rozhodnuti_id: int | None
+    # Přiřazené rozhodnutí přestalo platit, protože se položka po schválení změnila.
+    zmeneno_po_schvaleni: ZmenaPoSchvaleni | None
 
 
 class Prehled(BaseModel):
@@ -80,7 +83,8 @@ def _rozhodnuti(r: RozhodnutiDb) -> Rozhodnuti:
 
 def _prehled(s) -> Prehled:
     prof = profil.nacti(nastaveni().profil)
-    prirazeni = rozhodnuti.prirazeni(s)
+    polozky = rozhodnuti.polozky(prof, predpisy.nacti(prof, s))
+    dolozeni = rozhodnuti.dolozeni(s, polozky)
     return Prehled(
         dnes=date.today(),
         organy=[Organ(kod=k, nazev=n) for k, n in rozhodnuti.ORGANY.items()],
@@ -91,9 +95,10 @@ def _prehled(s) -> Prehled:
                 skupina=p.skupina,
                 nazev=p.nazev,
                 popis=p.popis,
-                rozhodnuti_id=prirazeni.get(p.klic),
+                rozhodnuti_id=d.rozhodnuti_id if (d := dolozeni.get(p.klic)) else None,
+                zmeneno_po_schvaleni=zmena_po_schvaleni(d, p),
             )
-            for p in rozhodnuti.polozky(prof, predpisy.nacti(prof, s))
+            for p in polozky
         ],
     )
 

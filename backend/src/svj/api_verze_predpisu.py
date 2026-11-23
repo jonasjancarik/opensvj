@@ -4,10 +4,13 @@ from datetime import date
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy import update
 
-from . import predpisy
+from . import audit, predpisy, rozhodnuti
+from .api_historie import ZmenaPoSchvaleni, zmena_po_schvaleni
 from .api_predpisy import _skupina
-from .db import sezeni
+from .db import Rozhodnuti as RozhodnutiDb
+from .db import RozhodnutiPro, sezeni
 from .domena import profil
 from .nastaveni import nastaveni
 from .prihlaseni import Prihlaseny, Zapisujici
@@ -44,11 +47,17 @@ class Verze(BaseModel):
     osoby: dict[str, int] = Field(default_factory=dict)
 
 
+class Schvaleni(BaseModel):
+    rozhodnuti: str  # „Shromáždění 12. 11. 2026, bod 3: Výše záloh“
+    zmeneno_po_schvaleni: ZmenaPoSchvaleni | None
+
+
 class VerzeVPrehledu(Verze):
     v_aplikaci: bool
     upravitelna: bool
     upravil: str
     mesicne: dict[str, int]  # jednotka → měsíčně celkem
+    schvaleni: Schvaleni | None
 
 
 class Role(BaseModel):
@@ -81,6 +90,7 @@ class Prehled(BaseModel):
 class Ulozeni(BaseModel):
     puvodni: date | None  # datum upravované verze; None = nová
     verze: Verze
+    duvod: str = Field(default="", max_length=500)  # povinný u schváleného předpisu
 
 
 class Nahled(BaseModel):
@@ -129,6 +139,13 @@ def _prehled() -> Prehled:
     with sezeni()() as s:
         nast = predpisy.nacti(prof, s)
         od = predpisy.prvni_mesic_ke_zmene(s)
+        schvaleni = {
+            datum: Schvaleni(
+                rozhodnuti=rozhodnuti.popis(r),
+                zmeneno_po_schvaleni=zmena_po_schvaleni(d, _polozka(prof, nast, datum)),
+            )
+            for datum, (r, d) in rozhodnuti.schvaleni_verze(s, prof, nast).items()
+        }
     return Prehled(
         dnes=date.today(),
         prvni_mesic=od,
@@ -154,6 +171,7 @@ def _prehled() -> Prehled:
                 upravitelna=v.v_aplikaci and v.plati_od >= od,
                 upravil=v.upravil,
                 mesicne=_mesicne(prof, v),
+                schvaleni=schvaleni.get(v.plati_od),
             )
             for v in nast.verze
         ],
@@ -177,12 +195,55 @@ def nahled(v: Verze, _: Prihlaseny) -> Nahled:
         return Nahled(mesicne={}, chyba=str(e).strip("'\""))
 
 
+def _polozka(prof: profil.Profil, nast: predpisy.Nastaveni, datum: date) -> rozhodnuti.Polozka:
+    return next(p for p in rozhodnuti.polozky(prof, nast) if p.od == datum)
+
+
+def _klic(datum: date) -> str:
+    return f"predpis:{datum.isoformat()}"
+
+
+def _over_duvod(s, prof: profil.Profil, datum: date | None, duvod: str) -> None:
+    """Schválený předpis jde změnit, ale jen s důvodem, který se zapíše do historie."""
+    p = s.get(RozhodnutiPro, _klic(datum)) if datum else None
+    r = s.get(RozhodnutiDb, p.rozhodnuti_id) if p else None
+    if r is None:
+        return
+    if not duvod.strip():
+        raise predpisy.ChybaPredpisu(
+            f"Předpis od {datum.day}. {datum.month}. {datum.year} schválil orgán SVJ "
+            f"({rozhodnuti.popis(r)}). Napište, proč ho po schválení měníte."
+        )
+    if p.otisk is None:
+        # Schválení zapsané dřív, než aplikace ukládala otisky, se vztahuje k dosavadní
+        # podobě předpisu. Doplní se mimo auditní záznam: je to chybějící údaj, ne změna.
+        v = next(v for v in predpisy.nacti(prof, s).verze if v.plati_od == datum)
+        tabulka = RozhodnutiPro.__table__
+        s.execute(
+            update(tabulka)
+            .where(tabulka.c.klic == p.klic)
+            .values(otisk=v.otisk, upraveno=tabulka.c.upraveno)
+        )
+        s.expire(p)
+    audit.duvod(s, duvod)
+
+
 @router.put("")
 def uloz(z: Ulozeni, uzivatel: Zapisujici) -> Prehled:
     prof = _profil()
     with sezeni()() as s:
         try:
+            _over_duvod(s, prof, z.puvodni, z.duvod)
             predpisy.uloz_verzi(s, prof, _do_domeny(z.verze), uzivatel.email, z.puvodni)
+            if z.puvodni and z.puvodni != z.verze.plati_od:
+                # Schválení jde s předpisem na nové datum; otisk nesedí, takže je vidět,
+                # že se předpis po schválení změnil.
+                rozhodnuti.presun_schvaleni(
+                    s,
+                    _klic(z.puvodni),
+                    _klic(z.verze.plati_od),
+                    _polozka(prof, predpisy.nacti(prof, s), z.verze.plati_od).nazev,
+                )
         except (predpisy.ChybaPredpisu, KeyError) as e:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e).strip("'\"")) from e
@@ -191,9 +252,10 @@ def uloz(z: Ulozeni, uzivatel: Zapisujici) -> Prehled:
 
 
 @router.delete("/{plati_od}")
-def smaz(plati_od: date, _: Zapisujici) -> Prehled:
+def smaz(plati_od: date, _: Zapisujici, duvod: str = "") -> Prehled:
     with sezeni()() as s:
         try:
+            _over_duvod(s, _profil(), plati_od, duvod[:500])
             predpisy.smaz_verzi(s, plati_od)
         except predpisy.ChybaPredpisu as e:
             s.rollback()

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api } from './auth'
 import { potvrdit } from './potvrdit'
-import { Chyba, Nacitani } from './ui'
+import { Chyba, Nacitani, ZmenenoPoSchvaleni, type ZmenaPoSchvaleni } from './ui'
 import './vlastnici.css'
 
 type Organ = { kod: string; nazev: string }
@@ -17,7 +17,14 @@ type Rozhodnuti = {
   popis: string
   upravil: string
 }
-type Polozka = { klic: string; skupina: string; nazev: string; popis: string; rozhodnuti_id: number | null }
+type Polozka = {
+  klic: string
+  skupina: string
+  nazev: string
+  popis: string
+  rozhodnuti_id: number | null
+  zmeneno_po_schvaleni: ZmenaPoSchvaleni | null
+}
 type Data = { dnes: string; organy: Organ[]; rozhodnuti: Rozhodnuti[]; polozky: Polozka[] }
 type Udaje = Omit<Rozhodnuti, 'id' | 'popis' | 'upravil'>
 
@@ -35,6 +42,7 @@ export function RozhodnutiOrganu() {
   if (!data) return chyba ? <Chyba text={chyba} /> : <Nacitani />
 
   const bez = data.polozky.filter((p) => p.rozhodnuti_id === null).length
+  const zmenene = data.polozky.filter((p) => p.zmeneno_po_schvaleni).length
   const skupiny = [...new Set(data.polozky.map((p) => p.skupina))]
 
   async function prirad(klic: string, rozhodnuti_id: number | null) {
@@ -74,10 +82,15 @@ export function RozhodnutiOrganu() {
       </p>
 
       <h2>Co má mít doložené rozhodnutí</h2>
-      {bez > 0 ? (
+      {bez > 0 || zmenene > 0 ? (
         <p className="upozorneni">
-          {bez === 1 ? 'Jedna položka nemá' : bez < 5 ? `${bez} položky nemají` : `${bez} položek nemá`} doložené rozhodnutí. Uzávěrka roku na to
-          upozorní.
+          {bez > 0 &&
+            `${bez === 1 ? 'Jedna položka nemá' : bez < 5 ? `${bez} položky nemají` : `${bez} položek nemá`} doložené rozhodnutí. `}
+          {zmenene > 0 &&
+            (zmenene === 1
+              ? 'Jedna položka se změnila po schválení, takže rozhodnutí pro ni přestalo platit. '
+              : `Položky (${zmenene}) se změnily po schválení, takže rozhodnutí pro ně přestalo platit. `)}
+          Uzávěrka roku na to upozorní.
         </p>
       ) : (
         <p className="uspech">Všechno má doložené rozhodnutí.</p>
@@ -90,7 +103,7 @@ export function RozhodnutiOrganu() {
         <div key={sk}>
           <h3>{sk}</h3>
           <div className="tabulka-posun">
-            <table className="vlastnici">
+            <table className="vlastnici polozky-rozhodnuti">
               <tbody>
                 {data.polozky
                   .filter((p) => p.skupina === sk)
@@ -103,6 +116,19 @@ export function RozhodnutiOrganu() {
                             <br />
                             <span className="tlumene">{p.popis}</span>
                           </>
+                        )}
+                        {p.zmeneno_po_schvaleni && (
+                          <ZmenenoPoSchvaleni zmena={p.zmeneno_po_schvaleni}>
+                            <p>
+                              Schválení přestalo platit. Když rozhodnutí pokrývá i novou podobu, potvrďte ho znovu.
+                              Jinak vyberte nové rozhodnutí.
+                            </p>
+                            <div className="radek">
+                              <button className="vedlejsi" onClick={() => prirad(p.klic, p.rozhodnuti_id)}>
+                                Rozhodnutí platí i pro změnu
+                              </button>
+                            </div>
+                          </ZmenenoPoSchvaleni>
                         )}
                       </td>
                       <td>
@@ -129,7 +155,8 @@ export function RozhodnutiOrganu() {
       ))}
       <p className="tlumene">
         Když se v nastavení SVJ změní klíč nebo volba, položka se tu objeví znovu jako nová a čeká na
-        nové rozhodnutí.
+        nové rozhodnutí. Když se po schválení změní předpis záloh, rozhodnutí u něj zůstane, ale přestane platit,
+        dokud ho znovu nepotvrdíte.
       </p>
 
       <h2>Zapsaná rozhodnutí</h2>

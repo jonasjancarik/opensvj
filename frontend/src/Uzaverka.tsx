@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { api } from './auth'
 import { kc } from './penize'
 import { potvrdit } from './potvrdit'
+import { odkazNaHistorii } from './odkazyHistorie'
 import { Chyba, Nacitani } from './ui'
 import './tisk.css'
 import './uzaverka.css'
@@ -879,6 +880,10 @@ function UzavreniRoku({ data, setData }: { data: Data; setData: (d: Data) => voi
         </>
       )}
       {chyba && <p className="chyba">{chyba}</p>}
+      <p className="tlumene">
+        Kdo a proč rok uzavřel nebo znovu otevřel, najdete v{' '}
+        <a href={odkazNaHistorii('obdobi', String(data.rok))}>historii změn roku {data.rok}</a>.
+      </p>
     </section>
   )
 }

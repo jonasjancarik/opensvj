@@ -8,7 +8,7 @@ zápis v deníku s řádky po jednotkách a složkách; saldo jednotek se počí
 nevzniká druhá evidence.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date
 from fractions import Fraction
 from pathlib import Path
@@ -17,7 +17,7 @@ import yaml
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, pocatecni
+from . import audit, denik, pocatecni
 from .db import RadekZapisu, VerzePredpisu, Zapis
 from .domena import katalog
 from .domena.penize import halire, na_text
@@ -53,6 +53,18 @@ class Verze:
     osoby: dict[str, int]  # jednotka nebo "vychozi" → počet osob
     v_aplikaci: bool = False  # zadaná v aplikaci, ne v souboru profilu
     upravil: str = ""
+
+    @property
+    def otisk(self) -> str:
+        """Otisk toho, co předpis určuje (bez podkladu); schválení se váže k němu."""
+        return audit.otisk(
+            {
+                "plati_od": self.plati_od,
+                "slozky": [asdict(s) for s in self.slozky],
+                "pevne": self.pevne,
+                "osoby": self.osoby,
+            }
+        )
 
 
 @dataclass

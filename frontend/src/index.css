@@ -184,6 +184,27 @@ p.varovani-text { background: var(--varovani-mekka); }
   background: var(--varovani-mekka); border: 1px solid color-mix(in srgb, var(--varovani) 25%, transparent);
 }
 .odpis-dluhu > label { display: grid; gap: 0.3rem; margin-bottom: 0.7rem; }
+.zmeneno-po-schvaleni {
+  margin: 0.4rem 0; padding: 0.55rem 0.8rem; border-radius: var(--radius-maly); max-width: 68ch;
+  background: var(--varovani-mekka); border-left: 3px solid var(--varovani);
+}
+.zmeneno-po-schvaleni > strong { color: var(--varovani); }
+.zmeneno-po-schvaleni > p { margin: 0.2rem 0 0.35rem; }
+.zmeneno-po-schvaleni .radek { margin: 0.3rem 0; }
+.potvrzeni-duvod { display: grid; gap: 0.35rem; margin-bottom: 1.1rem; }
+.potvrzeni-duvod textarea { width: 100%; font: inherit; }
+.historie { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+.historie-zaznam {
+  padding: 0.7rem 0.9rem; border: 1px solid var(--okraj); border-radius: var(--radius-maly);
+  background: var(--plocha);
+}
+.historie-hlavicka { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: baseline; }
+.historie-zaznam > p { margin: 0.4rem 0 0; }
+.historie-zaznam table { margin-top: 0.4rem; }
+.historie-zaznam td { vertical-align: top; overflow-wrap: anywhere; }
+.historie-filtr { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: end; margin-bottom: 1rem; }
+.historie-filtr label { display: grid; gap: 0.3rem; }
+.historie-filtr p { margin: 0 0 0.5rem; }
 .odpis-dluhu > label > input, .odpis-dluhu > label > select { width: 100%; }
 
 /* Štítky stavů v tabulkách */
@@ -687,7 +708,9 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
   th:first-child, td:first-child { display: none; }
   table.jednotky th:first-child, table.jednotky td:first-child,
   table.dluznici th:first-child, table.dluznici td:first-child,
-  table.polozky-dluhu th:first-child, table.polozky-dluhu td:first-child { display: table-cell; }
+  table.polozky-dluhu th:first-child, table.polozky-dluhu td:first-child,
+  table.polozky-rozhodnuti td:first-child, table.historie-zmeny th:first-child,
+  table.historie-zmeny td:first-child { display: table-cell; }
   th, td { padding: 0.55rem 0.65rem; }
   .pohyb-hlavicka .tlumene { margin-left: 0; width: 100%; }
 }

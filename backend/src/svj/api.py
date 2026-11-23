@@ -12,6 +12,7 @@ from .api_denik import router as denik_router
 from .api_dluznici import router as dluznici_router
 from .api_faktury import router as faktury_router
 from .api_formulare import router as formulare_router
+from .api_historie import router as historie_router
 from .api_interni_doklady import router as interni_doklady_router
 from .api_lide import router as lide_router
 from .api_meridla import router as meridla_router
@@ -52,6 +53,7 @@ app.include_router(oznameni_router)
 app.include_router(formulare_router)
 app.include_router(meridla_router)
 app.include_router(rozhodnuti_router)
+app.include_router(historie_router)
 app.include_router(lide_router)
 app.include_router(zasilky_router)
 app.include_router(verejne_router)

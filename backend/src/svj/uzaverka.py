@@ -254,7 +254,17 @@ def kontroly(
             "rozhodnuti",
             "Výše záloh, klíče a volby mají doložené rozhodnutí",
             "chybi",
-            "Bez doloženého rozhodnutí: " + "; ".join(p.nazev for p in bez) + ".",
+            " ".join(
+                f"{nadpis}: " + "; ".join(p.nazev for p in skupina) + "."
+                for nadpis, skupina in (
+                    ("Bez doloženého rozhodnutí", [p for p in bez if not p.zmeneno_po_schvaleni]),
+                    (
+                        "Změněno po schválení, rozhodnutí je potřeba potvrdit znovu",
+                        [p for p in bez if p.zmeneno_po_schvaleni],
+                    ),
+                )
+                if skupina
+            ),
             "rozhodnuti",
         )
     )

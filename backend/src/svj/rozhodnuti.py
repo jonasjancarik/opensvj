@@ -7,16 +7,21 @@ o které rozhodnutí se opírá, nebo že rozhodnutí doložené není.
 Položky vznikají z profilu SVJ a z předpisu záloh. Klíč položky obsahuje i zvolenou hodnotu
 (třeba `klic-spravy:SPRAVA:jednotka`), takže když se v profilu změní, položka znovu čeká
 na doložení.
+
+Přiřazení si pamatuje otisk (SHA-256) schválené podoby položky. Když se verze předpisu
+po schválení změní, otisk nesedí: schválení přestane platit, uzávěrka na to upozorní
+a v rozhraní je vidět „Změněno po schválení“ s tím, kdo a proč předpis změnil. Rozhodnutí
+jde k nové podobě znovu potvrdit.
 """
 
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, replace
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import meridla, predpisy
-from .db import Rozhodnuti, RozhodnutiPro
+from . import audit, meridla, predpisy
+from .db import AuditniZaznam, Rozhodnuti, RozhodnutiPro
 from .domena.profil import Profil
 
 ORGANY: dict[str, str] = {
@@ -65,6 +70,25 @@ class Polozka:
     popis: str
     od: date | None = None  # verze předpisu: odkdy platí
     do: date | None = None
+    otisk: str = ""  # podoba položky, ke které se schválení váže
+    # Kde v auditním záznamu hledat změny položky (druh, klíč).
+    zmeny: tuple[str, str] | None = None
+    zmeneno_po_schvaleni: bool = False
+
+    def __post_init__(self) -> None:
+        if not self.otisk:
+            # Klíč obsahuje zvolenou hodnotu, takže sám určuje podobu položky.
+            self.otisk = audit.otisk(self.klic)
+
+
+@dataclass
+class Dolozeni:
+    """Přiřazené rozhodnutí; `platne` je False, když se položka po schválení změnila."""
+
+    rozhodnuti_id: int
+    platne: bool
+    prirazeno: datetime
+    zmena: AuditniZaznam | None = None  # poslední změna položky po schválení
 
 
 def _d(d: date) -> str:
@@ -91,6 +115,8 @@ def polozky(profil: Profil, nastaveni: predpisy.Nastaveni) -> list[Polozka]:
                 popis=", ".join(s.nazev for s in v.slozky),
                 od=v.plati_od,
                 do=do,
+                otisk=v.otisk,
+                zmeny=("verze_predpisu", v.plati_od.isoformat()),
             )
         )
     if verze:
@@ -155,6 +181,37 @@ def prirazeni(s: Session) -> dict[str, int]:
     return {p.klic: p.rozhodnuti_id for p in s.scalars(select(RozhodnutiPro))}
 
 
+def dolozeni(s: Session, polozky_: list[Polozka]) -> dict[str, Dolozeni]:
+    """Přiřazená rozhodnutí a zda pořád platí pro současnou podobu položky."""
+    podle_klice = {p.klic: p for p in polozky_}
+    vysledek = {}
+    for p in s.scalars(select(RozhodnutiPro)):
+        polozka = podle_klice.get(p.klic)
+        if polozka is None:
+            continue
+        platne = p.otisk is None or p.otisk == polozka.otisk
+        zmena = None
+        if not platne and polozka.zmeny:
+            zmena = audit.posledni_zmena(s, *polozka.zmeny, po=p.upraveno)
+        vysledek[p.klic] = Dolozeni(p.rozhodnuti_id, platne, p.upraveno, zmena)
+    return vysledek
+
+
+def schvaleni_verze(
+    s: Session, profil: Profil, nastaveni: predpisy.Nastaveni
+) -> dict[date, tuple[Rozhodnuti, Dolozeni]]:
+    """Verze předpisu, ke kterým je přiřazené rozhodnutí, podle data platnosti."""
+    pol = polozky(profil, nastaveni)
+    d = dolozeni(s, pol)
+    vysledek = {}
+    for p in pol:
+        if p.od is not None and p.klic in d:
+            r = s.get(Rozhodnuti, d[p.klic].rozhodnuti_id)
+            if r is not None:
+                vysledek[p.od] = (r, d[p.klic])
+    return vysledek
+
+
 def _over(u: UdajeRozhodnuti) -> UdajeRozhodnuti:
     if u.organ not in ORGANY:
         raise ChybaRozhodnuti("Neznámý orgán.")
@@ -204,6 +261,8 @@ def smaz(s: Session, rozhodnuti_id: int) -> None:
         raise ChybaRozhodnuti("Takové rozhodnutí v evidenci není.")
     for p in s.scalars(select(RozhodnutiPro).where(RozhodnutiPro.rozhodnuti_id == r.id)):
         s.delete(p)
+    # Přiřazení napřed: jinak je smaže databáze kaskádou dřív a ORM je pak nenajde.
+    s.flush()
     s.delete(r)
 
 
@@ -216,8 +275,10 @@ def prirad(
     kdo: str,
 ) -> None:
     """Přiřadí položce rozhodnutí; None přiřazení zruší."""
-    if klic not in {p.klic for p in polozky(profil, nastaveni)}:
+    polozka = next((p for p in polozky(profil, nastaveni) if p.klic == klic), None)
+    if polozka is None:
         raise ChybaRozhodnuti("Tato položka v nastavení SVJ už není. Načtěte stránku znovu.")
+    audit.pojmenuj(s, "prirazeni_rozhodnuti", klic, polozka.nazev)
     p = s.get(RozhodnutiPro, klic)
     if rozhodnuti_id is None:
         if p is not None:
@@ -226,21 +287,41 @@ def prirad(
     if s.get(Rozhodnuti, rozhodnuti_id) is None:
         raise ChybaRozhodnuti("Takové rozhodnutí v evidenci není.")
     if p is None:
-        s.add(RozhodnutiPro(klic=klic, rozhodnuti_id=rozhodnuti_id, upravil=kdo))
-    else:
+        s.add(
+            RozhodnutiPro(klic=klic, rozhodnuti_id=rozhodnuti_id, otisk=polozka.otisk, upravil=kdo)
+        )
+    elif p.rozhodnuti_id != rozhodnuti_id or p.otisk != polozka.otisk:
+        if p.rozhodnuti_id == rozhodnuti_id:
+            audit.duvod(s, "Rozhodnutí potvrzené i pro změněnou podobu.")
         p.rozhodnuti_id = rozhodnuti_id
+        p.otisk = polozka.otisk
         p.upravil = kdo
+
+
+def presun_schvaleni(s: Session, stary: str, novy: str, nazev: str) -> None:
+    """Přenese přiřazené rozhodnutí na položku s novým klíčem (předpis s jiným datem).
+    Otisk zůstane původní, takže schválení neplatí, dokud ho někdo znovu nepotvrdí."""
+    p = s.get(RozhodnutiPro, stary)
+    if p is None or s.get(RozhodnutiPro, novy) is not None:
+        return
+    audit.pojmenuj(s, "prirazeni_rozhodnuti", novy, nazev)
+    p.klic = novy
+    s.flush()
 
 
 def bez_rozhodnuti(
     s: Session, profil: Profil, nastaveni: predpisy.Nastaveni, rok: int | None = None
 ) -> list[Polozka]:
-    """Položky bez doloženého rozhodnutí; s rokem jen verze předpisu, které v roce platily."""
-    hotove = prirazeni(s)
+    """Položky bez platného rozhodnutí (i ty změněné po schválení); s rokem jen verze
+    předpisu, které v roce platily."""
+    pol = polozky(profil, nastaveni)
+    hotove = dolozeni(s, pol)
     vysledek = []
-    for p in polozky(profil, nastaveni):
+    for p in pol:
         if p.klic in hotove:
-            continue
+            if hotove[p.klic].platne:
+                continue
+            p = replace(p, zmeneno_po_schvaleni=True)
         if rok is not None and p.od is not None:
             if p.od > date(rok, 12, 31) or (p.do is not None and p.do <= date(rok, 1, 1)):
                 continue

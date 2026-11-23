@@ -7,11 +7,13 @@ import argparse
 
 from sqlalchemy import select
 
+from . import audit
 from .db import Obdobi, sezeni
 
 
 def otevri_obdobi(roky: list[int]) -> None:
     with sezeni()() as s:
+        audit.kdo(s, "příkazová řádka")
         for rok in roky:
             o = s.scalar(select(Obdobi).where(Obdobi.rok == rok))
             if o is None:

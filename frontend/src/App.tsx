@@ -6,6 +6,7 @@ import { PrepinacVzhledu } from './Vzhled'
 import { Denik } from './Denik'
 import { Dluznici } from './Dluznici'
 import { Faktury } from './Faktury'
+import { Historie } from './Historie'
 import { Oznameni } from './Oznameni'
 import { Pocatecni } from './Pocatecni'
 import { Predpisy } from './Predpisy'
@@ -32,6 +33,7 @@ const STRANKY = {
   rozhodnuti: 'Rozhodnutí',
   zasilky: 'Zásilky',
   denik: 'Deník',
+  historie: 'Historie změn',
 } as const
 // Stránky, kterými v nabídce začíná nová skupina.
 const ZACATEK_SKUPINY: ReadonlySet<string> = new Set(['banka', 'vyuctovani', 'vlastnici'])
@@ -129,6 +131,8 @@ export default function App() {
           <Zasilky />
         ) : stranka === 'uzaverka' ? (
           <Uzaverka />
+        ) : stranka === 'historie' ? (
+          <Historie />
         ) : (
           <Prehled />
         )}
