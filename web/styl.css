@@ -57,75 +57,38 @@ button { font: inherit; cursor: pointer; }
 .tlacitko.svetle:hover { background: #e8edfb; }
 button.odkaz { padding: 0; border: 0; background: none; color: var(--akcent); text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---------- Úvod: vlevo sdělení, vpravo dům ---------- */
-.uvod { position: relative; display: grid; grid-template-columns: 1fr 1fr; min-height: 100svh; }
-.uvod-text {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 3rem;
-  padding: var(--kraj);
-}
+/* ---------- Úvod: sdělení a pod ním aplikace ---------- */
+.uvod { display: grid; gap: clamp(2.5rem, 6vw, 5rem); padding: var(--kraj) var(--kraj) 0; }
+.lista { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .znacka {
-  display: inline-flex; align-items: center; gap: 0.6rem; align-self: start; text-decoration: none;
-  font-family: var(--pismo-nadpis); font-weight: 600; font-size: 1.25rem;
+  display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none;
+  font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em;
 }
-.uvod-sdeleni { display: grid; gap: 1.1rem; justify-items: start; }
-.uvod-sdeleni h1 { font-size: var(--velky); line-height: 1.02; font-weight: 400; letter-spacing: -0.03em; }
-.uvod-sdeleni p { max-width: 44ch; }
-.uvod-akce { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; margin-top: 0.6rem; }
-.radek { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.odkaz-nahore {
+  display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 550; text-decoration: none;
+}
+.odkaz-nahore:hover span { text-decoration: underline; }
+.uvod-sdeleni {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 2rem clamp(2rem, 5vw, 5rem); align-items: end;
+}
+.uvod-sdeleni h1 { font-size: clamp(2.2rem, 4.6vw, 4.25rem); line-height: 1; font-weight: 400; letter-spacing: -0.035em; }
+.uvod-popis { display: grid; gap: 1.4rem; justify-items: start; padding-bottom: 0.35rem; }
+.uvod-popis p { max-width: 46ch; }
+.uvod-akce { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; }
+.radek { display: block; overflow: hidden; padding-bottom: 0.1em; }
 .radek > span { display: block; }
 .js .radek > span { animation: vyjed 0.9s var(--prechod) both; }
 .js .radek + .radek > span { animation-delay: 0.11s; }
-.js .uvod-sdeleni p, .js .uvod-akce { animation: objev 0.7s 0.5s var(--prechod) both; }
-.js .dum-ramec > * { animation: objev 0.7s var(--prechod) both; }
-.js .dum-ramec > :nth-child(2) { animation-delay: 0.1s; }
-.js .dum-ramec > :nth-child(3) { animation-delay: 0.2s; }
-.js .dum-ramec > :nth-child(4) { animation-delay: 0.3s; }
+.js .uvod-popis { animation: objev 0.7s 0.45s var(--prechod) both; }
+.js .uvod-snimek { animation: objev 0.9s 0.6s var(--prechod) both; }
 @keyframes vyjed { from { transform: translateY(105%); } }
 @keyframes objev { from { opacity: 0; transform: translateY(16px); } }
-
-.uvod-dum {
-  display: grid; place-items: center; background: var(--pozadi-2);
-  padding: calc(var(--kraj) + 2.5rem) var(--kraj) var(--kraj);
+/* Snímek aplikace stojí na tmavším poli a dole z něj vyjíždí. */
+.uvod-snimek {
+  margin: 0; padding: clamp(1rem, 4.5vw, 4.5rem) clamp(1rem, 6vw, 7rem) 0; overflow: hidden;
+  border-radius: 14px; background: var(--pozadi-2);
 }
-.odkaz-nahore {
-  position: absolute; top: var(--kraj); right: var(--kraj); display: inline-flex; align-items: center; gap: 0.5rem;
-  font-size: 0.95rem; font-weight: 550; text-decoration: none;
-}
-.odkaz-nahore:hover span { text-decoration: underline; }
-.dum-ramec { display: grid; gap: 1.1rem; justify-items: center; width: min(100%, 28rem); }
-.dum-stav { display: grid; text-align: center; font-size: var(--zaklad); }
-.dum-stav strong { font-family: var(--pismo-nadpis); font-size: var(--nadpis); font-weight: 600; line-height: 1.15; }
-.dum-stav span { color: var(--tlumeny); }
-.dum-kresba { width: min(100%, 17rem); }
-.dum-kresba svg { display: block; width: 100%; height: auto; overflow: visible; }
-.d-fasada { fill: var(--fasada); }
-.d-linka { fill: var(--fasada-linka); }
-.d-zem { fill: var(--okraj); }
-.d-dvere { fill: var(--akcent); }
-.d-klika { fill: var(--svetlo); }
-.d-okno { fill: var(--okno); transition: fill 0.5s; }
-.d-pricka { stroke: var(--fasada); stroke-width: 1.6; fill: none; }
-.d-jednotka { cursor: pointer; outline: none; }
-.d-jednotka.sviti .d-okno { fill: var(--svetlo); }
-.d-jednotka .d-vyber { fill: none; stroke: var(--text); stroke-width: 0; transition: stroke-width 0.15s; }
-.d-jednotka:hover .d-vyber, .d-jednotka:focus-visible .d-vyber { stroke-width: 1.2; }
-.d-jednotka.vybrana .d-vyber { stroke-width: 2.4; }
-.d-truhlik { fill: var(--akcent); }
-.d-kvet { fill: #e0705f; }
-.d-terc { fill: transparent; }
-.dum-jednotka {
-  display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: center; width: 100%;
-  padding: 1rem 1.1rem; border-radius: 14px; background: var(--plocha); border: 1px solid var(--okraj);
-  font-size: 0.94rem;
-}
-.dum-jednotka > div { display: grid; }
-.dum-jednotka strong, .dum-jednotka .j-stav { white-space: nowrap; }
-.dum-jednotka > div span { color: var(--tlumeny); }
-.dum-jednotka .j-stav { grid-column: 1; font-weight: 600; color: var(--varovani); }
-.dum-jednotka .j-stav.ok { color: var(--uspech); }
-.dum-jednotka button { grid-column: 2; grid-row: 1 / span 2; font-size: 0.94rem; padding: 0.65rem 1.1rem; }
-.dum-jednotka button:disabled { background: var(--akcent-mekky); color: var(--akcent); cursor: default; transform: none; }
-.dum-napoveda { font-size: var(--maly); color: var(--tlumeny); text-align: center; max-width: 40ch; }
+.uvod-snimek img { width: 100%; border-radius: 12px 12px 0 0; }
 
 /* ---------- Co aplikace umí ---------- */
 main > section { margin-top: clamp(6rem, 12vw, 11rem); }
@@ -284,13 +247,10 @@ a.dlazdice:hover { background: #c7c6c1; }
 
 /* ---------- Telefon a tablet ---------- */
 @media (max-width: 860px) {
-  .uvod { grid-template-columns: 1fr; min-height: 0; }
-  .uvod-dum { padding-top: 2.5rem; }
-  .uvod-text { gap: 3.5rem; padding-bottom: 2.5rem; }
-  .dum-jednotka { padding: 0.9rem; column-gap: 0.6rem; }
-  .dum-jednotka button { padding: 0.65rem 0.9rem !important; }
-  .uvod-sdeleni h1 { font-size: clamp(1.7rem, 7.4vw, 2.6rem); }
-  .dum-kresba { width: min(62vw, 15rem); }
+  .uvod-sdeleni { grid-template-columns: 1fr; }
+  .uvod-sdeleni h1 { font-size: clamp(2rem, 8.6vw, 3.2rem); }
+  .uvod-snimek { padding: 1rem 0 0 1rem; }
+  .uvod-snimek img { width: 150%; max-width: none; border-radius: 10px 0 0 0; }
   .umi { grid-template-columns: 1fr; }
   #umi-hledat { height: 56px; font-size: 1.25rem; }
   #umi-polozky li > button { font-size: clamp(1.9rem, 8.5vw, 3rem); }
