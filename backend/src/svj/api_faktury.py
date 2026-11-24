@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from . import faktury, fond_ze_zisku, majetek, uvery
+from . import faktury, fond_ze_zisku, majetek, ostatni_vynosy, uvery
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -40,6 +40,12 @@ class Faktura(BaseModel):
     rozhodnuti: str | None
     zapis: str
     zadal: str
+    pokuty_k_zapoctu: int = 0  # nezaplacené smluvní pokuty téhož dodavatele (u otevřených)
+
+
+class Zapocet(BaseModel):
+    castka: int
+    datum: date
 
 
 class Faktury(BaseModel):
@@ -65,9 +71,12 @@ class NovaFaktura(BaseModel):
     rozhodnuti: str | None = Field(default=None, max_length=200)
 
 
-def model(x: faktury.StavFaktury) -> Faktura:
+def model(x: faktury.StavFaktury, pokuty: dict[str, int] | None = None) -> Faktura:
     f = x.faktura
     return Faktura(
+        pokuty_k_zapoctu=(pokuty or {}).get(" ".join(f.dodavatel.split()).lower(), 0)
+        if x.zbyva > 0 and not x.stornovana
+        else 0,
         cislo=f.cislo,
         dodavatel=f.dodavatel,
         ico=f.ico,
@@ -106,6 +115,10 @@ def _prehled(rok: int) -> Faktury:
     prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         vse = faktury.prehled(s)
+        pokuty: dict[str, int] = {}
+        for p, c in ostatni_vynosy.otevrene(s, prof, ostatni_vynosy.POKUTY).items():
+            klic = " ".join(p.split()).lower()
+            pokuty[klic] = pokuty.get(klic, 0) + c
     roku = [x for x in vse if x.faktura.rok == rok or (x.zbyva > 0 and not x.stornovana)]
     return Faktury(
         rok=rok,
@@ -115,7 +128,7 @@ def _prehled(rok: int) -> Faktury:
             if _nabizet(k, d, prof)
         ],
         dodavatele=sorted({x.faktura.dodavatel for x in vse}, key=str.lower),
-        faktury=[model(x) for x in roku],
+        faktury=[model(x, pokuty) for x in roku],
         k_uhrade=sum(x.zbyva for x in vse if not x.stornovana and x.zbyva > 0),
     )
 
@@ -153,5 +166,22 @@ def zadej(nova: NovaFaktura, uzivatel: Zapisujici) -> Faktury:
             s.rollback()
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
         rok = f.rok
+        s.commit()
+    return _prehled(rok)
+
+
+@router.post("/{cislo}/zapocet")
+def zapocet(cislo: str, z: Zapocet, uzivatel: Zapisujici) -> Faktury:
+    """Započte uplatněnou smluvní pokutu proti faktuře téhož dodavatele."""
+    prof = profil.nacti(nastaveni().profil)
+    with sezeni()() as s:
+        try:
+            zapis = ostatni_vynosy.zapocti_pokutu(
+                s, prof, cislo, z.castka, datum=z.datum, zauctoval=uzivatel.email
+            )
+        except ostatni_vynosy.ChybaVynosu as e:
+            s.rollback()
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
+        rok = zapis.rok
         s.commit()
     return _prehled(rok)

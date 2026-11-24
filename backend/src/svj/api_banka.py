@@ -287,7 +287,7 @@ def prehled(_: Prihlaseny, vse: bool = False) -> Banka:
                         pole=pole,
                         volitelna=banka.VOLITELNE.get(i, []),
                         moznosti={
-                            p: m for p in pole if (m := banka.moznosti_pole(prof, p)) is not None
+                            p: m for p in pole if (m := banka.moznosti_pole(prof, p, s)) is not None
                         },
                     )
                     for i, pole in mozne.items()

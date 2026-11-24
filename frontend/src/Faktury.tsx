@@ -24,6 +24,7 @@ type Faktura = {
   rozhodnuti: string | null
   zapis: string
   zadal: string
+  pokuty_k_zapoctu: number
 }
 type Data = {
   rok: number
@@ -143,6 +144,7 @@ export function Faktury() {
                         .filter(Boolean)
                         .join(' · ')}
                     </span>
+                    {f.pokuty_k_zapoctu > 0 && <ZapocetPokuty faktura={f} poZapoctu={setData} />}
                   </td>
                   <td className="cislo">{kc(f.castka)}</td>
                   <td className="cislo">{f.stav === 'stornovana' ? '' : kc(f.zbyva)}</td>
@@ -154,6 +156,68 @@ export function Faktury() {
         </div>
       )}
     </>
+  )
+}
+
+function ZapocetPokuty({ faktura: f, poZapoctu }: { faktura: Faktura; poZapoctu: (d: Data) => void }) {
+  const navrh = Math.min(f.pokuty_k_zapoctu, f.zbyva)
+  const [otevreno, setOtevreno] = useState(false)
+  const [castka, setCastka] = useState((navrh / 100).toFixed(2).replace('.', ','))
+  const [den, setDen] = useState(dnes())
+  const [chyba, setChyba] = useState<string | null>(null)
+  const [pracuji, setPracuji] = useState(false)
+
+  async function zapocist(e: FormEvent) {
+    e.preventDefault()
+    const halire = naHalire(castka)
+    if (halire === null || halire <= 0) {
+      setChyba('Napište částku, kterou chcete započíst.')
+      return
+    }
+    setPracuji(true)
+    setChyba(null)
+    try {
+      poZapoctu(
+        await api<Data>(`/api/faktury/${f.cislo}/zapocet`, {
+          method: 'POST',
+          json: { castka: halire, datum: den },
+        }),
+      )
+    } catch (e) {
+      setChyba((e as Error).message)
+    } finally {
+      setPracuji(false)
+    }
+  }
+
+  if (!otevreno)
+    return (
+      <p className="upozorneni-radek">
+        Dodavatel má nezaplacenou smluvní pokutu {kc(f.pokuty_k_zapoctu)}.{' '}
+        <button className="odkaz" onClick={() => setOtevreno(true)}>
+          Započíst proti této faktuře
+        </button>
+      </p>
+    )
+  return (
+    <form className="zapocet" onSubmit={zapocist}>
+      <label>
+        Započíst
+        <input inputMode="decimal" value={castka} onChange={(e) => setCastka(e.target.value)} />
+      </label>
+      <label>
+        Ke dni
+        <input type="date" value={den} onChange={(e) => setDen(e.target.value)} required />
+      </label>
+      <button type="submit" disabled={pracuji}>
+        Započíst
+      </button>
+      <button type="button" className="vedlejsi" onClick={() => setOtevreno(false)}>
+        Zpět
+      </button>
+      {chyba && <span className="chyba">{chyba}</span>}
+      <span className="tlumene">Dodavateli pak zaplatíte jen zbytek faktury.</span>
+    </form>
   )
 }
 

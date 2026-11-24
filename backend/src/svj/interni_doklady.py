@@ -124,6 +124,12 @@ FORMULARE: dict[str, Formular] = {
             ),
         ),
     ),
+    "smluvni-pokuta": Formular(
+        (Pole("protistrana", "Dodavatel", "text"), Pole("castka", "Vyúčtovaná pokuta")),
+        napoveda="Pokutu zaúčtujte v den, kdy ji SVJ dodavateli vyúčtovalo, a jen když je dost "
+        "jisté, že ji zaplatí. Dodavatele napište stejně jako na jeho fakturách: pokutu pak jde "
+        "na stránce Faktury započíst proti jeho faktuře, nebo její úhradu vybrat v Bance.",
+    ),
     "najem-predpis": Formular(
         (Pole("najemce", "Nájemce", "text"), Pole("castka", "Nájemné za období")),
     ),

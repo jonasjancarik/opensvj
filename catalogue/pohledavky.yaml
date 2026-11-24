@@ -175,3 +175,75 @@
     - {typ: zakon, odkaz: "OZ § 1186 odst. 2 a 3"}
   platnost: {od: 2014-01-01}
   priklady: []
+
+- id: smluvni-pokuta
+  nazev: Smluvní pokuta dodavateli
+  kdy: SVJ vyúčtuje dodavateli smluvní pokutu nebo penále ze smlouvy (třeba za pozdě předané dílo).
+  stav: navrh
+  doklad: ID
+  vstupy: {protistrana: dodavatel, castka: vyúčtovaná pokuta}
+  zapisy:
+    - md: pohledavky_sankce_dodavatele
+      d: vynosy.smluvni_pokuty
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Smluvní pokuty od třetích osob ze smluv SVJ jsou příjmem SVJ (NV 366/2013 § 16 odst. 1 písm. e)) a patří mezi smluvní pokuty a úroky z prodlení (vyhláška 504 § 27 odst. 3 písm. a)).
+    - Účtuje se v den, kdy ji SVJ uplatnilo (vyúčtovalo, započetlo), a jen pokud je dost jisté, že ji dodavatel zaplatí (NÚR I-10 podle Durec s. 48).
+    - Daní se až po zaplacení nebo zápočtu (ZDP § 23 odst. 3 písm. a) bod 6 a písm. b) bod 1).
+  zdroje:
+    - {typ: zakon, odkaz: "NV 366/2013 § 16 odst. 1 písm. e); ZDP § 23 odst. 3"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 48"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Pokuta za pozdě předaná okna
+      vstupy: {protistrana: oknar, castka: "12000.00"}
+      ocekavane:
+        - [md, pohledavky_sankce_dodavatele, "12000.00", {protistrana: oknar}]
+        - [d, vynosy.smluvni_pokuty, "12000.00", {protistrana: oknar}]
+
+- id: smluvni-pokuta-zapocet
+  nazev: Zápočet smluvní pokuty proti faktuře dodavatele
+  kdy: SVJ započte uplatněnou pokutu proti faktuře téhož dodavatele a zaplatí mu jen zbytek.
+  stav: navrh
+  doklad: ID
+  vstupy: {protistrana: dodavatel, castka: započtená částka}
+  zapisy:
+    - md: dodavatele
+      d: pohledavky_sankce_dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Závazek nese párovací symbol faktury, takže z faktury zbývá zaplatit o započtenou částku méně.
+    - Zápočet je pro daň z příjmů úhradou pokuty (ZDP § 23 odst. 3 písm. a) bod 6).
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1982 (započtení)"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 48"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Zápočet pokuty proti poslední faktuře
+      vstupy: {protistrana: oknar, castka: "12000.00"}
+      ocekavane:
+        - [md, dodavatele, "12000.00", {protistrana: oknar}]
+        - [d, pohledavky_sankce_dodavatele, "12000.00", {protistrana: oknar}]
+
+- id: smluvni-pokuta-uhrada
+  nazev: Úhrada smluvní pokuty dodavatelem
+  kdy: Dodavatel zaplatí pokutu na účet SVJ.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, dodavatel: dodavatel, castka: zaplacená částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_sankce_dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{dodavatel}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 48"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Dodavatel pokutu zaplatí
+      vstupy: {ucet: provozni, dodavatel: oknar, castka: "12000.00"}
+      ocekavane:
+        - [md, banka.provozni, "12000.00", {}]
+        - [d, pohledavky_sankce_dodavatele, "12000.00", {protistrana: oknar}]

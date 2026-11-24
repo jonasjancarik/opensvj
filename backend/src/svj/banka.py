@@ -14,7 +14,7 @@ from typing import Any
 from sqlalchemy import ColumnElement, and_, exists, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, dluznici, faktury, pocatecni
+from . import denik, dluznici, faktury, ostatni_vynosy, pocatecni
 from .db import (
     BankovniPohyb,
     BankovniUcet,
@@ -40,6 +40,8 @@ OPERACE = {
         "uhrada-odepsane-pohledavky": ["jednotka"],
         "urok-a-srazkova-dan": [],
         "pojistne-plneni": [],
+        "pojistne-plneni-uhrada": ["udalost"],
+        "smluvni-pokuta-uhrada": ["dodavatel"],
         "najem-uhrada": ["najemce"],
         "dotace-prijeti": ["poskytovatel"],
     },
@@ -72,8 +74,26 @@ ZDROJE_PREPLATKU = {
 }
 
 
-def moznosti_pole(profil: Profil, pole: str) -> dict[str, str] | None:
-    """Hodnoty, ze kterých se v poli vybírá (hodnota → popis); None u pole bez výběru."""
+# Pole, u kterých se nabízí, co je ještě otevřené: role pohledávky a co v popisku je.
+OTEVRENE = {
+    "dodavatel": (ostatni_vynosy.POKUTY, "nezaplacená pokuta"),
+    "udalost": (ostatni_vynosy.POJISTNE, "pojišťovna dluží"),
+    "poskytovatel": (ostatni_vynosy.DOTACE_POHLEDAVKY, "zbývá vyplatit"),
+}
+
+
+def moznosti_pole(
+    profil: Profil, pole: str, session: Session | None = None
+) -> dict[str, str] | None:
+    """Hodnoty, ze kterých se v poli vybírá (hodnota → popis); None u pole bez výběru.
+
+    U otevřených pohledávek (pokuty, pojistné plnění, dotace) jen se sezením a jen když nějaká
+    je; jinak se jméno píše."""
+    if pole in OTEVRENE:
+        if session is None:
+            return None
+        role, co = OTEVRENE[pole]
+        return ostatni_vynosy.popisky(ostatni_vynosy.otevrene(session, profil, role), co) or None
     if pole == "sluzba":
         return {k: u.get("nazev", k) for k, u in profil.sluzby.items()}
     if pole == "zdroj":
@@ -583,6 +603,8 @@ POPISKY = {
     "drivejsi_vlastnik": "dřívější vlastník",
     "najemce": "nájemce",
     "poskytovatel": "kdo dotaci poskytl",
+    "dodavatel": "dodavatel",
+    "udalost": "pojistná událost",
     "sluzba": "služba",
     "zdroj": "odkud přeplatek je",
 }

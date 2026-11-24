@@ -636,6 +636,7 @@ DAN_PODLE_ROLE = {
     "vynosy.dotace": ("nepredmetne", "Dotace"),
     "vynosy.uroky": ("srazkova", "Úroky z bankovních účtů (daň srazila banka)"),
     "vynosy.urok_z_prodleni": ("predmetne", "Úroky z prodlení od vlastníků"),
+    "vynosy.smluvni_pokuty": ("predmetne", "Smluvní pokuty a penále od dodavatelů"),
     "vynosy.prispevky": ("nepredmetne", "Příspěvky vlastníků na správu domu"),
     "vynosy.cerpani_fondu": ("nezahrnuje", "Čerpání fondu ze zisku minulých let"),
     "vynosy.zuctovani_dlouhodobych_zaloh": (
@@ -665,13 +666,18 @@ DAN_PODLE_SKUPINY = {
 }
 # Sankce, které se daní až po zaplacení (§ 23 odst. 3 písm. a) bod 6 a písm. b) bod 1 ZDP),
 # a pohledávka, ze které aplikace pozná, kolik z nich vlastníci zaplatili.
-SANKCE = {"vynosy.urok_z_prodleni": "pohledavky_vlastnici_sankce"}
+SANKCE = {
+    "vynosy.urok_z_prodleni": "pohledavky_vlastnici_sankce",
+    "vynosy.smluvni_pokuty": "pohledavky_sankce_dodavatele",
+}
 SANKCE_BEZ_POHLEDAVKY = ("641", "642")
 POZNAMKY_DANE = {
     "vynosy.pacht": "Nájemné a pacht ze společných částí jsou příjmem vlastníků, ne SVJ "
     "(NV 366/2013 § 16 odst. 2; kniha s. 77–79), a SVJ je pak nedaní. "
     "Katalog pro ně má operace najem-predpis a prijmy-vlastniku. Vyjasněte s účetní.",
     "vynosy.urok_z_prodleni": "Daní se až po zaplacení (§ 23 odst. 3 ZDP), ne už při předpisu.",
+    "vynosy.smluvni_pokuty": "Daní se až po zaplacení nebo zápočtu (§ 23 odst. 3 ZDP), ne už "
+    "při vyúčtování.",
     "vynosy.cerpani_fondu": "Do základu daně se nezahrnuje, pokud kryje náklady, které nebyly "
     "daňově uznatelné (§ 23 odst. 4 písm. e) a g) ZDP). Přiznání se kvůli němu podat musí.",
 }
@@ -764,7 +770,7 @@ def dan(session: Session, profil: Profil, rok: int) -> Dan:
     vynosy: list[VynosProDan] = []
     souhrn = {"nepredmetne": 0, "srazkova": 0, "nezahrnuje": 0, "predmetne": 0, "nezname": 0}
     rad111 = rad30 = 0
-    sankce_predepsane = False
+    sankce_predepsane: set[str] = set()
     for ucet, z in sorted(zust.items()):
         if ucet[0] != "6" or z == 0:
             continue
@@ -779,7 +785,7 @@ def dan(session: Session, profil: Profil, rok: int) -> Dan:
         castka = -z
         poznamka = POZNAMKY_DANE.get(role, "")
         if role in SANKCE:
-            sankce_predepsane = True
+            sankce_predepsane.add(role)
             s = _sankce(session, rok, profil.ucet(SANKCE[role]), castka)
             rad111 += s.nezaplaceno_letos
             rad30 += s.zaplaceno_z_minula
@@ -791,10 +797,9 @@ def dan(session: Session, profil: Profil, rok: int) -> Dan:
         vynosy.append(VynosProDan(f"{popis} ({ucet})", castka, zdaneni, poznamka.strip()))
 
     # Sankce z minulých let zaplacené letos se daní, i když letos žádný výnos nemají.
-    if not sankce_predepsane:
-        for role, pohledavka in SANKCE.items():
-            if role in profil.role and pohledavka in profil.role:
-                rad30 += _sankce(session, rok, profil.ucet(pohledavka), 0).zaplaceno_z_minula
+    for role, pohledavka in SANKCE.items():
+        if role not in sankce_predepsane and role in profil.role and pohledavka in profil.role:
+            rad30 += _sankce(session, rok, profil.ucet(pohledavka), 0).zaplaceno_z_minula
 
     zdanovane = souhrn["predmetne"] + souhrn["nezname"]
     zaklad_presny = max(zdanovane - rad111 + rad30, 0)

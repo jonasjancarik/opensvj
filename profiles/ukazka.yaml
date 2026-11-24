@@ -145,6 +145,12 @@ role:
   # Jen u nezálohových příspěvků (prispevky: nezalohove) a u fondu ze zisku.
   vynosy.prispevky: "649500"
   vynosy.cerpani_fondu: "648100"
+  # Smluvní pokuty od dodavatelů a pojistné plnění zaúčtované v roce škody.
+  pohledavky_sankce_dodavatele: "378400"
+  vynosy.smluvni_pokuty: "641200"
+  pohledavky_pojistne: "378500"
+  dohadne_aktivni: "388100"
+  naklady.jine: "549900"
   zdroj_majetku: "901100"
   fond_ze_zisku: "911100"
   neuhrazena_ztrata: "932000"
@@ -192,6 +198,11 @@ nazvy_uctu:
   "951100": Úvěr
   "931000": Výsledek hospodaření ve schvalovacím řízení
   "932000": Neuhrazená ztráta minulých let
+  "378400": Smluvní pokuty od dodavatelů
+  "378500": Pojistné plnění k úhradě
+  "388100": Dohadné účty aktivní
+  "549900": Jiné ostatní náklady
+  "641200": Smluvní pokuty a penále od dodavatelů
   "648100": Čerpání fondu ze zisku
   "649500": Příspěvky vlastníků na správu (nezálohové)
   "961000": Počáteční účet rozvažný

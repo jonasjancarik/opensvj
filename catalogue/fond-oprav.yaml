@@ -91,7 +91,7 @@
       castka: "{castka}"
   pravidla:
     - Pojistné plnění je příjmem SVJ (NV 366/2013 § 16 odst. 1 písm. f)) a patří mezi jiné ostatní výnosy jako náhrada škody (vyhláška 504 § 27 odst. 3 písm. f)), obvykle na 649.
-    - Výnos patří do roku pojistné události. Když pojišťovna zaplatí až v dalším roce, zaúčtuje se v roce škody pohledávka (378/649), nebo odhad přes dohadný účet, pokud je nárok nesporný a výše ještě není známá (388/649). Tyto zápisy je zatím nutné zadat ručně.
+    - Výnos patří do roku pojistné události. Když pojišťovna zaplatí až v dalším roce, zaúčtuje se v roce škody pohledávka nebo odhad (`pojistne-plneni-narok`) a platba pak jen uhradí pohledávku (`pojistne-plneni-uhrada`).
   varianty:
     - id: snizeni-nakladu
       kdy: SVJ účtuje pojistné plnění jako snížení nákladů na pojištění.
@@ -108,3 +108,111 @@
       ocekavane:
         - [md, banka.provozni, "7000.00", {}]
         - [d, vynosy.pojistne_plneni, "7000.00", {}]
+
+- id: pojistne-plneni-narok
+  nazev: Pojistné plnění v roce škody
+  kdy: K 31. 12. roku pojistné události, když pojišťovna do té doby nezaplatila a nárok je nesporný.
+  stav: navrh
+  doklad: ID
+  vstupy:
+    udalost: pojistná událost (krátký popis, třeba „vytopený sklep 11/2026“)
+    sluzba: položka správy, ke které škoda patří
+    castka: přiznané plnění, nebo jeho odhad
+  zapisy:
+    - krok: priznano
+      md: pohledavky_pojistne
+      d: vynosy.pojistne_plneni
+      castka: "{castka}"
+      dimenze: {protistrana: "{udalost}", sluzba: "{sluzba}"}
+    - krok: odhad
+      md: dohadne_aktivni
+      d: vynosy.pojistne_plneni
+      castka: "{castka}"
+      dimenze: {protistrana: "{udalost}", sluzba: "{sluzba}"}
+  pravidla:
+    - Výnos patří do roku pojistné události (ZoÚ § 19 odst. 5 a § 25 odst. 3; Durec s. 50–51). Když pojišťovna sdělila výši plnění, je to pohledávka; když nárok uznala, ale výši ještě nesdělila, je to odhad na dohadném účtu.
+    - Sporný nárok se neúčtuje vůbec; výnos je až v roce, kdy ho pojišťovna přizná.
+    - Výnos nese položku správy, takže ve vyúčtování správy sníží její náklady.
+  zdroje:
+    - {typ: zakon, odkaz: "ZoÚ § 19 odst. 5, § 25 odst. 3; NV 366/2013 § 16 odst. 1 písm. f)"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 50–51 (kap. 6.3.3)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Odhad plnění za vytopený sklep
+      krok: odhad
+      vstupy: {udalost: sklep, sluzba: DROBNE_OPRAVY, castka: "41000.00"}
+      ocekavane:
+        - [md, dohadne_aktivni, "41000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, vynosy.pojistne_plneni, "41000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+    - nazev: Pojišťovna sdělila plnění do sestavení závěrky
+      krok: priznano
+      vstupy: {udalost: sklep, sluzba: DROBNE_OPRAVY, castka: "40000.00"}
+      ocekavane:
+        - [md, pohledavky_pojistne, "40000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, vynosy.pojistne_plneni, "40000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+
+- id: pojistne-plneni-oznameni
+  nazev: Pojišťovna oznámila plnění k odhadu
+  kdy: Pojišťovna v dalším roce oznámí výši plnění, které bylo k 31. 12. zaúčtované odhadem.
+  stav: navrh
+  doklad: ID
+  vstupy:
+    udalost: pojistná událost
+    sluzba: položka správy z odhadu
+    z_odhadu: oznámené plnění do výše odhadu
+    snizeni: o kolik je plnění nižší než odhad
+    navic: o kolik je plnění vyšší než odhad
+  zapisy:
+    - md: pohledavky_pojistne
+      d: dohadne_aktivni
+      castka: "{z_odhadu}"
+      dimenze: {protistrana: "{udalost}", sluzba: "{sluzba}"}
+    - md: naklady.jine
+      d: dohadne_aktivni
+      castka: "{snizeni}"
+      dimenze: {protistrana: "{udalost}", sluzba: "{sluzba}"}
+    - md: pohledavky_pojistne
+      d: vynosy.pojistne_plneni
+      castka: "{navic}"
+      dimenze: {protistrana: "{udalost}", sluzba: "{sluzba}"}
+  pravidla:
+    - Odhad se zúčtuje proti pohledávce. Rozdíl proti odhadu jde do nákladů, nebo výnosů roku oznámení; minulý rok se neopravuje (Durec s. 50–51).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 50–51 (kap. 6.3.3)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Oznámeno 40 000 Kč proti odhadu 41 000 Kč
+      vstupy: {udalost: sklep, sluzba: DROBNE_OPRAVY, z_odhadu: "40000.00", snizeni: "1000.00", navic: "0.00"}
+      ocekavane:
+        - [md, pohledavky_pojistne, "40000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, dohadne_aktivni, "40000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [md, naklady.jine, "1000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, dohadne_aktivni, "1000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+    - nazev: Oznámeno 43 000 Kč proti odhadu 41 000 Kč
+      vstupy: {udalost: sklep, sluzba: DROBNE_OPRAVY, z_odhadu: "41000.00", snizeni: "0.00", navic: "2000.00"}
+      ocekavane:
+        - [md, pohledavky_pojistne, "41000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, dohadne_aktivni, "41000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [md, pohledavky_pojistne, "2000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+        - [d, vynosy.pojistne_plneni, "2000.00", {protistrana: sklep, sluzba: DROBNE_OPRAVY}]
+
+- id: pojistne-plneni-uhrada
+  nazev: Úhrada pojistného plnění zaúčtovaného v roce škody
+  kdy: Pojišťovna zaplatí plnění, které už je zaúčtované jako pohledávka.
+  stav: navrh
+  doklad: BV
+  vstupy: {ucet: bankovní účet SVJ, udalost: pojistná událost, castka: připsaná částka}
+  zapisy:
+    - md: "banka.{ucet}"
+      d: pohledavky_pojistne
+      castka: "{castka}"
+      dimenze: {protistrana: "{udalost}"}
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 50–51 (kap. 6.3.3)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Pojišťovna zaplatí v dubnu
+      vstupy: {ucet: provozni, udalost: sklep, castka: "40000.00"}
+      ocekavane:
+        - [md, banka.provozni, "40000.00", {}]
+        - [d, pohledavky_pojistne, "40000.00", {protistrana: sklep}]

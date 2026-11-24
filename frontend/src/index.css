@@ -162,6 +162,10 @@ button.odkaz {
   background: none; color: var(--akcent); padding: 0.2rem 0.1rem; border-radius: 4px; border: 0;
 }
 button.odkaz:hover:not(:disabled) { background: none; box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
+.upozorneni-radek { margin: 0.35rem 0 0; color: var(--varovani, inherit); }
+form.zapocet { display: flex; flex-wrap: wrap; align-items: end; gap: 0.5rem 0.75rem; margin-top: 0.5rem; }
+form.zapocet label { display: grid; gap: 0.2rem; font-size: 0.9em; }
+form.zapocet input { width: 9rem; }
 
 /* ---------- Stavové barvy ---------- */
 .chyba { color: var(--chyba); }

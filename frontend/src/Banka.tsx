@@ -293,12 +293,15 @@ const POPIS_POLE: Record<string, string> = {
   drivejsi_vlastnik: 'Dřívější vlastník',
   najemce: 'Nájemce',
   poskytovatel: 'Kdo dotaci poskytl',
+  dodavatel: 'Dodavatel',
+  udalost: 'Pojistná událost',
   sluzba: 'Služba',
   zdroj: 'Odkud přeplatek je',
 }
 
-// Pole, do kterých se píše; předvyplní se jménem z platby.
-const TEXTOVA_POLE = ['protistrana', 'najemce', 'poskytovatel']
+// Pole, do kterých se píše; předvyplní se jménem z platby. Když aplikace zná otevřené
+// pohledávky (dotace, pokuty), nabídne je k výběru.
+const TEXTOVA_POLE = ['protistrana', 'najemce', 'poskytovatel', 'dodavatel']
 
 function PolozkaPohybu({
   pohyb: p,
@@ -331,7 +334,11 @@ function PolozkaPohybu({
     setChyba(null)
     try {
       const hodnoty = Object.fromEntries(
-        [...vybrana.pole, ...vybrana.volitelna].map((pole) => [pole, vstupy[pole] ?? '']),
+        [...vybrana.pole, ...vybrana.volitelna].map((pole) => {
+          const hodnota = vstupy[pole] ?? ''
+          const nabidka = vybrana.moznosti[pole]
+          return [pole, nabidka && !(hodnota in nabidka) ? '' : hodnota]
+        }),
       )
       poZauctovani(
         await api<Pohyb>(`/api/banka/pohyby/${p.id}`, {
@@ -437,14 +444,15 @@ function PolozkaPohybu({
                       </option>
                     ))}
                 </select>
-              ) : TEXTOVA_POLE.includes(pole) ? (
+              ) : (TEXTOVA_POLE.includes(pole) || pole === 'udalost') && !vybrana.moznosti[pole] ? (
                 <input
                   value={vstupy[pole] ?? ''}
                   onChange={(e) => setVstupy({ ...vstupy, [pole]: e.target.value })}
                 />
               ) : vybrana.moznosti[pole] ? (
                 <select
-                  value={vstupy[pole] ?? ''}
+                  // Jméno předvyplněné z platby nemusí být mezi nabízenými; pak se vybírá.
+                  value={vstupy[pole] && vstupy[pole] in vybrana.moznosti[pole] ? vstupy[pole] : ''}
                   onChange={(e) => setVstupy({ ...vstupy, [pole]: e.target.value })}
                 >
                   <option value="">Vyberte…</option>
