@@ -17,6 +17,7 @@ from . import (
     dluznici,
     fond_ze_zisku,
     majetek,
+    ostatni_vynosy,
     pocatecni,
     predpisy,
     rozhodnuti,
@@ -251,6 +252,7 @@ def kontroly(
 
     vysledek.extend(_kontroly_majetku(session, profil, zust, rok, k_datu))
     vysledek.extend(_kontroly_fondu_ze_zisku(session, profil, rok))
+    vysledek.extend(_kontroly_ostatnich_vynosu(session, profil, rok, k_datu))
 
     bez = rozhodnuti.bez_rozhodnuti(session, profil, nastaveni, rok)
     vysledek.append(
@@ -332,6 +334,63 @@ def _kontroly_fondu_ze_zisku(session: Session, profil: Profil, rok: int) -> list
             )
         )
     return vysledek
+
+
+def _kontroly_ostatnich_vynosu(
+    session: Session, profil: Profil, rok: int, k_datu: date
+) -> list[Kontrola]:
+    """Dotace a pojistné plnění, které ještě čekají na zaúčtování do výnosů."""
+    vysledek = []
+    dotace = ostatni_vynosy.otevrene(session, profil, ostatni_vynosy.DOTACE_NAROK, do=k_datu)
+    if dotace:
+        vysledek.append(
+            Kontrola(
+                "dotace",
+                "Dotace na náklady roku jsou použité",
+                "rucne",
+                "Z přiznaných dotací zbývá použít: "
+                + "; ".join(f"{p or 'bez určení'} {_kc(c)}" for p, c in dotace.items())
+                + ". Pokud na ně letos vznikly náklady, zaúčtujte k 31. 12. interní doklad "
+                "„Použití dotace na dotované náklady“ v poměru letošních nákladů k celé akci. "
+                "Zbytek zůstane na další roky.",
+                "denik",
+            )
+        )
+    odhady = ostatni_vynosy.otevrene(session, profil, ostatni_vynosy.ODHADY_POJISTNEHO, do=k_datu)
+    stare = {p: c for p, c in odhady.items() if _odhad_z_minula(session, profil, p, rok)}
+    if stare:
+        vysledek.append(
+            Kontrola(
+                "odhady-pojistneho",
+                "Odhady pojistného plnění z minulého roku jsou vyřešené",
+                "rucne",
+                "Pojišťovna zatím neoznámila plnění k odhadům: "
+                + "; ".join(f"{p or 'bez určení'} {_kc(c)}" for p, c in stare.items())
+                + ". Až plnění oznámí, zaúčtujte interní doklad „Pojišťovna oznámila plnění "
+                "k odhadu“. Když nárok odmítla, zadejte tam plnění 0 Kč a odhad půjde do nákladů.",
+                "denik",
+            )
+        )
+    return vysledek
+
+
+def _odhad_z_minula(session: Session, profil: Profil, udalost: str, rok: int) -> bool:
+    """Byl odhad k události zaúčtovaný už v některém z minulých roků (mimo uzávěrku)?"""
+    return bool(
+        session.scalar(
+            select(func.count())
+            .select_from(RadekZapisu)
+            .join(Zapis)
+            .where(
+                RadekZapisu.ucet == profil.ucet(ostatni_vynosy.ODHADY_POJISTNEHO),
+                RadekZapisu.protistrana == udalost,
+                RadekZapisu.strana == "md",
+                Zapis.rok < rok,
+                denik.nestornovany(),
+                denik.bez_uzaverky(),
+            )
+        )
+    )
 
 
 def _kontroly_majetku(

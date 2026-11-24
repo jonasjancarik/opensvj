@@ -85,31 +85,32 @@ def nabidka(_: Prihlaseny) -> Nabidka:
     ops = katalog.nacti()
     dostupne = interni_doklady.dostupne(prof)
     vysledek = []
-    for op_id, formular in interni_doklady.FORMULARE.items():
-        if not dostupne[op_id]:
-            continue
-        op = ops[op_id]
-        vysledek.append(
-            Operace(
-                id=op_id,
-                nazev=op.nazev,
-                kdy=op.data.get("kdy", ""),
-                stav=op.stav,
-                napoveda=formular.napoveda,
-                kroky=[Krok(id=k, nazev=n) for k, n in formular.kroky.items()],
-                pole=[
-                    Pole(
-                        klic=p.klic,
-                        popis=p.popis,
-                        typ=p.typ,
-                        moznosti=None
-                        if (m := interni_doklady.moznosti(prof, p.typ)) is None
-                        else [Moznost(hodnota=h, nazev=n) for h, n in m.items()],
-                    )
-                    for p in formular.pole
-                ],
+    with sezeni()() as s:
+        for op_id, formular in interni_doklady.FORMULARE.items():
+            if not dostupne[op_id]:
+                continue
+            op = ops[op_id]
+            vysledek.append(
+                Operace(
+                    id=op_id,
+                    nazev=op.nazev,
+                    kdy=op.data.get("kdy", ""),
+                    stav=op.stav,
+                    napoveda=formular.napoveda,
+                    kroky=[Krok(id=k, nazev=n) for k, n in formular.kroky.items()],
+                    pole=[
+                        Pole(
+                            klic=p.klic,
+                            popis=p.popis,
+                            typ=p.typ,
+                            moznosti=None
+                            if (m := interni_doklady.moznosti(prof, p.typ, s)) is None
+                            else [Moznost(hodnota=h, nazev=n) for h, n in m.items()],
+                        )
+                        for p in formular.pole
+                    ],
+                )
             )
-        )
     return Nabidka(
         operace=vysledek,
         nedostupne=sorted(ops[i].nazev for i, ok in dostupne.items() if not ok),
@@ -118,10 +119,11 @@ def nabidka(_: Prihlaseny) -> Nabidka:
 
 @router.post("/nahled")
 def nahled(d: Doklad, _: Prihlaseny) -> list[Radek]:
-    try:
-        radky = interni_doklady.nahled(_profil(), d.operace, d.krok, d.vstupy)
-    except (interni_doklady.ChybaDokladu, katalog.ChybaKatalogu) as e:
-        raise _chyba(e) from e
+    with sezeni()() as s:
+        try:
+            radky = interni_doklady.nahled(_profil(), d.operace, d.krok, d.vstupy, s)
+        except (interni_doklady.ChybaDokladu, katalog.ChybaKatalogu) as e:
+            raise _chyba(e) from e
     return [
         Radek(
             strana=r.strana,

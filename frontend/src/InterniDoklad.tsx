@@ -27,6 +27,11 @@ type Radek = {
 }
 
 const CASTKY = ['castka', 'castka_nula', 'castka_se_znamenkem']
+// Výběr z otevřených položek: co ukázat, když žádná není.
+const NIC_OTEVRENEHO: Record<string, string> = {
+  dotace: 'Žádná přiznaná dotace nečeká na použití. Nejdřív zaúčtujte „Rozhodnutí o poskytnutí dotace“.',
+  odhad_pojistneho: 'Žádný odhad pojistného plnění nečeká na oznámení od pojišťovny.',
+}
 
 /** Rok, jehož konec se právě účtuje: do konce března ještě minulý rok. */
 function rokUzaverky() {
@@ -165,8 +170,8 @@ export function InterniDoklad({ zauctovano }: { zauctovano: (cislo: string, rok:
     <form className="interni-doklad" onSubmit={zkontrolovat}>
       <h2>Interní doklad</h2>
       <p className="tlumene">
-        Pro účetní případy, které nemají vlastní stránku. Předpisy, faktury, platby, úrok
-        z prodlení, odpis dluhu nebo daň účtujte na jejich stránkách, kde aplikace hlídá víc.
+        Pro účetní případy, které nemají vlastní stránku. Předpisy, faktury, platby, úrok z prodlení, odpis dluhu nebo
+        daň účtujte na jejich stránkách, kde aplikace hlídá víc.
       </p>
       {!nabidka && !chyba && <p className="tlumene">Načítám…</p>}
       {nabidka && (
@@ -217,7 +222,9 @@ export function InterniDoklad({ zauctovano }: { zauctovano: (cislo: string, rok:
             {op.pole.map((p) => (
               <label key={p.klic}>
                 {p.popis}
-                {p.moznosti ? (
+                {p.moznosti && p.moznosti.length === 0 && NIC_OTEVRENEHO[p.typ] ? (
+                  <span className="tlumene">{NIC_OTEVRENEHO[p.typ]}</span>
+                ) : p.moznosti ? (
                   <select
                     value={hodnoty[p.klic] ?? ''}
                     onChange={(e) => zmenit(() => setHodnoty({ ...hodnoty, [p.klic]: e.target.value }))}
@@ -265,8 +272,7 @@ export function InterniDoklad({ zauctovano }: { zauctovano: (cislo: string, rok:
               {nahled.map((r, i) => (
                 <tr key={i}>
                   <td>
-                    {r.ucet}{' '}
-                    <span className="tlumene">{r.nazev_uctu !== r.ucet && r.nazev_uctu}</span>
+                    {r.ucet} <span className="tlumene">{r.nazev_uctu !== r.ucet && r.nazev_uctu}</span>
                   </td>
                   <td className="cislo">{r.strana === 'md' ? kc(r.castka) : ''}</td>
                   <td className="cislo">{r.strana === 'd' ? kc(r.castka) : ''}</td>

@@ -9,13 +9,15 @@ Operace s vlastní stránkou (předpisy, faktury, úvěr, majetek, úrok z prodl
 daň, vyúčtování, uzávěrka) se tu záměrně nenabízejí: tam aplikace hlídá víc než formulář.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import denik, faktury
-from .db import Zapis
+from . import denik, faktury, ostatni_vynosy
+from .db import RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import kc, na_text
 from .domena.profil import NeznamaRole, Profil
@@ -34,11 +36,67 @@ class Pole:
     typ: str = "castka"  # castka | castka_nula | castka_se_znamenkem | text | výběr (viz _moznosti)
 
 
+# Dopočet vstupů, které uživatel nezadává (z otevřených položek v účetnictví). Bez sezení
+# (kontrola, jestli má profil účty) dosadí zástupné hodnoty.
+Dopocet = Callable[[Session | None, Profil, dict[str, str], dict[str, int]], None]
+
+
 @dataclass(frozen=True)
 class Formular:
     pole: tuple[Pole, ...]
     kroky: dict[str, str] = field(default_factory=dict)  # krok → co znamená
     napoveda: str = ""
+    dopocet: Dopocet | None = None
+
+
+def _oznameni_pojistneho(
+    s: Session | None, profil: Profil, vstupy: dict[str, str], castky: dict[str, int]
+) -> None:
+    """Oznámené plnění proti odhadu z 31. 12.: do výše odhadu, rozdíl do nákladů nebo výnosů."""
+    oznameno = castky["castka"]
+    if s is None:
+        odhad, sluzba = oznameno, next(iter(profil.sprava), "")
+    else:
+        odhad = ostatni_vynosy.otevrene(s, profil, ostatni_vynosy.ODHADY_POJISTNEHO).get(
+            vstupy["udalost"], 0
+        )
+        if odhad <= 0:
+            raise ChybaDokladu("K této pojistné události není zaúčtovaný žádný odhad.")
+        sluzba = (
+            s.scalar(
+                select(RadekZapisu.sluzba)
+                .join(Zapis)
+                .where(
+                    RadekZapisu.ucet == profil.ucet(ostatni_vynosy.ODHADY_POJISTNEHO),
+                    RadekZapisu.protistrana == vstupy["udalost"],
+                    RadekZapisu.strana == "md",
+                    denik.nestornovany(),
+                )
+                .order_by(Zapis.datum.desc())
+            )
+            or ""
+        )
+    vstupy |= {
+        "sluzba": sluzba,
+        "z_odhadu": na_text(min(oznameno, odhad)),
+        "snizeni": na_text(max(odhad - oznameno, 0)),
+        "navic": na_text(max(oznameno - odhad, 0)),
+    }
+
+
+def _pouziti_dotace(
+    s: Session | None, profil: Profil, vstupy: dict[str, str], castky: dict[str, int]
+) -> None:
+    """Použít jde jen tolik, kolik z přiznané dotace ještě nešlo do výnosů."""
+    if s is None:
+        return
+    zbyva = ostatni_vynosy.otevrene(s, profil, ostatni_vynosy.DOTACE_NAROK).get(
+        vstupy["poskytovatel"], 0
+    )
+    if castky["castka"] > zbyva:
+        raise ChybaDokladu(
+            f"Z dotace od poskytovatele {vstupy['poskytovatel']} zbývá použít jen {kc(zbyva)}."
+        )
 
 
 FORMULARE: dict[str, Formular] = {
@@ -144,9 +202,40 @@ FORMULARE: dict[str, Formular] = {
     ),
     "dotace-pouziti": Formular(
         (
-            Pole("poskytovatel", "Kdo dotaci poskytl", "text"),
+            Pole("poskytovatel", "Kdo dotaci poskytl", "dotace"),
             Pole("castka", "Část dotace na náklady tohoto roku"),
         ),
+        napoveda="Dotace patří do výnosů toho roku, kdy vznikly náklady, na které je. Když akce "
+        "trvá víc let, rozdělte dotaci podle nákladů každého roku: stojí-li akce 1 000 000 Kč, "
+        "letos z ní bylo 400 000 Kč nákladů a dotace je 450 000 Kč, letos použijte 180 000 Kč. "
+        "Zbytek zůstane na další roky.",
+        dopocet=_pouziti_dotace,
+    ),
+    "pojistne-plneni-narok": Formular(
+        (
+            Pole("udalost", "Pojistná událost (třeba „vytopený sklep 11/2026“)", "text"),
+            Pole("sluzba", "Položka správy, ke které škoda patří", "naklad_spravy"),
+            Pole("castka", "Plnění od pojišťovny"),
+        ),
+        kroky={
+            "priznano": "K 31. 12.: pojišťovna už sdělila, kolik zaplatí",
+            "odhad": "K 31. 12.: pojišťovna škodu uznala, výši zatím nesdělila (odhad)",
+        },
+        napoveda="Pojistné plnění patří do roku, kdy škoda vznikla, i když pojišťovna zaplatí "
+        "až později. Když pojišťovna nárok zpochybňuje, nezapisujte nic. Odhad je obvykle "
+        "škoda snížená o spoluúčast. Platbu od pojišťovny pak v Bance zaúčtujte jako úhradu "
+        "pojistného plnění zaúčtovaného v roce škody.",
+    ),
+    "pojistne-plneni-oznameni": Formular(
+        (
+            Pole("udalost", "Pojistná událost s odhadem", "odhad_pojistneho"),
+            Pole(
+                "castka", "Plnění, které pojišťovna oznámila (0, když nárok odmítla)", "castka_nula"
+            ),
+        ),
+        napoveda="Odhad z 31. 12. se nahradí oznámenou částkou. Rozdíl proti odhadu jde do "
+        "nákladů, nebo výnosů letošního roku; minulý rok se neopravuje.",
+        dopocet=_oznameni_pojistneho,
     ),
     "preuctovani-mezi-sluzbami": Formular(
         (
@@ -186,8 +275,22 @@ def _naklady_spravy(profil: Profil) -> dict[str, faktury.Druh]:
     }
 
 
-def moznosti(profil: Profil, typ: str) -> dict[str, str] | None:
-    """Hodnoty, ze kterých se v poli vybírá (hodnota → popis); None u volného pole."""
+# Výběr z otevřených položek v účetnictví: typ pole → (role, co je v popisku).
+OTEVRENE = {
+    "dotace": (ostatni_vynosy.DOTACE_NAROK, "zbývá použít"),
+    "odhad_pojistneho": (ostatni_vynosy.ODHADY_POJISTNEHO, "odhad"),
+}
+
+
+def moznosti(profil: Profil, typ: str, session: Session | None = None) -> dict[str, str] | None:
+    """Hodnoty, ze kterých se v poli vybírá (hodnota → popis); None u volného pole.
+
+    Otevřené položky (dotace, odhady pojistného) jen se sezením; bez něj je pole volné."""
+    if typ in OTEVRENE:
+        if session is None:
+            return None
+        role, co = OTEVRENE[typ]
+        return ostatni_vynosy.popisky(ostatni_vynosy.otevrene(session, profil, role), co)
     if typ == "jednotka":
         return {j: j for j in profil.jednotky}
     if typ == "sluzba":
@@ -197,7 +300,12 @@ def moznosti(profil: Profil, typ: str) -> dict[str, str] | None:
     return None
 
 
-def _vstupy(profil: Profil, formular: Formular, zadane: dict[str, object]) -> dict[str, str]:
+def _vstupy(
+    profil: Profil,
+    formular: Formular,
+    zadane: dict[str, object],
+    session: Session | None = None,
+) -> dict[str, str]:
     vstupy: dict[str, str] = {}
     castky: dict[str, int] = {}
     for pole in formular.pole:
@@ -217,7 +325,7 @@ def _vstupy(profil: Profil, formular: Formular, zadane: dict[str, object]) -> di
             raise ChybaDokladu(f"Vyplňte „{pole.popis}“.")
         if len(text) > 128:
             raise ChybaDokladu(f"„{pole.popis}“ je příliš dlouhé.")
-        mozne = moznosti(profil, pole.typ)
+        mozne = moznosti(profil, pole.typ, session)
         if mozne is not None and text not in mozne:
             raise ChybaDokladu(f"Vyberte „{pole.popis}“ z nabídky.")
         if pole.typ == "naklad_spravy":
@@ -227,6 +335,8 @@ def _vstupy(profil: Profil, formular: Formular, zadane: dict[str, object]) -> di
         raise ChybaDokladu("Daň a pojištění sražené členovi nemůžou být vyšší než hrubá odměna.")
     if vstupy.get("z_sluzby") and vstupy.get("z_sluzby") == vstupy.get("do_sluzby"):
         raise ChybaDokladu("Vyberte dvě různé služby.")
+    if formular.dopocet is not None:
+        formular.dopocet(session, profil, vstupy, castky)
     return vstupy
 
 
@@ -256,11 +366,15 @@ def _krok(formular: Formular, krok: str | None) -> str | None:
 
 
 def nahled(
-    profil: Profil, operace_id: str, krok: str | None, zadane: dict[str, object]
+    profil: Profil,
+    operace_id: str,
+    krok: str | None,
+    zadane: dict[str, object],
+    session: Session | None = None,
 ) -> list[Radek]:
     """Řádky, které by se zaúčtovaly: účty z profilu SVJ a částky."""
     op, formular = _formular(operace_id)
-    radky = katalog.sestav(op, _vstupy(profil, formular, zadane), _krok(formular, krok))
+    radky = katalog.sestav(op, _vstupy(profil, formular, zadane, session), _krok(formular, krok))
     try:
         return [
             Radek(r.strana, (u := profil.ucet(r.role)), profil.nazev_uctu(u), r.castka, r.dimenze)
@@ -285,7 +399,7 @@ def zauctuj(
     popis = popis.strip()
     if not popis:
         raise ChybaDokladu("Napište, čeho se doklad týká.")
-    vstupy = _vstupy(profil, formular, zadane)
+    vstupy = _vstupy(profil, formular, zadane, session)
     krok = _krok(formular, krok)
     if (operace_id, krok) in ZBYVA:
         role, strana, co = ZBYVA[(operace_id, krok)]
