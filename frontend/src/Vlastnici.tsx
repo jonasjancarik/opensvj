@@ -117,7 +117,8 @@ export function Vlastnici() {
       <p className="tlumene">
         Vlastníky zapisujte podle katastru nemovitostí. Jejich jména a adresy se pak objeví
         v upomínkách, oznámeních o zálohách a vyúčtováních. Když u vlastníka vyplníte číslo
-        účtu, aplikace pozná jeho platby, i když zapomene na variabilní symbol.
+        účtu, aplikace pozná jeho platby, i když zapomene na variabilní symbol. Podíly jednotek na společných částech
+        a jejich změny jsou na stránce <a href="#podily">Podíly na společných částech</a>.
       </p>
       {bez > 0 && (
         <p className="upozorneni">
@@ -214,7 +215,7 @@ function DetailJednotky({
       </div>
       <h1>Jednotka {j.jednotka}</h1>
       <p className="tlumene">
-        Plocha {plocha(j.plocha)}, podíl na společných částech {j.podil}.
+        Plocha {plocha(j.plocha)}, podíl na společných částech {j.podil} (<a href="#podily">změny podílů</a>).
       </p>
 
       <h2>{v ? `Vlastní od ${datum(v.plati_od)}` : 'Současný vlastník'}</h2>

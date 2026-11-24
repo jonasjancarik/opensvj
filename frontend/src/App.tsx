@@ -9,6 +9,7 @@ import { Faktury } from './Faktury'
 import { Historie } from './Historie'
 import { Oznameni } from './Oznameni'
 import { Pocatecni } from './Pocatecni'
+import { Podily } from './Podily'
 import { Predpisy } from './Predpisy'
 import { Prehled } from './Prehled'
 import { Prihlaseni } from './Prihlaseni'
@@ -38,7 +39,11 @@ const STRANKY = {
 // Stránky, kterými v nabídce začíná nová skupina.
 const ZACATEK_SKUPINY: ReadonlySet<string> = new Set(['banka', 'vyuctovani', 'vlastnici'])
 // Stránky, které nejsou v menu (jednorázové nastavení); vedou na ně odkazy z jiných stránek.
-const SKRYTE = { pocatecni: 'Počáteční stavy', oznameni: 'Oznámení o zálohách' } as const
+const SKRYTE = {
+  pocatecni: 'Počáteční stavy',
+  oznameni: 'Oznámení o zálohách',
+  podily: 'Podíly na společných částech',
+} as const
 type Stranka = keyof typeof STRANKY | keyof typeof SKRYTE
 
 function zAdresy(): Stranka {
@@ -113,6 +118,8 @@ export default function App() {
           <Pocatecni />
         ) : stranka === 'oznameni' ? (
           <Oznameni />
+        ) : stranka === 'podily' ? (
+          <Podily />
         ) : stranka === 'dluznici' ? (
           <Dluznici />
         ) : stranka === 'vlastnici' ? (

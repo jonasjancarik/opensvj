@@ -43,11 +43,13 @@ class Oznameni(BaseModel):
     sidlo: str | None
     dnes: date
     splatnost_den: int
-    verze: list[date]  # všechny verze předpisu, od nejnovější
+    verze: list[date]  # všechny změny předpisu (verze i změny podílů), od nejnovější
     plati_od: date
     predchozi_od: date | None
     dorucit_do: date
     zdroj: str
+    # Od tohoto data se předpis počítá s novými podíly na společných částech.
+    zmena_podilu: date | None
     jednotky: list[Jednotka]
     rozeslani: str  # klíč zásilek s tímto oznámením
 
@@ -57,7 +59,7 @@ def nejnovejsi(_: Prihlaseny) -> Oznameni:
     nast = predpisy.nacti_s(_profil(), sezeni)
     if not nast.verze:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "SVJ zatím nemá žádný předpis záloh.")
-    return _oznameni(max(v.plati_od for v in nast.verze))
+    return _oznameni(nast.zmeny_predpisu()[-1])
 
 
 @router.get("/{plati_od}")
@@ -86,11 +88,12 @@ def _oznameni(plati_od: date) -> Oznameni:
         sidlo=prof.sidlo,
         dnes=date.today(),
         splatnost_den=nast.splatnost_den,
-        verze=sorted((v.plati_od for v in nast.verze), reverse=True),
+        verze=sorted(nast.zmeny_predpisu(), reverse=True),
         plati_od=o.plati_od,
         predchozi_od=o.predchozi_od,
         dorucit_do=o.dorucit_do,
         zdroj=o.zdroj,
+        zmena_podilu=o.zmena_podilu.plati_od if o.zmena_podilu else None,
         jednotky=[
             Jednotka(
                 jednotka=j.jednotka,

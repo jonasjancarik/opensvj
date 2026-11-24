@@ -17,7 +17,7 @@ from fractions import Fraction
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, predpisy
+from . import denik, podily, predpisy
 from .db import RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import na_text
@@ -154,7 +154,9 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
         )
         .group_by(RadekZapisu.jednotka, RadekZapisu.sluzba)
     ).all()
-    jednotky = {j.oznaceni: Jednotka(j.oznaceni, j.podil) for j in profil.udaje_jednotek}
+    # Podíl za rok: průměr podílů za měsíce, stejně jako se z nich počítaly zálohy.
+    za_rok = podily.nacti(session, profil).v_roce(rok)
+    jednotky = {j: Jednotka(j, za_rok[j]) for j in profil.jednotky}
     for jednotka, sluzba, castka in zalohy:
         if jednotka in jednotky and sluzba in polozky and castka:
             jednotky[jednotka].zalohy[sluzba] = int(castka)

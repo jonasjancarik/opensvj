@@ -36,6 +36,7 @@ type Data = {
   predchozi_od: string | null
   dorucit_do: string
   zdroj: string
+  zmena_podilu: string | null
   jednotky: Jednotka[]
   rozeslani: string
 }
@@ -107,6 +108,12 @@ export function Oznameni() {
             ))}
           </select>
         </label>
+      )}
+      {data.zmena_podilu && (
+        <p>
+          Od {datum(data.plati_od)} se zálohy počítají s novými podíly na společných částech, které platí od{' '}
+          {datum(data.zmena_podilu)} (<a href="#podily">změny podílů</a>).
+        </p>
       )}
       <p className={pozde ? 'upozorneni' : undefined}>
         Aby nová výše platila od {datum(data.plati_od)}, musí oznámení vlastníkům dojít nejpozději{' '}

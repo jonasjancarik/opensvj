@@ -430,6 +430,17 @@ class VerzePredpisu(Zaklad):
     upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class ZmenaPodilu(Zaklad):
+    """Podíly všech jednotek na společných částech platné od data (změna prohlášení)."""
+
+    __tablename__ = "zmena_podilu"
+    plati_od: Mapped[date] = mapped_column(Date, primary_key=True)
+    podily: Mapped[dict] = mapped_column(JSONB)  # jednotka → "citatel/jmenovatel"
+    zdroj: Mapped[str] = mapped_column(String(200))
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class Dokument(Zaklad):
     """Dokument přesně tak, jak odešel vlastníkovi. Po uložení se nemění (trigger)."""
 

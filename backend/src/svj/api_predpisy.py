@@ -84,7 +84,7 @@ def _prehled(rok: int) -> Predpisy:
     # Ukazujeme předpis platný v aktuálním měsíci; u jiného roku poslední platný v tom roce.
     mesic = dnes.month if dnes.year == rok else 12
     verze = nast.pro_mesic(rok, mesic)
-    castky = predpisy.spocitej(prof, verze) if verze else {}
+    castky = predpisy.castky_mesice(prof, nast, rok, mesic)
     with sezeni()() as s:
         saldo = {x.jednotka: x for x in predpisy.saldo(s, prof, rok)}
         drivejsi = predpisy.drivejsi_vlastnici(s, rok)

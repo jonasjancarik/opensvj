@@ -18,6 +18,7 @@ from .api_lide import router as lide_router
 from .api_meridla import router as meridla_router
 from .api_oznameni import router as oznameni_router
 from .api_pocatecni import router as pocatecni_router
+from .api_podily import router as podily_router
 from .api_predpisy import router as predpisy_router
 from .api_rozhodnuti import router as rozhodnuti_router
 from .api_uzaverka import router as uzaverka_router
@@ -55,6 +56,7 @@ app.include_router(meridla_router)
 app.include_router(rozhodnuti_router)
 app.include_router(historie_router)
 app.include_router(lide_router)
+app.include_router(podily_router)
 app.include_router(zasilky_router)
 app.include_router(verejne_router)
 

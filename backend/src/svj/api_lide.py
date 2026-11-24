@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 
-from . import lide, predpisy, prevody
+from . import lide, podily, predpisy, prevody
 from .db import Osoba as OsobaDb
 from .db import Vlastnictvi as VlastnictviDb
 from .db import sezeni
@@ -147,13 +147,14 @@ def _prehled(s) -> Prehled:
     podle_jednotky: dict[str, list[Vlastnictvi]] = {}
     for v in lide.vlastnictvi(s):
         podle_jednotky.setdefault(v.jednotka, []).append(_vlastnictvi(v))
+    dnes = podily.nacti(s, prof).k_datu(date.today())
     return Prehled(
         dnes=date.today(),
         jednotky=[
             Jednotka(
                 jednotka=j.oznaceni,
                 plocha=j.plocha,
-                podil=f"{j.podil.numerator}/{j.podil.denominator}",
+                podil=dnes.texty[j.oznaceni],
                 vlastnictvi=podle_jednotky.get(j.oznaceni, []),
             )
             for j in prof.udaje_jednotek

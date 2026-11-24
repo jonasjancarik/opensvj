@@ -710,7 +710,8 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
   table.dluznici th:first-child, table.dluznici td:first-child,
   table.polozky-dluhu th:first-child, table.polozky-dluhu td:first-child,
   table.polozky-rozhodnuti td:first-child, table.historie-zmeny th:first-child,
-  table.historie-zmeny td:first-child { display: table-cell; }
+  table.historie-zmeny td:first-child, table.podily th:first-child,
+  table.podily td:first-child { display: table-cell; }
   th, td { padding: 0.55rem 0.65rem; }
   .pohyb-hlavicka .tlumene { margin-left: 0; width: 100%; }
 }

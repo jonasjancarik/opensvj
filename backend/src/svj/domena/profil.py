@@ -22,6 +22,12 @@ class Jednotka:
     oznaceni: str
     plocha: int  # setiny m² (90,90 m² = 9090)
     podil: Fraction
+    # Podíl tak, jak je zapsaný v profilu ("718/8600"); zlomek se sám zkrátí na 359/4300.
+    zapis_podilu: str = ""
+
+    @property
+    def podil_text(self) -> str:
+        return self.zapis_podilu or f"{self.podil.numerator}/{self.podil.denominator}"
 
 
 @dataclass
@@ -153,9 +159,11 @@ def _volba_prevodu(hodnota: str | None) -> str:
 
 
 def _jednotka(d: dict) -> Jednotka:
-    citatel, _, jmenovatel = str(d["podil"]).partition("/")
+    zapis = str(d["podil"]).replace(" ", "")
+    citatel, _, jmenovatel = zapis.partition("/")
     return Jednotka(
         oznaceni=str(d["oznaceni"]),
         plocha=halire(str(d["plocha"])),
-        podil=Fraction(int(citatel), int(jmenovatel)),
+        podil=Fraction(int(citatel), int(jmenovatel or 1)),
+        zapis_podilu=zapis,
     )

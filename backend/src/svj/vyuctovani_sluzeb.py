@@ -23,7 +23,7 @@ from fractions import Fraction
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, dluznici, meridla, pocatecni, predpisy, vyuctovani_spravy
+from . import denik, dluznici, meridla, pocatecni, podily, predpisy, vyuctovani_spravy
 from .db import RadekZapisu, VysledekZuctovatele, Zapis
 from .domena import katalog
 from .domena.penize import na_text
@@ -200,7 +200,8 @@ def _vahy(
     if x.klic == "plocha":
         return {j: udaje[j].plocha for j in jednotky}
     if x.klic == "podil":
-        return {j: udaje[j].podil for j in jednotky}
+        za_rok = podily.nacti(s, profil).v_roce(rok)  # průměr podílů za měsíce roku
+        return {j: za_rok[j] for j in jednotky}
     if x.klic == "osoby":
         return {j: u.osobomesice for j, u in jednotky.items()}
     if x.klic == "meridla":

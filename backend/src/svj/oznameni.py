@@ -9,7 +9,7 @@ nejpozději poslední den měsíce před platností nové verze.
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from . import predpisy
+from . import podily, predpisy
 from .domena.profil import Profil
 
 
@@ -50,22 +50,34 @@ class Oznameni:
     zdroj: str
     predchozi_od: date | None
     jednotky: list[OznameniJednotky]
+    # Změna podílů na společných částech, se kterou se od `plati_od` počítá (jinak None).
+    zmena_podilu: podily.Zmena | None = None
 
     @property
     def dorucit_do(self) -> date:
         return self.plati_od - timedelta(days=1)
 
 
-def oznameni(profil: Profil, nastaveni: predpisy.Nastaveni, plati_od: date) -> Oznameni:
-    verze = sorted(nastaveni.verze, key=lambda v: v.plati_od)
-    poradi = next((i for i, v in enumerate(verze) if v.plati_od == plati_od), None)
-    if poradi is None:
-        raise ChybaOznameni(f"Předpis platný od {plati_od:%d. %m. %Y} neexistuje.")
-    nova = verze[poradi]
-    stara = verze[poradi - 1] if poradi else None
+def _mesic_pred(d: date) -> tuple[int, int]:
+    return (d.year, d.month - 1) if d.month > 1 else (d.year - 1, 12)
 
-    nove = predpisy.spocitej(profil, nova)
-    puvodni = predpisy.spocitej(profil, stara) if stara else {}
+
+def oznameni(profil: Profil, nastaveni: predpisy.Nastaveni, plati_od: date) -> Oznameni:
+    """Porovná předpis od `plati_od` s předpisem v předchozím měsíci.
+
+    Předpis se mění s novou verzí i se změnou podílů, když má verze složku podle podílů.
+    """
+    zmeny = nastaveni.zmeny_predpisu()
+    if plati_od not in zmeny:
+        raise ChybaOznameni(f"Předpis platný od {plati_od:%d. %m. %Y} neexistuje.")
+    poradi = zmeny.index(plati_od)
+    nova = nastaveni.pro_mesic(plati_od.year, plati_od.month)
+    assert nova is not None
+    rok, mesic = _mesic_pred(plati_od)
+    stara = nastaveni.pro_mesic(rok, mesic) if poradi else None
+
+    nove = predpisy.castky_mesice(profil, nastaveni, plati_od.year, plati_od.month)
+    puvodni = predpisy.castky_mesice(profil, nastaveni, rok, mesic) if stara else {}
     slozky = {s.kod: s for s in nova.slozky}
     if stara:
         for s in stara.slozky:
@@ -87,4 +99,15 @@ def oznameni(profil: Profil, nastaveni: predpisy.Nastaveni, plati_od: date) -> O
         )
         for j in nove
     ]
-    return Oznameni(nova.plati_od, nova.zdroj, stara.plati_od if stara else None, jednotky)
+    zmeny_podilu = nastaveni.podily.zmeny if nastaveni.podily else []
+    zmena_podilu = next((z for z in zmeny_podilu if z.od_mesice == plati_od), None)
+    zdroje = [nova.zdroj] if nova.plati_od == plati_od and nova.zdroj else []
+    if zmena_podilu is not None:
+        zdroje.append(zmena_podilu.zdroj)
+    return Oznameni(
+        plati_od,
+        "; ".join(zdroje),
+        zmeny[poradi - 1] if poradi else None,
+        jednotky,
+        zmena_podilu,
+    )

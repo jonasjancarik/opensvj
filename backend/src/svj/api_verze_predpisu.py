@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import update
 
-from . import audit, predpisy, rozhodnuti
+from . import audit, podily, predpisy, rozhodnuti
 from .api_historie import ZmenaPoSchvaleni, zmena_po_schvaleni
 from .api_predpisy import _skupina
 from .db import Rozhodnuti as RozhodnutiDb
@@ -130,8 +130,10 @@ def _do_domeny(v: Verze) -> predpisy.Verze:
     )
 
 
-def _mesicne(prof: profil.Profil, v: predpisy.Verze) -> dict[str, int]:
-    return {j: sum(c.values()) for j, c in predpisy.spocitej(prof, v).items()}
+def _mesicne(prof: profil.Profil, v: predpisy.Verze, pod: podily.Podily) -> dict[str, int]:
+    """Měsíční předpis jednotek v prvním měsíci verze (s podíly platnými v tom měsíci)."""
+    vahy = pod.k_mesici(v.plati_od.year, v.plati_od.month).podily
+    return {j: sum(c.values()) for j, c in predpisy.spocitej(prof, v, vahy).items()}
 
 
 def _prehled() -> Prehled:
@@ -139,6 +141,7 @@ def _prehled() -> Prehled:
     with sezeni()() as s:
         nast = predpisy.nacti(prof, s)
         od = predpisy.prvni_mesic_ke_zmene(s)
+        dnes_podily = (nast.podily or podily.ze_souboru(prof)).k_datu(date.today())
         schvaleni = {
             datum: Schvaleni(
                 rozhodnuti=rozhodnuti.popis(r),
@@ -154,7 +157,7 @@ def _prehled() -> Prehled:
             JednotkaDomu(
                 oznaceni=j.oznaceni,
                 plocha=j.plocha,
-                podil=f"{j.podil.numerator}/{j.podil.denominator}",
+                podil=dnes_podily.texty[j.oznaceni],
             )
             for j in prof.udaje_jednotek
         ],
@@ -170,7 +173,7 @@ def _prehled() -> Prehled:
                 v_aplikaci=v.v_aplikaci,
                 upravitelna=v.v_aplikaci and v.plati_od >= od,
                 upravil=v.upravil,
-                mesicne=_mesicne(prof, v),
+                mesicne=_mesicne(prof, v, nast.podily or podily.ze_souboru(prof)),
                 schvaleni=schvaleni.get(v.plati_od),
             )
             for v in nast.verze
@@ -188,9 +191,11 @@ def nahled(v: Verze, _: Prihlaseny) -> Nahled:
     """Měsíční předpis jednotek podle rozpracované verze, bez uložení."""
     prof = _profil()
     d = _do_domeny(v)
+    with sezeni()() as s:
+        pod = podily.nacti(s, prof)
     try:
         predpisy.zkontroluj(prof, d)
-        return Nahled(mesicne=_mesicne(prof, d), chyba=None)
+        return Nahled(mesicne=_mesicne(prof, d, pod), chyba=None)
     except (predpisy.ChybaPredpisu, KeyError) as e:
         return Nahled(mesicne={}, chyba=str(e).strip("'\""))
 

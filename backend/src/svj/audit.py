@@ -40,6 +40,7 @@ from .db import (
     Vlastnictvi,
     VlastnikJednotky,
     VysledekZuctovatele,
+    ZmenaPodilu,
 )
 from .domena.penize import kc
 
@@ -200,6 +201,13 @@ def _verze_ploche(stav: dict[str, Any]) -> dict[str, str]:
     return vysledek
 
 
+def _podily_ploche(stav: dict[str, Any]) -> dict[str, str]:
+    vysledek = {"Podle čeho": stav.get("zdroj") or "—"}
+    for j, podil in (stav.get("podily") or {}).items():
+        vysledek[f"Podíl jednotky {j}"] = podil
+    return vysledek
+
+
 SLEDOVANE: dict[type, Sledovani] = {
     Osoba: Sledovani(
         "osoba",
@@ -300,6 +308,14 @@ SLEDOVANE: dict[type, Sledovani] = {
         klic=lambda v: f"{v.rok}:{v.sluzba}:{v.jednotka}",
         nazev=lambda s, v: f"Výsledek zúčtovatele za {v.rok}, {v.sluzba}, jednotka {v.jednotka}",
         pole={"castka": Pole("Náklad jednotky", kc), "zdroj": Pole("Podle čeho")},
+    ),
+    ZmenaPodilu: Sledovani(
+        "zmena_podilu",
+        "Podíly na společných částech",
+        klic=lambda z: z.plati_od.isoformat(),
+        nazev=lambda s, z: f"Podíly jednotek od {_d(z.plati_od)}",
+        pole={"zdroj": Pole("Podle čeho"), "podily": Pole("")},
+        ploche=_podily_ploche,
     ),
     Obdobi: Sledovani(
         "obdobi",

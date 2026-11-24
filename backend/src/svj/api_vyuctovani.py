@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from . import predpisy, vyuctovani_spravy, zasilky
+from . import podily, predpisy, vyuctovani_spravy, zasilky
 from .api_lide import Adresat, adresati
 from .db import BankovniUcet, sezeni
 from .domena import profil
@@ -32,9 +32,17 @@ class PolozkaJednotky(BaseModel):
     zalohy: int
 
 
+class ObdobiPodilu(BaseModel):
+    od_mesice: int
+    do_mesice: int
+    podil: str  # "543/8600", jak je v prohlášení
+
+
 class Jednotka(BaseModel):
     jednotka: str
-    podil: str  # "543/8600"
+    podil: str  # "543/8600"; když se podíl v roce měnil, průměr za měsíce roku
+    # Jen když se podíl během roku měnil: které měsíce platil jaký podíl.
+    podily_v_roce: list[ObdobiPodilu]
     zalohy: int
     naklady: int
     rozdil: int  # kladný = nedoplatek
@@ -68,6 +76,7 @@ def _prehled(rok: int) -> Vyuctovani:
     dnes = date.today()
     with sezeni()() as s:
         v = vyuctovani_spravy.spocitej(s, prof, rok)
+        pod = podily.nacti(s, prof)
         duvod = vyuctovani_spravy.proc_nejde(s, nast, v, dnes)
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
@@ -95,6 +104,12 @@ def _prehled(rok: int) -> Vyuctovani:
             Jednotka(
                 jednotka=j.jednotka,
                 podil=f"{j.podil.numerator}/{j.podil.denominator}",
+                podily_v_roce=[
+                    ObdobiPodilu(od_mesice=od, do_mesice=do, podil=sada.texty[j.jednotka])
+                    for od, do, sada in pod.obdobi_roku(rok)
+                ]
+                if pod.zmeny_v_roce(rok)
+                else [],
                 zalohy=sum(j.zalohy.values()),
                 naklady=sum(j.naklady.values()),
                 rozdil=j.rozdil,

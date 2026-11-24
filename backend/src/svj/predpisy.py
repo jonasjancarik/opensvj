@@ -3,6 +3,7 @@
 Nastavení předpisu je v `<profil>-predpisy.yaml` ve složce profilů (složky, klíče, sazby,
 pevné částky a počty osob, vše s platností od). Další verze zadává výbor v aplikaci
 (tabulka `verze_predpisu`); verze z aplikace se stejným datem nahradí verzi ze souboru.
+Složky podle podílů se počítají s podíly platnými pro daný měsíc (viz podily.py).
 Výpočet je deterministický: stejné nastavení dá stejné haléře. Předpis měsíce je jeden
 zápis v deníku s řádky po jednotkách a složkách; saldo jednotek se počítá z deníku, takže
 nevzniká druhá evidence.
@@ -18,6 +19,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from . import audit, denik, pocatecni
+from . import podily as podily_
 from .db import RadekZapisu, VerzePredpisu, Zapis
 from .domena import katalog
 from .domena.penize import halire, na_text
@@ -72,18 +74,35 @@ class Nastaveni:
     poznamka: str
     splatnost_den: int
     verze: list[Verze] = field(default_factory=list)
+    podily: podily_.Podily | None = None  # None = jen podíly z profilu
 
     def pro_mesic(self, rok: int, mesic: int) -> Verze | None:
         den = date(rok, mesic, 1)
         platne = [v for v in self.verze if v.plati_od <= den]
         return max(platne, key=lambda v: v.plati_od) if platne else None
 
+    def podily_mesice(self, rok: int, mesic: int) -> dict[str, Fraction] | None:
+        return self.podily.k_mesici(rok, mesic).podily if self.podily else None
+
+    def zmeny_predpisu(self) -> list[date]:
+        """Měsíce, od kterých se mění předpis: nové verze a změny podílů."""
+        dny = {v.plati_od for v in self.verze}
+        for z in self.podily.zmeny if self.podily else []:
+            v = self.pro_mesic(z.od_mesice.year, z.od_mesice.month)
+            if v is not None and any(s.klic == "podil" for s in v.slozky):
+                dny.add(z.od_mesice)
+        return sorted(dny)
+
 
 def nacti(profil: Profil, session: Session | None = None, cesta: Path | None = None) -> Nastaveni:
     """Nastavení předpisu ze souboru profilu; se sezením i s verzemi zadanými v aplikaci."""
     soubor = (cesta or vychozi_cesta()) / f"{profil.id}-predpisy.yaml"
     d = yaml.safe_load(soubor.read_text(encoding="utf-8")) if soubor.exists() else {}
-    n = Nastaveni(poznamka=d.get("poznamka", ""), splatnost_den=int(d.get("splatnost_den", 15)))
+    n = Nastaveni(
+        poznamka=d.get("poznamka", ""),
+        splatnost_den=int(d.get("splatnost_den", 15)),
+        podily=podily_.ze_souboru(profil) if session is None else podily_.nacti(session, profil),
+    )
     for v in d.get("verze") or []:
         slozky = [
             Slozka(
@@ -230,13 +249,19 @@ def _na_koruny(halire: Fraction) -> int:
     return int(koruny + Fraction(1, 2)) * 100 if koruny >= 0 else -_na_koruny(-halire)
 
 
-def spocitej(profil: Profil, v: Verze) -> dict[str, dict[str, int]]:
-    """Měsíční částky: jednotka → kód složky → haléře (celé koruny)."""
+def spocitej(
+    profil: Profil, v: Verze, podily_: dict[str, Fraction] | None = None
+) -> dict[str, dict[str, int]]:
+    """Měsíční částky: jednotka → kód složky → haléře (celé koruny).
+
+    `podily_` jsou podíly platné pro počítaný měsíc; bez nich se vezmou podíly z profilu.
+    """
     jednotky = profil.udaje_jednotek
+    vahy = podily_ or {j.oznaceni: j.podil for j in jednotky}
     vysledek: dict[str, dict[str, int]] = {j.oznaceni: {} for j in jednotky}
     for s in v.slozky:
         if s.klic == "podil":
-            rozdil = rozdel(s.sazba, {j.oznaceni: j.podil for j in jednotky}, krok=100)
+            rozdil = rozdel(s.sazba, {j.oznaceni: vahy[j.oznaceni] for j in jednotky}, krok=100)
         elif s.klic == "jednotka":
             rozdil = rozdel(s.sazba, {j.oznaceni: 1 for j in jednotky}, krok=100)
         else:
@@ -253,12 +278,19 @@ def spocitej(profil: Profil, v: Verze) -> dict[str, dict[str, int]]:
     return vysledek
 
 
-def mesicni_celkem(profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int) -> dict[str, int]:
-    """Měsíční předpis jednotek celkem (prázdné, když pro měsíc předpis není)."""
+def castky_mesice(
+    profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int
+) -> dict[str, dict[str, int]]:
+    """Předpis měsíce po jednotkách a složkách (prázdné, když pro měsíc předpis není)."""
     v = nastaveni.pro_mesic(rok, mesic)
     if v is None:
         return {}
-    return {j: sum(c.values()) for j, c in spocitej(profil, v).items()}
+    return spocitej(profil, v, nastaveni.podily_mesice(rok, mesic))
+
+
+def mesicni_celkem(profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int) -> dict[str, int]:
+    """Měsíční předpis jednotek celkem (prázdné, když pro měsíc předpis není)."""
+    return {j: sum(c.values()) for j, c in castky_mesice(profil, nastaveni, rok, mesic).items()}
 
 
 def klic_mesice(rok: int, mesic: int) -> str:
@@ -301,7 +333,7 @@ def vygeneruj(
                 if c
             ],
         }
-        for jednotka, castky in spocitej(profil, v).items()
+        for jednotka, castky in castky_mesice(profil, nastaveni, rok, mesic).items()
     ]
     try:
         return denik.zauctuj(

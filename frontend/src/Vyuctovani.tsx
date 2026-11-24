@@ -18,9 +18,11 @@ type Polozka = {
   zalohy: number
 }
 type PolozkaJednotky = { kod: string; naklady: number; zalohy: number }
+type ObdobiPodilu = { od_mesice: number; do_mesice: number; podil: string }
 type Jednotka = {
   jednotka: string
   podil: string
+  podily_v_roce: ObdobiPodilu[] // jen když se podíl během roku měnil
   zalohy: number
   naklady: number
   rozdil: number
@@ -47,6 +49,28 @@ const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')
 function procent(podil: string) {
   const [a, b] = podil.split('/').map(Number)
   return `${((a / b) * 100).toLocaleString('cs-CZ', { maximumFractionDigits: 3 })} %`
+}
+
+const MESICU = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince']
+
+function PodilJednotky({ j, rok }: { j: Jednotka; rok: number }) {
+  if (j.podily_v_roce.length === 0)
+    return (
+      <>
+        Podíl jednotky {j.jednotka} na společných částech domu je {procent(j.podil)}. Náklady na správu se rozdělují
+        podle podílů, odměna správce rovným dílem na každou jednotku.
+      </>
+    )
+  const obdobi = j.podily_v_roce.map(
+    (o) => `od ${MESICU[o.od_mesice - 1]} do ${MESICU[o.do_mesice - 1]} ${procent(o.podil)}`,
+  )
+  return (
+    <>
+      Podíl jednotky {j.jednotka} na společných částech domu se v roce {rok} měnil: {obdobi.join(', ')}. Náklady na
+      správu se proto rozdělují podle průměrného podílu za měsíce roku, {procent(j.podil)}. Odměna správce se dělí
+      rovným dílem na každou jednotku.
+    </>
+  )
 }
 
 function Vysledek({ rozdil }: { rozdil: number }) {
@@ -341,8 +365,7 @@ function Dokument({ data, j }: { data: Data; j: Jednotka }) {
         <p className="vpravo">Dne {datum(data.dnes)}</p>
         <h2>Vyúčtování záloh na správu domu a pozemku za rok {data.rok}</h2>
         <p>
-          Podíl jednotky {j.jednotka} na společných částech domu je {procent(j.podil)}. Náklady
-          na správu se rozdělují podle podílů, odměna správce rovným dílem na každou jednotku.
+          <PodilJednotky j={j} rok={data.rok} />
         </p>
         <table className="polozky-dluhu">
           <thead>
