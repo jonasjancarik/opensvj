@@ -26,14 +26,7 @@ změna schválené věci:
 Auditní záznam (stránka Historie změn) a upozornění „Změněno po schválení“ u předpisu
 záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky na nich stavějí.
 
-## 1. Základy, na kterých stojí další oblasti
-
-- **Zbylé operace z katalogu v rozhraní:** interní doklad a Banka už nabízejí většinu
-  operací. Chybí výdaj bez faktury (platba a náhradní doklad), vyrovnání dohadné položky
-  po doručení faktury, mimořádná záloha pro všechny jednotky podle podílů a pokladna.
-  Operace úvěru a pořízení majetku přijdou s jejich oblastmi níže.
-
-## 2. Účetní oblasti
+## 1. Účetní oblasti
 
 - **Úvěr:** výpočet podílů jednotek na jistině, splátka jako složka měsíčního předpisu,
   ve vyúčtování záloh na správu odlišit náklady kryté zálohou na úvěr (955300) od běžného
@@ -49,7 +42,7 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 - **Účetní období a archiv:** hospodářský rok a první období delší než 12 měsíců; export
   deníku, hlavní knihy a dokladů pro archiv (PDF a CSV); hlídání lhůt úschovy.
 
-## 3. Doklady, schvalování a závěrka
+## 2. Doklady, schvalování a závěrka
 
 - **Podklady a přílohy:** soubory k fakturám, rozhodnutím (zápisy ze shromáždění)
   a ostatním dokladům, neměnné se SHA-256; stav podkladu `chybi → vyzadan → doplnen`
@@ -57,8 +50,8 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 - **Role a podpisové záznamy:** role v databázi aplikace (předseda, člen výboru, účetní,
   správce), podpisový záznam vázaný k otisku verze dokladu a podkladů, schvalování více
   lidmi nad nastavenou částku, kdo žádá o proplacení, nesmí ho sám schválit; tisk
-  podpisového řádu (§ 33a odst. 10). Výdaj bez faktury proplacený členovi výboru
-  s náhradním dokladem.
+  podpisového řádu (§ 33a odst. 10). Podpisy u náhradního dokladu k výdaji bez faktury
+  a u pokladních dokladů, které dostanou vlastní číselné řady příjmů a výdajů.
 - **Zpráva o hospodaření** a **evidence schválení závěrky** (orgán, datum, rozhodnutí,
   otisk schválené verze). Po schválení oprava v běžném roce: operace v katalogu (stav
   `overit`, účet potvrdí účetní), odkaz na opravovaný rok a bod do přílohy. Znovuotevření
@@ -66,7 +59,7 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 - **Dobropisy** k přijatým fakturám.
 - **Další formáty výpisů:** camt.053 a MT940.
 
-## 4. Až nakonec
+## 3. Až nakonec
 
 - Upozornění pro výbor e-mailem (blížící se lhůty, nové faktury, dluhy).
 - Automatický zápis vrácených e-mailů (bounce) do zásilek.

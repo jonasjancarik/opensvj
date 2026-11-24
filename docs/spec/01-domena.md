@@ -210,6 +210,14 @@ nepoužije: platba zaúčtovaná jako úhrada předpisu jde vždy na zálohy. Ú
 skutečně požaduje (tlačítko na stránce Dlužníci, předpis k dnešku na 311400). Po předpisu
 se počítá jen za dobu potom. Předpis i saldo jsou zatím na jednotku, ne na vlastnické období.
 
+**Mimořádná záloha** (`mimoradna-zaloha`) je jednorázový příspěvek do fondu oprav podle
+rozhodnutí shromáždění (§ 1180 odst. 1 OZ). Celková částka domu se rozdělí na jednotky
+podle podílů na společných částech platných v den předpisu metodou největšího zbytku.
+Předpis je jeden zápis (doklad `PR`) s řádkem za jednotku; každý řádek nese splatnost,
+kterou určilo shromáždění (`RadekZapisu.splatnost`), a v dlužnících je samostatný dluh.
+Rozhodnutí musí být rozhodnutí shromáždění ze dne předpisu nebo dřívějšího a jeho popis
+je v popisu zápisu. Splatnost nesmí být dřív než den předpisu.
+
 ## 3. Banka
 
 ### BankovniUcet
@@ -316,7 +324,8 @@ dodavatele, bankovní pohyb a schválení výboru. Úplný je, když jsou nále�
 vyplněné přímo nebo v některém připojeném záznamu.
 
 Řady dokladů: `FP` přijaté faktury, `BV` bankovní výpisy, `ID` interní doklady,
-`PR` předpisy, `PS` počáteční stavy, `VY` vyúčtování, `UZ` uzávěrkové operace.
+`PR` předpisy, `PS` počáteční stavy, `VY` vyúčtování, `UZ` uzávěrkové operace,
+`PD` pokladní doklady.
 
 Stavy dokladu: `koncept → uplny → schvaleny → zauctovany`, z kteréhokoli stavu
 `zpochybneny` (§ 33a odst. 2) a ze zpochybněného `opraveny` (nový doklad nebo opravný
@@ -345,6 +354,20 @@ odst. 10.
 DUZP a splatností a zaúčtuje se hned při zadání. Zadání faktury je zároveň schválení.
 Bankovní výpis se ukládá jako neměnná kopie se SHA-256. Účetní případy, podklady, stavy
 dokladu a podpisové záznamy zatím v aplikaci nejsou; kdo co zaúčtoval, nese každý zápis.
+
+Výdaj bez dokladu od dodavatele má dva kroky (`vydaj-bez-faktury`): platba v Bance jde na
+nevyjasněné výdaje, náhradní doklad interním dokladem přeúčtuje částku na náklad
+s položkou správy. Dohadná položka (`dohadna-polozka`) se po doručení faktury rozpustí
+proti nákladu, faktura se pak zaúčtuje běžně. Náhradní doklad ani rozpuštění nesmí být
+vyšší než zůstatek nevyjasněných výdajů nebo dohadných položek k danému dni.
+
+Pokladna: výběr z účtu jde v Bance na peníze na cestě (`pokladna-vyber`, krok `vyber`),
+příjmový pokladní doklad je převede do pokladny (krok `prijem`) a nesmí být vyšší než
+jejich zůstatek k danému dni. Výdaj (`pokladna-vydaj`) nese položku správy, aby ho
+vyúčtování záloh na správu započítalo, a nesmí snížit zůstatek pokladny pod nulu v den
+výdaje ani v žádný pozdější den roku. Hotová platba vlastníka
+(`pokladna-platba-vlastnika`) snižuje dluh jednotky jako platba na účet. Pokladní doklady
+mají řadu `PD`, ale zatím bez vlastního číslování příjmů a výdajů.
 
 ## 5. Účetnictví
 

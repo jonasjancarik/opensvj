@@ -79,6 +79,20 @@ testy a data jsou mimo veřejný repozitář.
   převodu bere jen zápisy do toho dne; část vyúčtování jde prodávajícímu a jeho doručení
   nespouští lhůty jednotky.
 
+### Výdaje bez faktury, odhady, mimořádná záloha a pokladna
+
+- Výdaj bez faktury: platba z Banky jde na nevyjasněné výdaje, náhradní doklad vyšší než
+  zbývající částka neprojde a zaúčtovaný náhradní doklad dá náklad do vyúčtování správy
+  u vybrané položky.
+- Dohadná položka se po doručení faktury rozpustí proti nákladu služby, nejvýš do výše
+  odhadu.
+- Mimořádná záloha se rozdělí podle podílů přesně na haléře, rozhodnutí výboru ani
+  splatnost před dnem předpisu neprojdou a v dlužnících je dluh po splatnosti až po dni
+  určeném shromážděním.
+- Pokladna: příjem nejvýš do částky vybrané z účtu, výdaj, po kterém by pokladna v některý
+  pozdější den šla do minusu, neprojde, pokladní kniha má průběžný zůstatek a výdaj
+  s položkou správy je ve vyúčtování správy.
+
 ### Vlastníci, měřidla a rozhodnutí
 
 - Období vlastnictví jedné jednotky na sebe navazují a nepřekrývají se.
@@ -111,7 +125,7 @@ Tyto situace v provozu nastanou, ale aplikace je zatím neumí, nebo je umí jen
 | Případ | Co se má ověřit |
 | --- | --- |
 | Platba bez VS od neznámého účtu | `prijem-nesparovany`, uzávěrka zablokovaná, po vyjasnění `prijem-vyjasneni` |
-| Výdaj 150 Kč bez faktury proplacený členovi výboru | `vydaj-bez-faktury`; kdo o proplacení žádá, nemůže ho sám schválit; podpisové záznamy u náhradního dokladu |
+| Výdaj 150 Kč bez faktury proplacený členovi výboru | kdo o proplacení žádá, nemůže ho sám schválit; podpisové záznamy u náhradního dokladu (zaúčtování platby a náhradního dokladu už test má) |
 | Duplicitně zaúčtovaná faktura po doručení vyúčtování | storno, nová verze vyúčtování, původní verze zůstane dohledatelná |
 | Změna podkladu po podpisu | podpisový záznam se zneplatní a doklad se vrátí do stavu `uplny` |
 | Revize přiřazená ke službě | odmítnuto s odkazem na § 2 odst. 1 písm. d) zákona 67/2013 |

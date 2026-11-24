@@ -8,8 +8,8 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Kdy | Stránka |
 | --- | --- |
 | Jednou na začátku | [Počáteční stavy](#počáteční-stavy), [Vlastníci](#vlastníci), [Měřidla](#měřidla), [Rozhodnutí](#rozhodnutí) |
-| Každý měsíc | [Předpisy](#předpisy), [Banka](#banka), [Faktury](#faktury), [Dlužníci](#dlužníci) |
-| Při změně záloh | [Oznámení o výši záloh](#oznámení-o-výši-záloh), [Rozesílání dokumentů](#rozesílání-dokumentů) |
+| Každý měsíc | [Předpisy](#předpisy), [Banka](#banka), [Faktury](#faktury), [Pokladna](#pokladna), [Dlužníci](#dlužníci) |
+| Při změně záloh | [Oznámení o výši záloh](#oznámení-o-výši-záloh), [Mimořádná záloha](#mimořádná-záloha), [Rozesílání dokumentů](#rozesílání-dokumentů) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
 | Kdo co změnil | [Historie změn](#historie-změn) |
@@ -44,7 +44,34 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
 - U odchozí platby za fakturu se vybírá z nezaplacených faktur. Aplikace ji navrhne podle
   VS faktury, potom podle účtu dodavatele a částky. Platbu vyšší, než kolik z faktury
   zbývá, odmítne.
+- Výdaj, ke kterému chybí doklad od dodavatele (třeba drobný nákup proplacený členovi
+  výboru), se v Bance zaúčtuje jako výdaj bez dokladu. Peníze tím odešly, ale náklad ještě
+  ne: na stránce Deník se k němu interním dokladem zapíše náhradní doklad, tedy co se
+  koupilo, kdo nákup zadal a kdo ho schválil, a vybere se položka správy, ze které se
+  platí. Dokud náhradní doklad chybí, uzávěrka roku na výdaj upozorní.
+- Výběr hotovosti z účtu do pokladny se v Bance zaúčtuje jako výběr do pokladny. Na
+  stránce Pokladna se pak stejná částka zapíše jako příjem.
 - Operace, které musí potvrdit účetní (například nespárovaný příjem), zatím zaúčtovat nejde.
+
+## Pokladna
+
+Stránka Pokladna je pro SVJ, které vede hotovost. Ukazuje, kolik je v pokladně, a pokladní
+knihu roku: každý příjem a výdaj s průběžným zůstatkem. Nový pokladní doklad je jeden ze
+tří druhů:
+
+- **Příjem hotovosti vybrané z účtu.** Výběr se nejdřív zaúčtuje v Bance jako výběr
+  hotovosti do pokladny. Příjem nemůže být vyšší, než kolik je z účtu vybráno a do
+  pokladny ještě nepřijato; stránka tuto částku ukazuje.
+- **Drobný výdaj** s popisem, co se koupilo, a s položkou správy, ze které se platí.
+  Výdaj bez položky správy se do vyúčtování záloh na správu nezapočte, dokud ho účetní
+  nezařadí. Pokladna nesmí jít do minusu ani zpětně: výdaj s dřívějším datem neprojde,
+  když by zůstatek v některý pozdější den klesl pod nulu.
+- **Vlastník platí hotově** za vybranou jednotku. Platba sníží jeho dluh stejně jako
+  platba na účet.
+
+Každý příjem a výdaj potřebuje pokladní doklad s podpisem. Zůstatek pokladny se k 31. 12.
+ověřuje inventurou, tedy spočítáním hotovosti. Dokud SVJ nemá v nastavení účet pokladny,
+stránka jen upozorní, že je potřeba ho doplnit.
 
 ## Faktury
 
@@ -89,6 +116,17 @@ revize, drobné opravy) a zálohy na služby. Zálohy na správu nejsou služby 
 Na stránce Předpisy se zaúčtuje předpis za měsíc jedním zápisem pro všechny jednotky.
 Měsíce jdou postupně a opakované zaúčtování nic nezdvojí. U jednotek je vidět rozpis
 složek a za rok předepsáno, zaplaceno a dluh nebo přeplatek.
+
+### Mimořádná záloha
+
+Když shromáždění rozhodne o jednorázovém příspěvku na opravu nebo investici (třeba výměnu
+oken), předepíše se odkazem Mimořádná záloha podle podílů na stránce Předpisy. Zadá se,
+na co záloha je, celková částka za dům, rozhodnutí shromáždění, den předpisu a splatnost.
+Formulář hned ukáže, kolik připadne na každou jednotku: částka se rozdělí podle podílů na
+společných částech platných v den předpisu, na haléře přesně. Rozhodnutí musí být
+zapsané na stránce Rozhodnutí a jde vybrat jen rozhodnutí shromáždění. Předepsaná záloha
+jde do fondu oprav a u každé jednotky se na stránce Dlužníci objeví jako samostatný dluh
+se splatností, kterou určilo shromáždění. Opravit ji jde stornem zápisu na stránce Deník.
 
 ## Dlužníci
 
@@ -302,8 +340,11 @@ s úhradou jde stornovat až po stornu úhrady.
 Účetní případy, které nemají vlastní stránku, se zaúčtují interním dokladem: na stránce
 Deník tlačítko Zaúčtovat interní doklad. Nabízí časové rozlišení (náklad příštích období,
 s položkou správy, aby ho vyúčtování záloh započítalo do správného roku), dohadnou
-položku k 31. 12., zařazení a odpisy majetku, zásoby, dotace, nájemné ze společných
+položku k 31. 12. a její zrušení po doručení faktury (krok Faktura přišla: zrušit odhad;
+fakturu samotnou pak zadejte na stránce Faktury), náhradní doklad k výdaji bez dokladu
+z Banky, zařazení a odpisy majetku, zásoby, dotace, nájemné ze společných
 částí, převody do fondu oprav, vyčlenění pochybných dluhů, opravné položky, odměny
 výboru, přeúčtování mezi službami a vyjasnění nespárované platby. Před zaúčtováním
-formulář ukáže, na které účty a jakými částkami se zápis zapíše. Operace, pro kterou
+formulář ukáže, na které účty a jakými částkami se zápis zapíše. Odhad ani výdaj bez
+dokladu nejde vyřešit vyšší částkou, než kolik k danému dni zbývá. Operace, pro kterou
 v profilu SVJ chybí účet, se nenabízí a formulář ji vypíše.
