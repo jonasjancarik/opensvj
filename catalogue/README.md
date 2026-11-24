@@ -11,10 +11,10 @@ Každý soubor pokrývá jednu oblast:
 | `predpisy.yaml` | měsíční předpis záloh, mimořádná záloha |
 | `banka.yaml` | úhrady vlastníků, nespárované platby, převody mezi účty, úhrady faktur, poplatky a úroky |
 | `dodavatele.yaml` | faktury za služby a správu, zálohy dodavatelům, časové rozlišení, dohadné položky |
-| `fond-oprav.yaml` | opravy z fondu oprav, převod výnosů do fondu, pojistné plnění |
+| `fond-oprav.yaml` | opravy z fondu oprav, převod výnosů do fondu, pojistné plnění (i v roce škody a odhadem) |
 | `fond-ze-zisku.yaml` | rozdělení výsledku minulého roku, opravy z fondu ze zisku |
 | `vyuctovani.yaml` | vyúčtování služeb a správy, přeúčtování mezi službami, zaokrouhlovací rozdíl |
-| `pohledavky.yaml` | úrok z prodlení, pochybné a nedobytné pohledávky |
+| `pohledavky.yaml` | úrok z prodlení, smluvní pokuta dodavateli, pochybné a nedobytné pohledávky |
 | `majetek-pokladna.yaml` | majetek, zásoby, hotovostní pokladna |
 | `uvery-dotace.yaml` | úvěr na opravy a jeho splácení, dotace |
 | `prijmy-vlastniku.yaml` | nájemné ze společných částí a jiné příjmy vlastníků, které SVJ vybírá |

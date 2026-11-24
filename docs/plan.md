@@ -28,9 +28,6 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 
 ## 1. Účetní oblasti
 
-- **Ostatní výnosy:** smluvní pokuta dodavateli v katalogu; pohledávka z pojistného plnění
-  v roce škody a dohad; rozpouštění dotace do více let; podíly vlastníků na nájemném
-  a potvrzení pro jejich daňové přiznání.
 - **Vyúčtování služeb:** evidence námitek vlastníků a jejich vyřízení; přeúčtování mezi
   službami jako operace místo ručního zápisu.
 - **Účetní období a archiv:** hospodářský rok a první období delší než 12 měsíců; export

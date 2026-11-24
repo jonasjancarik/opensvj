@@ -257,22 +257,39 @@ a jak naloží s nájemným, které dosud účtovalo jako svůj výnos.
 - Úrok z prodlení vlastníkovi a jeho úhradu pokrývají operace
   [`urok-z-prodleni` a `uhrada-uroku-z-prodleni`](../../catalogue/pohledavky.yaml). Sankce
   vedou na samostatné analytice 311400, aby se nepočítaly mezi dluhy, které při prodeji
-  přecházejí na nového vlastníka. Smluvní pokutu dodavateli katalog zatím nemá.
-- Pojistné plnění ([`pojistne-plneni`](../../catalogue/fond-oprav.yaml)) se účtuje
-  v den, kdy pojišťovna zaplatí, rovnou z banky do výnosů na 649. Pohledávku v roce škody
-  ani dohad aplikace zatím sama nenabídne, je nutné je zadat ručně. Operace má stav
-  `overit`, takže ji uzávěrka připomene k posouzení. Varianta `snizeni-nakladu` odpovídá
-  praxi, ale ne § 7 odst. 6 ZoÚ.
+  přecházejí na nového vlastníka.
+- Smluvní pokutu dodavateli uplatní výbor interním dokladem
+  [`smluvni-pokuta`](../../catalogue/pohledavky.yaml) (378 / 641) se jménem dodavatele.
+  U faktury téhož dodavatele ji pak stránka Faktury nabídne k zápočtu
+  (`smluvni-pokuta-zapocet`, 321 / 378) a v Bance jde vybrat její úhradu
+  (`smluvni-pokuta-uhrada`). Daňový přehled v uzávěrce s ní zachází jako s úrokem
+  z prodlení: nezaplacená základ daně snižuje a v roce zaplacení nebo zápočtu ho zvýší.
+- Pojistné plnění, které pojišťovna zaplatí ještě v roce škody, se zaúčtuje v Bance
+  rovnou do výnosů na 649 ([`pojistne-plneni`](../../catalogue/fond-oprav.yaml)). Operace
+  má stav `overit`, takže ji uzávěrka připomene k posouzení. Varianta `snizeni-nakladu`
+  odpovídá praxi, ale ne § 7 odst. 6 ZoÚ.
+- Když pojišťovna do konce roku nezaplatí, zaúčtuje se k 31. 12. interní doklad
+  `pojistne-plneni-narok`: krok `priznano` jako pohledávka (378), krok `odhad` na dohadný
+  účet (388). Po oznámení výše se u `pojistne-plneni-oznameni` vybere událost s odhadem
+  a zadá jen oznámená částka; aplikace odhad zúčtuje proti pohledávce a rozdíl dá do
+  nákladů (549), nebo výnosů roku oznámení. Plnění 0 Kč znamená odmítnutý nárok. Platbu
+  pojišťovny pak Banka nabídne jako `pojistne-plneni-uhrada`. Uzávěrka připomene odhady
+  z minulých let, ke kterým plnění ještě nepřišlo.
 - Dotace mají tři operace v [`uvery-dotace.yaml`](../../catalogue/uvery-dotace.yaml):
-  `dotace-rozhodnuti`, `dotace-pouziti` a `dotace-prijeti`. Rozpouštění dotace do více
-  let je nutné rozdělit ručně podle nákladů.
+  `dotace-rozhodnuti`, `dotace-pouziti` a `dotace-prijeti`. U použití dotace se vybírá
+  z poskytovatelů, u kterých z nároku ještě něco zbývá, a víc použít nejde. Poměr
+  letošních nákladů k celé akci ale aplikace nezná, částku na každý rok spočítá výbor
+  nebo účetní. Uzávěrka připomene dotace, ze kterých zbývá něco použít.
 - Nájemné ze společných částí má operace v
   [`prijmy-vlastniku.yaml`](../../catalogue/prijmy-vlastniku.yaml): předpis a úhradu
   nájemného přes 378/379, výplatu podílu vlastníkovi a převod podílu do fondu oprav.
-  Podíly jednotlivých vlastníků aplikace zatím nespočítá a potvrzení pro daňové účely
-  nevystaví. Kdo dosud vedl nájemné jako výnos SVJ, může dál použít variantu
-  `vynos-svj`; daňový přehled v uzávěrce u ní upozorní, že podle § 16 odst. 2 NV jde
-  o příjem vlastníků.
+  Stránka Příjmy vlastníků rozdělí každou přijatou platbu podle podílů platných v den
+  platby na vlastníky, kteří jednotky v ten den vlastnili, ukáže, co zbývá vypořádat,
+  a vytiskne potvrzení pro daňové přiznání s podílem na přijatých platbách i na
+  předepsaném nájemném. Převod do fondu oprav jde jen tam a chce popis žádosti vlastníka.
+  Kdo dosud vedl nájemné jako výnos SVJ, může dál použít variantu `vynos-svj`; daňový
+  přehled v uzávěrce u ní upozorní, že podle § 16 odst. 2 NV jde o příjem vlastníků,
+  a stránka Příjmy vlastníků takové platby nepočítá.
 - Fotovoltaiku aplikace zvlášť neřeší.
 
 ## Příklad

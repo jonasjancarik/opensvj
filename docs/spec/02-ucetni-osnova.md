@@ -95,6 +95,8 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 | `vynosy.zuctovani_dlouhodobych_zaloh` | úroky z úvěru a odpisy majetku pokryté z fondu oprav nebo ze záloh na úvěr | 649400 |
 | `pohledavky_dotace`, `narok_dotace`, `vynosy.dotace` | nárok na dotaci a její použití | 378200, 346100, 691100 |
 | `pohledavky_najemci`, `prijmy_vlastniku` | nájemné ze společných částí a závazek vůči vlastníkům, kterým patří | 378300, 379200 |
+| `pohledavky_sankce_dodavatele`, `vynosy.smluvni_pokuty` | smluvní pokuty uplatněné vůči dodavatelům | 378400, 641200 |
+| `pohledavky_pojistne`, `dohadne_aktivni`, `naklady.jine` | pojistné plnění přiznané v roce škody, jeho odhad k 31. 12. a snížení odhadu po oznámení pojišťovny | 378500, 388100, 549900 |
 | `naklady.odmeny`, `zavazky_odmeny` | odměny členů výboru | 523100, 379100 |
 | `naklady.odvody`, `zavazky_pojistne`, `zavazky_dan_odmeny` | pojistné a daň z odměn | 524100, 336100, 342100 |
 

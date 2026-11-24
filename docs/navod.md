@@ -14,6 +14,7 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Když SVJ koupí dražší věc, pozemek nebo jednotku | [Majetek](#majetek) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
 | Když shromáždění rozhodne o zisku nebo ztrátě | [Fond ze zisku](#fond-ze-zisku) |
+| Když SVJ pronajímá společné části (střechu, sušárnu) | [Příjmy vlastníků](#příjmy-vlastníků) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
 | Kdo co změnil | [Historie změn](#historie-změn) |
 
@@ -40,10 +41,13 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
   místo záloh), vybere se ten dluh u platby v poli Na který dluh vlastník platí. Platba
   se pak zaúčtuje na jeho účet a na stránce Dlužníci jde nejdřív na něj (§ 1933 OZ).
 - Kromě plateb vlastníků a faktur jde platbu zaúčtovat jako úrok od banky, pojistné
-  plnění, nájemné ze společných částí, přijatou dotaci, úhradu dříve odepsaného dluhu,
-  vrácení přeplatku vlastníkovi (s výběrem, jestli jde o přeplatek z vyúčtování, nebo
-  na zálohách), zálohu dodavateli energie nebo vody a výplatu podílu na příjmech ze
-  společných částí.
+  plnění (rovnou do výnosů, nebo jako úhradu plnění zaúčtovaného už v roce škody),
+  nájemné ze společných částí, přijatou dotaci, zaplacenou smluvní pokutu od dodavatele,
+  úhradu dříve odepsaného dluhu, vrácení přeplatku vlastníkovi (s výběrem, jestli jde
+  o přeplatek z vyúčtování, nebo na zálohách), zálohu dodavateli energie nebo vody
+  a výplatu podílu na příjmech ze společných částí.
+- U úhrady nájemného, pojistného plnění z roku škody, smluvní pokuty a dotace aplikace
+  nabídne, kdo ještě dluží a kolik. Když nikdo nedluží, jméno se napíše ručně.
 - U odchozí platby za fakturu se vybírá z nezaplacených faktur. Aplikace ji navrhne podle
   VS faktury, potom podle účtu dodavatele a částky. Platbu vyšší, než kolik z faktury
   zbývá, odmítne.
@@ -91,6 +95,12 @@ pořízení dlouhodobého majetku jde na pořizování majetku a do nákladů se
 odpisy (viz [Majetek](#majetek)). Stejné číslo faktury od stejného dodavatele
 podruhé zadat nejde. Seznam ukazuje, kolik z každé faktury zbývá zaplatit a co je po
 splatnosti.
+
+Když má dodavatel nezaplacenou smluvní pokutu (uplatněnou interním dokladem v Deníku),
+u jeho faktury se objeví upozornění a tlačítko Započíst proti této faktuře. Zápočet
+sníží, kolik z faktury zbývá zaplatit, a nejde započíst víc, než zbývá z faktury
+nebo z pokut. Pokuta je výnos SVJ a daní se, až když ji dodavatel zaplatí nebo se
+započte (viz [Uzávěrka roku](#uzávěrka-roku)).
 
 ## Počáteční stavy
 
@@ -393,12 +403,15 @@ Stránka Uzávěrka má pět částí:
 - co zbývá udělat: kontroly, které aplikace ověří sama z účetnictví (počáteční stavy,
   předpisy, nezaúčtované pohyby, zůstatky proti výpisům, vyrovnané pomocné účty,
   vyúčtování, odpisy a evidence majetku, rozdělení výsledku minulého roku, fond ze zisku,
-  doložená rozhodnutí), a body, které se odškrtávají ručně,
+  doložená rozhodnutí), a body, které se odškrtávají ručně, mezi nimi nevyčerpané dotace
+  a odhady pojistného plnění z minulých let, ke kterým pojišťovna ještě neoznámila
+  plnění,
 - rozvaha a výsledovka ve zkráceném rozsahu, v tisících Kč i přesně,
 - inventura: zůstatky rozvahových účtů s rozpisem po jednotkách nebo fakturách a tisk
   inventurních soupisů se zákonnými náležitostmi,
 - daň z příjmů: jestli SVJ musí podat přiznání (§ 38mb ZDP), jak se který výnos daní
-  a návrh výpočtu daně po řádcích přiznání. Úroky z prodlení se daní až po zaplacení,
+  a návrh výpočtu daně po řádcích přiznání. Úroky z prodlení a smluvní pokuty od
+  dodavatelů se daní až po zaplacení,
   takže nezaplacené letošní základ snižují a loňské zaplacené letos ho zvyšují. Daň jde
   tlačítkem zaúčtovat k 31. 12. jako náklad na správu domu; udělejte to před vyúčtováním
   záloh na správu, které ji pak rozdělí mezi vlastníky. Zaplacení daně a úhradu úroku
@@ -434,6 +447,32 @@ rozpustí do výnosů, takže výsledek roku nezhorší. Fondem ze zisku jde kr�
 majetku (viz [Majetek](#majetek)). Fond nesmí jít do záporu; aplikace takovou fakturu ani
 zařazení majetku nezaúčtuje a uzávěrka hlásí nerozdělený výsledek i fond v záporu.
 
+## Příjmy vlastníků
+
+Nájemné za společné části domu (střecha pro anténu, sušárna pronajatá jako sklad) patří
+vlastníkům, ne společenství. Nájemné se předepíše interním dokladem v Deníku („Předpis
+nájemného ze společných částí“) a platba od nájemce se zaúčtuje v Bance jako úhrada
+nájemného. Nájemce pište pokaždé stejně, podle něj se platby párují.
+
+Stránka Příjmy vlastníků za vybraný rok ukáže platby od nájemců a jejich rozdělení na
+jednotky. Každá platba se dělí podle podílů na společných částech platných v den platby
+a připadne tomu, kdo jednotku v ten den vlastnil. U jednotky je vidět, kolik se v roce
+vyplatilo, převedlo do fondu oprav a kolik zbývá vypořádat, i z minulých let. Vypořádání
+z doby před začátkem účtování v aplikaci se tu ukáže, jen když jsou počáteční stavy účtu
+příjmů vlastníků zadané po jednotkách.
+
+- Výplata podílu se zaúčtuje v Bance jako výplata podílu na příjmech ze společných částí.
+- Převod do fondu oprav jde tlačítkem u jednotky. Potřebuje výslovný, nejlépe písemný
+  souhlas vlastníka: do formuláře se napíše, kdy a jak o převod požádal, a souhlas se
+  potvrdí zaškrtnutím. Víc, než jednotce zbývá, převést nejde.
+- Potvrzení pro daňové přiznání vlastníka jde vytisknout u každé jednotky. Obsahuje podíl
+  na platbách, které SVJ v roce od nájemců skutečně dostalo, a pro vlastníky, kteří vedou
+  účetnictví, i podíl na nájemném předepsaném na rok. Když jednotka v roce změnila
+  vlastníka, má každý z nich vlastní potvrzení jen za dobu, kdy jednotku vlastnil.
+
+Nájemné předepsané jako výnos SVJ (dosavadní praxe některých SVJ) se na stránce nepočítá
+a stránka na ně upozorní.
+
 ## Historie změn
 
 Stránka Historie změn ukazuje, kdo a kdy přidal, změnil nebo smazal vlastníka nebo
@@ -456,9 +495,13 @@ Deník tlačítko Zaúčtovat interní doklad. Nabízí časové rozlišení (n�
 s položkou správy, aby ho vyúčtování záloh započítalo do správného roku), dohadnou
 položku k 31. 12. a její zrušení po doručení faktury (krok Faktura přišla: zrušit odhad;
 fakturu samotnou pak zadejte na stránce Faktury), náhradní doklad k výdaji bez dokladu
-z Banky, zásoby, dotace, nájemné ze společných
-částí, převody do fondu oprav, vyčlenění pochybných dluhů, opravné položky, odměny
+z Banky, zásoby, dotace (rozhodnutí a použití na náklady roku s nabídkou nevyčerpaných
+dotací), pojistné plnění v roce škody (přiznané, nebo odhad) a oznámení plnění k odhadu,
+smluvní pokutu dodavateli, předpis nájemného ze společných částí, převod výnosů do fondu
+oprav, vyčlenění pochybných dluhů, opravné položky, odměny
 výboru, přeúčtování mezi službami a vyjasnění nespárované platby. Před zaúčtováním
 formulář ukáže, na které účty a jakými částkami se zápis zapíše. Odhad ani výdaj bez
-dokladu nejde vyřešit vyšší částkou, než kolik k danému dni zbývá. Operace, pro kterou
+dokladu nejde vyřešit vyšší částkou, než kolik k danému dni zbývá, a dotaci nejde použít
+nad to, co z ní zbývá. U oznámení plnění se vybere událost s odhadem a zadá se jen
+oznámená částka: rozdíl proti odhadu jde do nákladů, nebo výnosů letošního roku. Operace, pro kterou
 v profilu SVJ chybí účet, se nenabízí a formulář ji vypíše.
