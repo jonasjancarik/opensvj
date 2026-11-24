@@ -11,6 +11,7 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Každý měsíc | [Předpisy](#předpisy), [Banka](#banka), [Faktury](#faktury), [Pokladna](#pokladna), [Dlužníci](#dlužníci) |
 | Při změně záloh | [Oznámení o výši záloh](#oznámení-o-výši-záloh), [Mimořádná záloha](#mimořádná-záloha), [Rozesílání dokumentů](#rozesílání-dokumentů) |
 | Když si SVJ vezme úvěr | [Úvěry](#úvěry) |
+| Když SVJ koupí dražší věc, pozemek nebo jednotku | [Majetek](#majetek) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
 | Kdo co změnil | [Historie změn](#historie-změn) |
@@ -83,7 +84,9 @@ oprava z fondu oprav…), částka, DUZP a splatnost, nepovinně číslo faktury
 dodavatele. Zadáním se faktura schvaluje a hned se zaúčtuje podle druhu nákladu; u opravy
 z fondu oprav nebo opravy hrazené z úvěru se musí uvést, kdo ji schválil. Oprava hrazená
 z úvěru se nabízí, jen když má SVJ v profilu účty pro úvěr; platí se ze záloh vlastníků
-na úvěr, ne z běžného fondu oprav, a zaplatí ji banka (viz [Úvěry](#úvěry)). Stejné číslo faktury od stejného dodavatele
+na úvěr, ne z běžného fondu oprav, a zaplatí ji banka (viz [Úvěry](#úvěry)). Faktura za
+pořízení dlouhodobého majetku jde na pořizování majetku a do nákladů se dostane až
+odpisy (viz [Majetek](#majetek)). Stejné číslo faktury od stejného dodavatele
 podruhé zadat nejde. Seznam ukazuje, kolik z každé faktury zbývá zaplatit a co je po
 splatnosti.
 
@@ -163,6 +166,42 @@ Stránka ukazuje, kolik zbývá splatit bance, kolik vlastníci ještě nesplati
 jednotkách. Úroky, které podle rozhodnutí platí fond oprav nebo mimořádné zálohy na úvěr,
 se po skončení roku uhradí tlačítkem Uhradit úroky za rok; do té doby je vyúčtování
 správy ukazuje mezi náklady, které k žádné položce nepatří.
+
+## Majetek
+
+Na stránce Majetek se vede dlouhodobý majetek SVJ: věci, které se používají déle než rok
+a stojí víc než hranice z vnitřního předpisu SVJ (třeba robotická sekačka), a vždy pozemky
+a jednotky. Levnější věci jdou rovnou do nákladů a v evidenci nejsou. Společné části domu
+majetkem SVJ nejsou.
+
+Majetek se kupuje fakturou, která se na stránce Faktury zadá jako pořízení dlouhodobého
+majetku (u softwaru na zakázku jako pořízení nehmotného majetku). Až se majetek začne
+používat, zařadí se na stránce Majetek: co to je, druh, den zařazení, pořizovací cena (nejvýš
+kolik z faktur za pořízení čeká na zařazení), na kolik let se odepisuje podle odpisového
+plánu SVJ a z čeho se platí:
+
+- **fond oprav**: vlastníci majetek zaplatí najednou při zařazení a odpisy je už znovu
+  nezatíží,
+- **fond ze zisku**: totéž u SVJ, které má fond ze zisku minulých let,
+- **provozní zálohy na některou položku správy**: vlastníci majetek zaplatí postupně,
+  protože odpisy jdou do vyúčtování záloh na správu podle klíče položky (počítač pro
+  výbor rovným dílem, sekačka podle podílů).
+
+Odepisuje se rovnoměrně po měsících od měsíce po zařazení, po celých korunách. Pozemky se
+neodepisují. Karta ukazuje odpisový plán po letech a zůstatkovou cenu. Odpisy za rok se
+zaúčtují tlačítkem od 31. 12.; u majetku placeného z provozních záloh to musí být před
+vyúčtováním správy, jinak ho aplikace nezaúčtuje.
+
+Majetek, který SVJ mělo už před začátkem účtování v aplikaci a který je v počátečních
+stavech, se převezme do evidence k 1. 1. s oprávkami k tomu dni. Co z ceny zbývá, se
+rozloží rovnoměrně do konce odpisové doby. Uzávěrka roku hlídá, že evidence sedí na účty
+majetku a oprávek.
+
+Název, inventární číslo a poznámku jde upravit kdykoli. Když je špatně cena, datum nebo
+doba odpisování, stornuje se zápis o zařazení na stránce Deník (jde to, dokud nejsou
+zaúčtované odpisy) a majetek se zařadí znovu. Majetek, který se prodá, zničí nebo ztratí,
+se vyřadí: zbytek ceny se odepíše najednou a majetek se odúčtuje. Peníze z prodeje se
+zaúčtují zvlášť u platby v Bance.
 
 ## Dlužníci
 
@@ -312,7 +351,8 @@ Před koncem roku jsou čísla průběžná. Zaúčtovat jde od 31. 12., když j
 předpisy všech měsíců. Nedoplatek se pak objeví na stránce Dlužníci se splatností 30. 4.
 dalšího roku, stejně jako u vyúčtování služeb (§ 7 zákona 67/2013). Náklady, které k žádné
 položce správy nepatří (bankovní poplatky, převod do fondu oprav), stránka vypíše zvlášť
-a kam patří, rozhodne účetní. Výnosy přiřazené k položce správy, třeba pojistné plnění
+a kam patří, rozhodne účetní. Odpisy majetku placeného z provozních záloh jsou nákladem
+své položky. Výnosy přiřazené k položce správy, třeba pojistné plnění
 na opravu, náklady té položky snižují.
 
 Opravy placené z fondu oprav nebo z úvěru do vyúčtování záloh na správu nepatří, protože
@@ -341,7 +381,7 @@ Stránka Uzávěrka má pět částí:
 
 - co zbývá udělat: kontroly, které aplikace ověří sama z účetnictví (počáteční stavy,
   předpisy, nezaúčtované pohyby, zůstatky proti výpisům, vyrovnané pomocné účty,
-  vyúčtování, doložená rozhodnutí), a body, které se odškrtávají ručně,
+  vyúčtování, odpisy a evidence majetku, doložená rozhodnutí), a body, které se odškrtávají ručně,
 - rozvaha a výsledovka ve zkráceném rozsahu, v tisících Kč i přesně,
 - inventura: zůstatky rozvahových účtů s rozpisem po jednotkách nebo fakturách a tisk
   inventurních soupisů se zákonnými náležitostmi,
@@ -386,7 +426,7 @@ Deník tlačítko Zaúčtovat interní doklad. Nabízí časové rozlišení (n�
 s položkou správy, aby ho vyúčtování záloh započítalo do správného roku), dohadnou
 položku k 31. 12. a její zrušení po doručení faktury (krok Faktura přišla: zrušit odhad;
 fakturu samotnou pak zadejte na stránce Faktury), náhradní doklad k výdaji bez dokladu
-z Banky, zařazení a odpisy majetku, zásoby, dotace, nájemné ze společných
+z Banky, zásoby, dotace, nájemné ze společných
 částí, převody do fondu oprav, vyčlenění pochybných dluhů, opravné položky, odměny
 výboru, přeúčtování mezi službami a vyjasnění nespárované platby. Před zaúčtováním
 formulář ukáže, na které účty a jakými částkami se zápis zapíše. Odhad ani výdaj bez

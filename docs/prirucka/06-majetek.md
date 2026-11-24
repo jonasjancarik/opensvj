@@ -129,18 +129,23 @@ vede se obvykle v podrozvahové nebo jednoduché operativní evidenci (praxe).
 
 ## V aplikaci
 
-- Katalog má v [`majetek-pokladna.yaml`](../../catalogue/majetek-pokladna.yaml) operace
-  `majetek-porizeni` (042/321), `majetek-zarazeni` (022/042 a zdroj krytí 955 nebo
-  324/901), `majetek-odpisy` (551/082 a vrácení zdroje 901/955) a `zasoby-konec-roku`
-  (112/501 a v novém roce zpět). Odpovídají druhé, rozvahové možnosti. Všechny mají stav
-  `navrh`.
-- Ukázkový profil pro ně má role `majetek` (022100), `majetek_porizovani` (042100),
-  `opravky_majetku` (082100), `zdroj_majetku` (901100), `naklady.odpisy` (551100),
-  `zasoby` (112100) a `naklady.spotreba` (501100).
-- Evidenci majetku, odpisový plán ani výpočet odpisů aplikace zatím nemá. Roční odpis je
-  nutné spočítat a zadat ručně.
-- Pozemky, jednotky a software nemají v ukázkovém profilu vlastní role. Nehmotný majetek
-  ani nezálohovou variantu přes fond 911 aplikace nepodporuje.
+- Majetek se vede na stránce Majetek (viz [návod](../navod.md#majetek)): faktura za
+  pořízení jde na 042 (u softwaru na 041), zařazení na 022, 021, 031 nebo 013 a aplikace
+  sestaví rovnoměrný měsíční odpisový plán a odpisy zaúčtuje k 31. 12. Pozemky se
+  neodepisují. Majetek z počátečních stavů jde převzít do evidence s oprávkami k 1. 1.
+- Krytí pořízení odpovídá druhé, rozvahové možnosti z tabulky výše: z fondu oprav 955/901
+  a ve výši odpisů 901/955, u fondu ze zisku 911/901 a 901/911. U fondu oprav aplikace
+  odpis rovnou uhradí z fondu (955/649), stejně jako vyúčtování ve výkladu (955/311), takže
+  výsledek je nulový.
+- Majetek placený z provozních záloh aplikace nevede přes 324/901. Odpisy jsou nákladem
+  položky správy a vlastníci je zaplatí ve vyúčtování záloh na správu postupně, jak se
+  majetek odepisuje. Kdo chce mít pořízení z provozních záloh uhrazené najednou, měl by to
+  probrat s účetní.
+- Hranici dlouhodobého majetku aplikace nehlídá. Jiné než rovnoměrné odpisy, technické
+  zhodnocení vlastního majetku, prodej pozemku a příjem z prodeje majetku jako součást
+  vyřazení neumí; příjem z prodeje se zaúčtuje zvlášť.
+- Zásoby na konci roku (`zasoby-konec-roku`, 112/501 a v novém roce zpět) jdou zaúčtovat
+  interním dokladem na stránce Deník.
 
 ## Příklad
 

@@ -109,6 +109,23 @@ Příklad zateplení z příručky (kapitola 5):
   jednou. Vyúčtování správy pak úroky mezi nezahrnutými nemá a ukáže, co platil fond
   oprav a co zálohy na úvěr.
 
+### Majetek
+
+Příklad se sekačkou z příručky (kapitola 6):
+
+- Faktury 36 000 a 2 400 Kč na pořizování; zařadit víc, než je nezařazeno, nejde. Zařazení
+  1. 6. 2026 z fondu oprav: 022/042 a 955/901.
+- Odpisový plán na 6 let po měsících: 3 200 Kč za rok 2026, pak 6 400 Kč, v roce 2032
+  zbytek 3 200 Kč; kumulativní zaokrouhlení dorovná haléře.
+- Odpisy jdou zaúčtovat až 31. 12. a jen jednou; výsledek je nulový, ve vyúčtování správy
+  odpis není a pořízení je mezi platbami z fondu oprav. Zařazení pak nejde stornovat.
+- Uzávěrka: evidence sedí na účty, inventurní soupis má kartu u majetku i oprávek.
+- Vyřazení doodepíše zůstatkovou cenu a vynuluje majetek, oprávky i 901.
+- Software placený ze správy: odpis je nákladem položky Správa a vyúčtování správy čeká,
+  dokud odpis není zaúčtovaný.
+- Převzatý majetek: zbytek ceny ve zbývajících měsících, bez počátečních stavů uzávěrka
+  hlásí nesoulad, kartu bez odpisů jde odebrat. Pozemek se neodepisuje a vyřadit nejde.
+
 ### Vlastníci, měřidla a rozhodnutí
 
 - Období vlastnictví jedné jednotky na sebe navazují a nepřekrývají se.

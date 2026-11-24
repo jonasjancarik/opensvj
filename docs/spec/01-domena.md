@@ -463,6 +463,29 @@ Bankovní doklad se v programu účetní dá spárovat s výpisem, který si ú�
 z banky. Export proto nese číslo výpisu a klíč pohybu. Před prací na formátech pro konkrétní
 programy je potřeba ověřit s několika účetními SVJ, co opravdu používají.
 
+### Majetek
+
+`Majetek(nazev, inventarni_cislo, druh, zarazeno, cena, doba_mesicu, kryti, prevzato_k,
+opravky_prevzate)`
+
+- Druh určí účty: movitá věc 022/082, stavba nebo jednotka 021/081, pozemek 031 (neodepisuje
+  se), nehmotný majetek 013/073; pořizuje se na 042, nehmotný na 041.
+- Zařazení (`majetek-zarazeni`) převede cenu z pořizování na majetek; víc, než kolik je na
+  pořizování nezařazeno, zařadit nejde. Kryje-li pořízení fond oprav nebo fond ze zisku,
+  zařazení zároveň zaúčtuje 955 nebo 911 / 901.
+- Odpisy jsou rovnoměrné po měsících od měsíce po zařazení, kumulativně zaokrouhlené na
+  celé koruny, poslední měsíc dorovná cenu. Roční odpis (`majetek-odpisy`) je jeden zápis
+  na kartu a rok k 31. 12.: 551 / oprávky, u fondu 901 / fond a u fondu oprav ještě 955 /
+  649, takže výsledek je nulový a fond oprav se sníží jen jednou. U provozních záloh nese
+  náklad 551 kód položky správy a jde do vyúčtování.
+- Řádky karty nesou kód `MAJ-<id>` v dimenzi služby (kromě nákladu s položkou). Zařazení
+  nejde stornovat, když na něj navazuje odpis nebo vyřazení.
+- Převzatý majetek nemá zápis o zařazení; zůstatková cena k převzetí se odepisuje ve
+  zbývajících měsících plánu.
+- Vyřazení (`majetek-vyrazeni`) doodepíše zůstatkovou cenu a odúčtuje majetek proti
+  oprávkám; předtím musí být zaúčtované odpisy minulých let.
+- Uzávěrka porovná součet karet s účty majetku a oprávek.
+
 ### Uzávěrka
 
 Kroky, které aplikace vede a které blokují uzavření roku, dokud nejsou splněné:

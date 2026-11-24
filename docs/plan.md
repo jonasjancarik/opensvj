@@ -28,8 +28,6 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 
 ## 1. Účetní oblasti
 
-- **Majetek:** evidence hmotného i nehmotného majetku, odpisový plán, výpočet a zaúčtování
-  odpisů, krytí přes fond 911.
 - **Nezálohové příspěvky:** předpis a účtování příspěvků jako výnosů, fond ze zisku 911.
 - **Ostatní výnosy:** smluvní pokuta dodavateli v katalogu; pohledávka z pojistného plnění
   v roce škody a dohad; rozpouštění dotace do více let; podíly vlastníků na nájemném

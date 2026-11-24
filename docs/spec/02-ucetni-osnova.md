@@ -17,7 +17,7 @@ Ověřeno v aktuálním znění vyhlášky (verze 10, účinná od 1. 1. 2024).
 
 | Třída | Skupiny |
 | --- | --- |
-| 0 Dlouhodobý majetek | 02 hmotný majetek, 04 nedokončený majetek, 08 oprávky (jen SVJ, které majetek vlastní) |
+| 0 Dlouhodobý majetek | 01 nehmotný, 02 a 03 hmotný majetek, 04 nedokončený majetek, 07 a 08 oprávky (jen SVJ, které majetek vlastní) |
 | 1 Zásoby | 11 materiál |
 | 2 Finanční účty | 21 pokladna, 22 účty v bankách, 26 převody mezi finančními účty |
 | 3 Zúčtovací vztahy | 31 pohledávky, 32 závazky, 33 zúčtování s institucemi, 34 daně a dotace, 37 jiné pohledávky a závazky, 38 přechodné účty aktiv a pasiv, 39 vnitřní zúčtování a opravné položky |
@@ -75,8 +75,11 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 
 | Role | Význam | Ukázkový profil |
 | --- | --- | --- |
-| `majetek`, `majetek_porizovani`, `opravky_majetku` | dlouhodobý hmotný majetek, jeho pořízení a oprávky | 022100, 042100, 082100 |
-| `zdroj_majetku` | zdroj krytí majetku placeného ze záloh vlastníků | 901100 |
+| `majetek`, `majetek_porizovani`, `opravky_majetku` | hmotné movité věci, pořizování hmotného majetku a oprávky | 022100, 042100, 082100 |
+| `majetek_stavby`, `opravky_staveb`, `majetek_pozemky` | stavby a jednotky, jejich oprávky, pozemky | 021100, 081100, 031100 |
+| `majetek_nehmotny`, `majetek_nehmotny_porizovani`, `opravky_nehmotneho` | software na zakázku, jeho pořizování a oprávky | 013100, 041100, 073100 |
+| `zdroj_majetku` | zdroj krytí majetku placeného z fondu oprav nebo fondu ze zisku | 901100 |
+| `fond_ze_zisku` | fond ze zisku minulých let | 911100 |
 | `naklady.odpisy` | účetní odpisy | 551100 |
 | `zasoby` | nespotřebované zásoby k 31. 12. | 112100 |
 | `pokladna`, `naklady.spotreba` | hotovostní pokladna a drobný materiál | 211100, 501100 |
@@ -86,7 +89,7 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 | `naklady.odpis_pohledavky` | odpis nedobytné pohledávky | 543100 |
 | `uvery`, `naklady.uroky_uver` | dlouhodobý úvěr a jeho úroky | 951100, 544100 |
 | `pohledavky_uver`, `zalohy_dlouhodobe_uver` | podíly vlastníků na splácení úvěru a zálohy na něj | 378100, 955300 |
-| `vynosy.zuctovani_dlouhodobych_zaloh` | úroky z úvěru pokryté z fondu oprav nebo ze záloh na úvěr | 649400 |
+| `vynosy.zuctovani_dlouhodobych_zaloh` | úroky z úvěru a odpisy majetku pokryté z fondu oprav nebo ze záloh na úvěr | 649400 |
 | `pohledavky_dotace`, `narok_dotace`, `vynosy.dotace` | nárok na dotaci a její použití | 378200, 346100, 691100 |
 | `pohledavky_najemci`, `prijmy_vlastniku` | nájemné ze společných částí a závazek vůči vlastníkům, kterým patří | 378300, 379200 |
 | `naklady.odmeny`, `zavazky_odmeny` | odměny členů výboru | 523100, 379100 |
