@@ -73,7 +73,7 @@ export function Prihlaseni() {
         )}
       </main>
       <div className="prihlaseni-obraz" aria-hidden="true">
-        <p className="prihlaseni-citat">Účetnictví domu, ve kterém se dá vyznat.</p>
+        <p className="prihlaseni-citat">Správa domu, ve které se dá vyznat.</p>
         <OzdobnyDum />
       </div>
     </div>

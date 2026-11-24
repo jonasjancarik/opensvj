@@ -1,9 +1,10 @@
 # OpenSVJ
 
-Účetnictví domu, ve kterém se dá vyznat. OpenSVJ je open source webová aplikace pro výbor a účetní
-společenství vlastníků jednotek (SVJ): z bankovních výpisů a faktur vede podvojné
-účetnictví, počítá předpisy záloh, hlídá dlužníky, vyúčtovává služby i správu domu
-a připravuje roční uzávěrku. Je zdarma a provozujete ji na vlastním serveru.
+Správa domu, ve které se dá vyznat. OpenSVJ je open source webová aplikace pro výbor a účetní
+společenství vlastníků jednotek (SVJ), kteří chtějí mít hospodaření domu pod kontrolou:
+z bankovních výpisů a faktur vede podvojné účetnictví, počítá předpisy záloh, hlídá dlužníky,
+vede vlastníky a rozhodnutí shromáždění, posílá vlastníkům upomínky a vyúčtování a připravuje
+roční uzávěrku. Je zdarma a provozujete ji na vlastním serveru.
 
 [Web projektu](https://jonasjancarik.github.io/opensvj/) ·
 [Návod](docs/navod.md) ·
