@@ -55,3 +55,42 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 - Upozornění pro výbor e-mailem (blížící se lhůty, nové faktury, dluhy).
 - Automatický zápis vrácených e-mailů (bounce) do zásilek.
 - Export do Beancountu a pro programy účetních.
+
+## 4. Správa domu (předběžné, k promyšlení)
+
+Zatím jen náměty, nic z toho není rozhodnuté ani rozvržené. Cílem je, aby aplikace
+pokryla i správu domu mimo peníze: tedy to, co slogan „Správa domu“ slibuje. Než se
+do čehokoli pustíme, je potřeba vyjasnit, jak to navázat na agentní wiki, kterou už
+vlastní SVJ pro správu domu používá: co má žít ve wiki, co v aplikaci a jestli má
+aplikace wiki číst, zapisovat do ní, nebo ji nahradit.
+
+Náměty v pořadí, ve kterém na sebe navazují:
+
+1. **Smlouvy s dodavateli:** dodavatel, předmět, cena, platnost, výpovědní lhůta,
+   automatické prodloužení. Faktura se spáruje se smlouvou a aplikace upozorní, když
+   neodpovídá smluvní ceně; hlídá blížící se výpověď.
+2. **Revize a povinné kontroly:** kalendář povinností (výtahy, plyn, elektro,
+   hromosvody, komíny, hasicí přístroje, PENB) s četností podle předpisu, dodavatelem
+   ze smlouvy, datem příští kontroly, revizní zprávou a zjištěnými závadami.
+3. **Opravy a závady:** hlášení, stav (nahlášeno → objednáno → hotovo), nabídky
+   dodavatelů, faktura a zaúčtování z fondu oprav. Plán oprav na více let napojený na
+   fond oprav: stačí naspořené peníze, a jaká by musela být záloha.
+4. **Shromáždění a hlasování per rollam:** pozvánka a lhůty podle stanov, prezenční
+   listina s podíly hlasů, usnášeníschopnost a většiny podle OZ, návrh zápisu;
+   per rollam podle § 1209–1211 OZ. Výsledek se zapíše do evidence rozhodnutí, na
+   kterou už navazují předpisy záloh.
+5. **Komunikace s vlastníky:** oznámení a hromadné e-maily s evidencí doručení
+   (staví na doručování dokumentů). Později portál pro vlastníky: předpis, platby,
+   dluh, vyúčtování, dokumenty domu, hlášení odečtů a závad.
+6. **Dokumenty domu:** stanovy, prohlášení vlastníka, pojistné smlouvy, projektová
+   dokumentace, zápisy, revizní zprávy. Staví na podkladech a přílohách z oddílu 2.
+7. **Pojištění a pojistné události:** pojistná smlouva, hlášení škody, sledování
+   plnění (účtování pojistného plnění už aplikace má).
+
+Otevřené otázky:
+
+- Rozdělení mezi aplikaci a agentní wiki (viz výše).
+- Per rollam a portál pro vlastníky jsou velké celky s vlastními nároky na přístupy
+  a bezpečnost; vyplatí se je dělat, nebo stačí odkazovat jinam?
+- Dokud aplikace neumí aspoň smlouvy a revize, web neslibuje, že nahradí správcovskou
+  firmu.
