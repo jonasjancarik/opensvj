@@ -86,6 +86,7 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 | `naklady.odpis_pohledavky` | odpis nedobytné pohledávky | 543100 |
 | `uvery`, `naklady.uroky_uver` | dlouhodobý úvěr a jeho úroky | 951100, 544100 |
 | `pohledavky_uver`, `zalohy_dlouhodobe_uver` | podíly vlastníků na splácení úvěru a zálohy na něj | 378100, 955300 |
+| `vynosy.zuctovani_dlouhodobych_zaloh` | úroky z úvěru pokryté z fondu oprav nebo ze záloh na úvěr | 649400 |
 | `pohledavky_dotace`, `narok_dotace`, `vynosy.dotace` | nárok na dotaci a její použití | 378200, 346100, 691100 |
 | `pohledavky_najemci`, `prijmy_vlastniku` | nájemné ze společných částí a závazek vůči vlastníkům, kterým patří | 378300, 379200 |
 | `naklady.odmeny`, `zavazky_odmeny` | odměny členů výboru | 523100, 379100 |

@@ -28,9 +28,6 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
 
 ## 1. Účetní oblasti
 
-- **Úvěr:** výpočet podílů jednotek na jistině, splátka jako složka měsíčního předpisu,
-  ve vyúčtování záloh na správu odlišit náklady kryté zálohou na úvěr (955300) od běžného
-  fondu oprav, v potvrzení o dluzích při prodeji ukázat nesplacený zbytek podílu na úvěru.
 - **Majetek:** evidence hmotného i nehmotného majetku, odpisový plán, výpočet a zaúčtování
   odpisů, krytí přes fond 911.
 - **Nezálohové příspěvky:** předpis a účtování příspěvků jako výnosů, fond ze zisku 911.

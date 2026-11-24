@@ -184,6 +184,30 @@ Dvě pravidla omezují, kam se náklad smí zařadit:
 - Každý měsíc je jeden zápis v deníku (doklad `PR <rok>-<měsíc>`) s řádky po jednotkách
   a složkách. Opakované zaúčtování téhož měsíce nic nezdvojí.
 
+### Uver
+
+`Uver(nazev, cislo_uctu, jistina, rozhodnuti, predepsano_dne, prvni_splatka,
+pocet_splatek, uroky_hradi, podily)`
+
+- Jistina se rozdělí na jednotky podle podílů platných v den předpisu, metodou největšího
+  zbytku po celých korunách (u jistiny v haléřích na haléře). Podíly se uloží s úvěrem,
+  takže pozdější změna podílů splátky nemění.
+- Celý podíl se předepíše jedním zápisem (`uver-predpis-mimoradnych-zaloh`, 378100 /
+  955300). Splátka jednotky je podíl dělený počtem splátek zaokrouhlený nahoru na koruny,
+  poslední splátka je zbytek a po splacení podílu se už nepředepisuje. V měsíčním předpisu
+  je to složka s kódem `UVER-<id>` a rolí `pohledavky_uver` (311 / 378).
+- Všechny řádky úvěru nesou kód `UVER-<id>` v dimenzi služby, takže zůstatky jdou sečíst po
+  úvěru i po jednotce přes všechny roky. Párovací symbol se nepoužívá, aby šly stornovat
+  jednotlivé měsíční předpisy.
+- První splátka musí být v měsíci, jehož předpis ještě není zaúčtovaný, a rozhodnutí musí
+  být rozhodnutím shromáždění. Předpis podílů nejde stornovat, když na něj navazuje
+  jiný platný zápis se stejným kódem (splátka, úroky, úhrada faktury).
+- Faktura druhu `UVER` se čerpá přímo ze záloh na úvěr (`cerpani-zalohy-na-uver`,
+  955300 / 321), stejně jako oprava z fondu oprav. Banka ji zaplatí z úvěru (321 / 951).
+- Úroky jsou náklad (544100) a poplatky ostatní náklad položky správy. Když úroky podle
+  rozhodnutí platí fond oprav nebo zálohy na úvěr, `uver-kryti-uroku` je k 31. 12. pokryje
+  (955100 nebo 955300 / 649400) a vyúčtování správy je pak mezi nezahrnutými náklady nemá.
+
 ### Saldo
 
 Saldo jednotky = předpisy + výsledky vyúčtování + ostatní pohledávky − přiřazené platby.
@@ -490,6 +514,9 @@ Porovnají se s předepsanými zálohami jednotky na tutéž položku a rozdíl 
 nebo přeplatek jednotky. Výnosy přiřazené k položce (pojistné plnění na opravu, dotace na
 úroky) náklady té položky snižují. Nedoplatek je splatný 30. 4. dalšího roku, stejně jako
 u služeb (§ 7 zákona 67/2013), pokud stanovy neurčí jinak.
+
+Opravy hrazené z fondu oprav a ze záloh na úvěr a úroky z úvěru pokryté z dlouhodobých
+záloh se do vyúčtování nezahrnují, ale vypíšou se zvlášť podle zdroje.
 
 **V aplikaci:** hotové, stránka Vyúčtování a zápis `vyuctovani-spravy`.
 

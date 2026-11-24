@@ -93,6 +93,22 @@ testy a data jsou mimo veřejný repozitář.
   pozdější den šla do minusu, neprojde, pokladní kniha má průběžný zůstatek a výdaj
   s položkou správy je ve vyúčtování správy.
 
+### Úvěr
+
+Příklad zateplení z příručky (kapitola 5):
+
+- Jistina 1 032 000 Kč na 120 splátek: na 1/8 600 podílu připadne 120 Kč, jednotka 1001/6
+  splatí 74 880 Kč po 624 Kč měsíčně, dům 8 600 Kč měsíčně. Rozhodnutí výboru a první
+  splátka v už zaúčtovaném měsíci neprojdou.
+- Splátka je v předpisu od zvoleného měsíce, oznámení o zálohách ji ukáže jako změnu
+  a zbytek podílu jednotky k datu bere jen zaúčtované splátky.
+- Jednotka s malým podílem splácí zaokrouhleně nahoru a poslední splátka je zbytek.
+- Předpis podílů nejde stornovat, když na něj navazují splátky.
+- Faktura z úvěru se čerpá ze záloh na úvěr, úhrada víc, než kolik z faktury zbývá,
+  neprojde, splátka bez peněz na cestě neprojde, úroky jde pokrýt až k 31. 12. a jen
+  jednou. Vyúčtování správy pak úroky mezi nezahrnutými nemá a ukáže, co platil fond
+  oprav a co zálohy na úvěr.
+
 ### Vlastníci, měřidla a rozhodnutí
 
 - Období vlastnictví jedné jednotky na sebe navazují a nepřekrývají se.

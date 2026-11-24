@@ -131,19 +131,21 @@ pro kupujícího se vyplatí uvést i tento zbytek, i když dluhem prodávajíc�
 
 ## V aplikaci
 
-- Katalog má operace pro úvěr v [`uvery-dotace.yaml`](../../catalogue/uvery-dotace.yaml):
-  `uver-uhrada-faktury`, `uver-predpis-mimoradnych-zaloh`, `uver-splatka-do-predpisu`,
-  `uver-urok` a `uver-splatka` (odchod z běžného účtu a příchod na úvěrový účet přes 261).
-  Všechny mají stav `navrh` a v praxi je zatím nikdo nepoužil.
-- Ukázkový profil pro ně má role `uvery` (951100), `pohledavky_uver` (378100),
-  `zalohy_dlouhodobe_uver` (955300) a `naklady.uroky_uver` (544100).
-- Podíly jednotek na jistině je zatím nutné spočítat ručně a předat operaci
-  `uver-predpis-mimoradnych-zaloh` jako seznam. Měsíční předpis splátky do předpisu
-  jednotky sám nepřidá.
-- Vyúčtování záloh na správu zatím s úvěrem nepočítá: neví, že úroky a oprava placená
-  z úvěru se mají uhradit ze zálohy na analytice 955300.
-- Potvrzení o dluzích při prodeji jednotky ukazuje splatné dluhy. Nesplacený zbytek podílu
-  na úvěru v něm zatím není.
+- Úvěr se zadá na stránce Úvěry (viz [návod](../navod.md#úvěry)). Aplikace rozdělí
+  jistinu podle podílů, předepíše podíly na 378/955 analytika úvěr a splátky sama přidává
+  do měsíčních předpisů. Používá jen zálohové příspěvky; nezálohové splácení zatím neumí.
+- Účtuje jinak než tabulka výše v jednom bodě: oprava hrazená z úvěru nejde přes náklady
+  546 a stanovení příspěvků na konci roku, ale čerpá se rovnou ze zálohy (955 analytika
+  úvěr / 321), stejně jako oprava z fondu oprav. Výsledek hospodaření je stejně nulový.
+  Úroky jdou do nákladů (544) a k 31. 12. se pokryjí ze záloh (955 / 649), poplatky jdou
+  na vybranou položku správy a vyúčtují se s provozními zálohami.
+- Vyúčtování záloh na správu ukazuje zvlášť, co zaplatil fond oprav a co zálohy na úvěr,
+  a potvrzení o dluzích při prodeji jednotky uvede nesplacený zbytek podílu.
+- Jednorázové doplacení podílu aplikace zatím neumí, stejně jako úpravu založeného úvěru;
+  chyba se opraví stornem předpisu podílů, dokud není zaúčtovaná žádná splátka.
+- Operace jsou v [`uvery-dotace.yaml`](../../catalogue/uvery-dotace.yaml) a ukázkový profil
+  má role `uvery` (951100), `pohledavky_uver` (378100), `zalohy_dlouhodobe_uver` (955300),
+  `naklady.uroky_uver` (544100) a `vynosy.zuctovani_dlouhodobych_zaloh` (649400).
 
 ## Příklad
 

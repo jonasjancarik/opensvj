@@ -10,6 +10,7 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Jednou na začátku | [Počáteční stavy](#počáteční-stavy), [Vlastníci](#vlastníci), [Měřidla](#měřidla), [Rozhodnutí](#rozhodnutí) |
 | Každý měsíc | [Předpisy](#předpisy), [Banka](#banka), [Faktury](#faktury), [Pokladna](#pokladna), [Dlužníci](#dlužníci) |
 | Při změně záloh | [Oznámení o výši záloh](#oznámení-o-výši-záloh), [Mimořádná záloha](#mimořádná-záloha), [Rozesílání dokumentů](#rozesílání-dokumentů) |
+| Když si SVJ vezme úvěr | [Úvěry](#úvěry) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
 | Kdo co změnil | [Historie změn](#historie-změn) |
@@ -49,6 +50,8 @@ pozdější výpis platbu nezdvojí, protože se párují podle čísla transakc
   ne: na stránce Deník se k němu interním dokladem zapíše náhradní doklad, tedy co se
   koupilo, kdo nákup zadal a kdo ho schválil, a vybere se položka správy, ze které se
   platí. Dokud náhradní doklad chybí, uzávěrka roku na výdaj upozorní.
+- Splátka úvěru odchází z běžného účtu jako splátka úvěru z provozního účtu. Peníze
+  jsou pak na cestě, dokud se na stránce Úvěry nezapíše, že dorazily na úvěrový účet.
 - Výběr hotovosti z účtu do pokladny se v Bance zaúčtuje jako výběr do pokladny. Na
   stránce Pokladna se pak stejná částka zapíše jako příjem.
 - Operace, které musí potvrdit účetní (například nespárovaný příjem), zatím zaúčtovat nejde.
@@ -78,7 +81,9 @@ stránka jen upozorní, že je potřeba ho doplnit.
 Přijatá faktura se zadá na stránce Faktury: dodavatel, za co je (teplo, úklid, správa,
 oprava z fondu oprav…), částka, DUZP a splatnost, nepovinně číslo faktury, VS, účet a IČO
 dodavatele. Zadáním se faktura schvaluje a hned se zaúčtuje podle druhu nákladu; u opravy
-z fondu oprav se musí uvést, kdo ji schválil. Stejné číslo faktury od stejného dodavatele
+z fondu oprav nebo opravy hrazené z úvěru se musí uvést, kdo ji schválil. Oprava hrazená
+z úvěru se nabízí, jen když má SVJ v profilu účty pro úvěr; platí se ze záloh vlastníků
+na úvěr, ne z běžného fondu oprav, a zaplatí ji banka (viz [Úvěry](#úvěry)). Stejné číslo faktury od stejného dodavatele
 podruhé zadat nejde. Seznam ukazuje, kolik z každé faktury zbývá zaplatit a co je po
 splatnosti.
 
@@ -110,7 +115,8 @@ v Oznámení vlastníkům a v Rozhodnutích. Upravit nebo smazat jde jen verzi z
 v aplikaci, a to jen dokud podle ní není zaúčtovaný žádný měsíc.
 
 Složky jsou ve třech skupinách: fond oprav, zálohy na správu domu (pojištění, správce,
-revize, drobné opravy) a zálohy na služby. Zálohy na správu nejsou služby podle § 2 zákona
+revize, drobné opravy) a zálohy na služby. Splátky úvěru jsou čtvrtá skupina; nezadávají
+se tady, ale přidá je stránka [Úvěry](#úvěry). Zálohy na správu nejsou služby podle § 2 zákona
 67/2013, a proto se nevyúčtovávají spolu se službami, ale zvlášť.
 
 Na stránce Předpisy se zaúčtuje předpis za měsíc jedním zápisem pro všechny jednotky.
@@ -127,6 +133,36 @@ společných částech platných v den předpisu, na haléře přesně. Rozhodnu
 zapsané na stránce Rozhodnutí a jde vybrat jen rozhodnutí shromáždění. Předepsaná záloha
 jde do fondu oprav a u každé jednotky se na stránce Dlužníci objeví jako samostatný dluh
 se splatností, kterou určilo shromáždění. Opravit ji jde stornem zápisu na stránce Deník.
+
+## Úvěry
+
+Když shromáždění schválí úvěr na opravu nebo investici, jehož jistinu splatí vlastníci
+podle podílů, zadá se na stránce Úvěry: na co je, jistina, rozhodnutí shromáždění, den
+předpisu podílů, od kterého měsíce se splácí, počet měsíčních splátek a z čeho se platí
+úroky (fond oprav, mimořádné zálohy na úvěr, nebo některá položka správy). Formulář hned
+ukáže, kolik jistiny připadne na každou jednotku podle podílů platných v den předpisu
+a kolik bude měsíčně splácet. Splátka je podíl jednotky dělený počtem splátek,
+zaokrouhlený nahoru na koruny, poslední splátka je zbytek. Jednotka s malým podílem proto
+může mít splaceno o něco dřív než ostatní.
+
+Založením se celý podíl každé jednotky předepíše najednou jako mimořádná záloha na úvěr
+a splátka se od zvoleného měsíce sama přidá do měsíčního předpisu jako složka Splátka
+úvěru. Na stránce Předpisy je ve skupině Splátky úvěru a v oznámení o výši záloh se ukáže
+jako změna. Začít jde jen měsícem, jehož předpis ještě není zaúčtovaný. Založený úvěr
+nejde upravit: když je v něm chyba, stornuje se předpis podílů na stránce Deník a úvěr se
+zadá znovu. To jde jen do zaúčtování první splátky.
+
+U úvěru se zapisuje, co je na výpisu z úvěrového účtu:
+
+- banka zaplatila fakturu z úvěru (faktura se nejdřív zadá na stránce Faktury jako oprava
+  hrazená z úvěru),
+- banka připsala úroky a poplatky; u poplatků se vybírá položka správy, ze které se platí,
+- splátka dorazila na úvěrový účet; odejít z běžného účtu musí nejdřív v Bance.
+
+Stránka ukazuje, kolik zbývá splatit bance, kolik vlastníci ještě nesplatili a rozpis po
+jednotkách. Úroky, které podle rozhodnutí platí fond oprav nebo mimořádné zálohy na úvěr,
+se po skončení roku uhradí tlačítkem Uhradit úroky za rok; do té doby je vyúčtování
+správy ukazuje mezi náklady, které k žádné položce nepatří.
 
 ## Dlužníci
 
@@ -190,7 +226,9 @@ Změna podílů se zapíše do historie změn.
 
 Ke každé jednotce jde vytisknout potvrzení o dluzích pro prodej (§ 1186 odst. 3 OZ). Na
 kupujícího přejdou jen dluhy uvedené v potvrzení, proto stránka varuje, když nejsou
-zaúčtované všechny bankovní pohyby nebo je poslední výpis starší než týden.
+zaúčtované všechny bankovní pohyby nebo je poslední výpis starší než týden. Když jednotka
+splácí podíl na úvěru, potvrzení uvede i nesplacený zbytek podílu a měsíční splátku.
+Dluhem prodávajícího nejsou, ale kupující s jednotkou převezme povinnost je splácet.
 
 ## Měřidla
 
@@ -276,6 +314,12 @@ dalšího roku, stejně jako u vyúčtování služeb (§ 7 zákona 67/2013). N�
 položce správy nepatří (bankovní poplatky, převod do fondu oprav), stránka vypíše zvlášť
 a kam patří, rozhodne účetní. Výnosy přiřazené k položce správy, třeba pojistné plnění
 na opravu, náklady té položky snižují.
+
+Opravy placené z fondu oprav nebo z úvěru do vyúčtování záloh na správu nepatří, protože
+je vlastníci zaplatili dlouhodobými zálohami. Stránka je přesto vypíše v části Zaplaceno
+z fondu oprav (a ze záloh na úvěr, když nějaký úvěr je), aby bylo vidět, co z kterých
+peněz šlo. Úroky z úvěru, které podle rozhodnutí platí fond oprav nebo zálohy na úvěr, jsou
+mezi nezahrnutými náklady, dokud se na stránce Úvěry neuhradí k 31. 12.
 
 ## Vyúčtování služeb
 
