@@ -10,7 +10,10 @@ na poplatky) náklady té položky snižují: vlastníci nesou jen to, co výnos
 
 Co se v roce zaplatilo z dlouhodobých záloh (opravy z fondu oprav, oprava placená z úvěru,
 úroky z úvěru hrazené z fondu oprav nebo ze zálohy na úvěr), se do vyúčtování nezapočte;
-vyúčtování to ukáže zvlášť, s rozlišením fondu oprav a zálohy na úvěr.
+vyúčtování to ukáže zvlášť, s rozlišením fondu oprav a zálohy na úvěr. Stejně tak pořízení
+majetku z fondu oprav. Odpisy majetku, jehož pořízení kryl fond (oprav nebo ze zisku), už
+vlastníci zaplatili při pořízení; odpisy majetku hrazeného provozními zálohami jsou
+nákladem položky správy.
 """
 
 from collections.abc import Iterable
@@ -21,7 +24,7 @@ from fractions import Fraction
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, podily, predpisy, vlastnicka_obdobi
+from . import denik, majetek, podily, predpisy, vlastnicka_obdobi
 from .db import RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import na_text
@@ -50,6 +53,7 @@ CERPANI = {
     "cerpani-fo": "Opravy a údržba",
     "cerpani-zalohy-na-uver": "Opravy a investice placené z úvěru",
     "uver-kryti-uroku": "Úroky z úvěru",
+    majetek.OPERACE_ZARAZENI: "Pořízení majetku",
 }
 OPERACE_KRYTI = "uver-kryti-uroku"
 
@@ -161,6 +165,8 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
     for sluzba, role, castka in naklady:
         if sluzba in polozky:
             polozky[sluzba].naklady += int(castka)
+        elif role == "naklady.odpisy" and (sluzba or "").startswith("MAJ-"):
+            continue  # majetek krytý fondem: vlastníci ho zaplatili při pořízení
         elif castka:
             popis = NAZVY_NAKLADU.get(role, role)
             nezahrnuto[popis] = nezahrnuto.get(popis, 0) + int(castka)
@@ -269,6 +275,11 @@ def proc_nejde(
         return None
     if dnes < date(v.rok, 12, 31):
         return f"Vyúčtování půjde zaúčtovat od 31. 12. {v.rok}, až budou známé náklady celého roku."
+    if any(m.kryti not in majetek.FONDY for m, _ in majetek.k_odepsani(session, v.rok)):
+        return (
+            f"Nejdřív zaúčtujte odpisy majetku za rok {v.rok} na stránce Majetek; "
+            "u majetku placeného z provozních záloh patří do vyúčtování."
+        )
     chybi = predpisy.dalsi_k_zauctovani(session, nastaveni, v.rok)
     if chybi is not None:
         mesic = predpisy.MESICE[chybi - 1]

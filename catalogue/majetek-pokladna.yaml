@@ -82,13 +82,13 @@
         - [d, pohledavky_vlastnici, "4800.00", {jednotka: "1001/5"}]
 
 - id: majetek-porizeni
-  nazev: Pořízení dlouhodobého hmotného majetku
+  nazev: Pořízení dlouhodobého majetku
   kdy: SVJ kupuje věc pro správu domu nad hranici dlouhodobého majetku ze svého vnitřního předpisu (nebo pozemek či jednotku, ty vždy).
   stav: navrh
   doklad: FP
-  vstupy: {protistrana: dodavatel, castka: pořizovací cena včetně souvisejících nákladů}
+  vstupy: {protistrana: dodavatel, castka: pořizovací cena včetně souvisejících nákladů, porizovani: "majetek_porizovani (hmotný) | majetek_nehmotny_porizovani (nehmotný)"}
   zapisy:
-    - md: majetek_porizovani
+    - md: "{porizovani}"
       d: dodavatele
       castka: "{castka}"
       dimenze: {protistrana: "{protistrana}"}
@@ -97,69 +97,150 @@
     - Po dokončení se zařadí (majetek-zarazeni) a od dalšího měsíce účetně odpisuje.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 69–71 (kap. 9.1)"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002 Sb., § 7 odst. 1 a § 8 odst. 10 a 12"}
   platnost: {od: 2014-01-01}
   priklady:
-    - nazev: Sekačka na trávu do společné zahrady
-      vstupy: {protistrana: prodejce, castka: "64000.00"}
+    - nazev: Robotická sekačka na dvůr
+      vstupy: {protistrana: prodejce, castka: "36000.00", porizovani: majetek_porizovani}
       ocekavane:
-        - [md, majetek_porizovani, "64000.00", {protistrana: prodejce}]
-        - [d, dodavatele, "64000.00", {protistrana: prodejce}]
+        - [md, majetek_porizovani, "36000.00", {protistrana: prodejce}]
+        - [d, dodavatele, "36000.00", {protistrana: prodejce}]
 
 - id: majetek-zarazeni
   nazev: Zařazení majetku do užívání a určení zdroje krytí
   kdy: Majetek je připravený k užívání.
   stav: navrh
   doklad: ID
-  vstupy: {castka: pořizovací cena, zdroj: "zalohy_sprava.POLOZKA | zalohy_dlouhodobe"}
+  vstupy:
+    majetek: "role majetku: majetek, majetek_stavby, majetek_pozemky, majetek_nehmotny"
+    porizovani: "role pořizování: majetek_porizovani nebo majetek_nehmotny_porizovani"
+    castka: pořizovací cena
+    zdroj: "zalohy_dlouhodobe (fond oprav) | fond_ze_zisku; prázdné, když odpisy hradí provozní zálohy"
+    kryti: "částka krytí přes vlastní jmění (pořizovací cena, nebo 0)"
   zapisy:
-    - md: majetek
-      d: majetek_porizovani
+    - md: "{majetek}"
+      d: "{porizovani}"
       castka: "{castka}"
     - md: "{zdroj}"
       d: zdroj_majetku
-      castka: "{castka}"
+      castka: "{kryti}"
   pravidla:
-    - Kniha uvádí dvě možnosti krytí; tady je ta, kdy se pořízení uhradí přímo ze záloh vlastníků (324 nebo 955) proti 901.
-    - Zdroj krytí se pak postupně vrací do záloh ve výši účetních odpisů (majetek-odpisy), aby odpisy záloh podruhé nezatížily.
+    - Kniha uvádí dvě možnosti krytí; tady je ta rozvahová, kdy se pořízení uhradí přímo z fondu oprav (955) nebo u nezálohových příspěvků z fondu ze zisku (911) proti vlastnímu jmění (901).
+    - Zdroj krytí se pak postupně vrací ve výši účetních odpisů (majetek-odpisy), aby odpisy fond podruhé nezatížily.
+    - Když pořízení nekryje žádný fond, vlastníci ho zaplatí postupně přes odpisy, které jdou do vyúčtování položky správy (počítač pro výbor rovným dílem, sekačka podle podílů).
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 70–71 (kap. 9.1)"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002 Sb., § 18 odst. 1 (vlastní jmění)"}
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Sekačka placená z fondu oprav
-      vstupy: {castka: "64000.00", zdroj: zalohy_dlouhodobe}
+      vstupy: {majetek: majetek, porizovani: majetek_porizovani, castka: "38400.00", zdroj: zalohy_dlouhodobe, kryti: "38400.00"}
       ocekavane:
-        - [md, majetek, "64000.00", {}]
-        - [d, majetek_porizovani, "64000.00", {}]
-        - [md, zalohy_dlouhodobe, "64000.00", {}]
-        - [d, zdroj_majetku, "64000.00", {}]
+        - [md, majetek, "38400.00", {}]
+        - [d, majetek_porizovani, "38400.00", {}]
+        - [md, zalohy_dlouhodobe, "38400.00", {}]
+        - [d, zdroj_majetku, "38400.00", {}]
+    - nazev: Software odepisovaný přes provozní zálohy
+      vstupy: {majetek: majetek_nehmotny, porizovani: majetek_nehmotny_porizovani, castka: "90000.00", zdroj: "", kryti: "0"}
+      ocekavane:
+        - [md, majetek_nehmotny, "90000.00", {}]
+        - [d, majetek_nehmotny_porizovani, "90000.00", {}]
 
 - id: majetek-odpisy
-  nazev: Roční účetní odpisy majetku a proúčtování zdroje krytí
+  nazev: Roční účetní odpis majetku a vrácení zdroje krytí
   kdy: Nejpozději k rozvahovému dni (ČUS 409 odst. 4.3).
   stav: navrh
   doklad: ID
-  vstupy: {castka: odpis za rok, zdroj: "role záloh, ze kterých byl majetek pořízen"}
+  vstupy:
+    opravky: "role oprávek: opravky_majetku, opravky_staveb, opravky_nehmotneho"
+    castka: odpis za rok
+    sluzba: "položka správy, když odpisy hradí provozní zálohy; jinak prázdné"
+    zdroj: "zalohy_dlouhodobe | fond_ze_zisku | prázdné"
+    vraceni: "vrácení zdroje krytí (odpis, nebo 0)"
+    kryti: "úhrada odpisu z fondu oprav (odpis u fondu oprav, jinak 0)"
   zapisy:
     - md: naklady.odpisy
-      d: opravky_majetku
+      d: "{opravky}"
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
     - md: zdroj_majetku
       d: "{zdroj}"
-      castka: "{castka}"
+      castka: "{vraceni}"
+    - md: "{zdroj}"
+      d: vynosy.zuctovani_dlouhodobych_zaloh
+      castka: "{kryti}"
   pravidla:
-    - Odpisy jsou náklad na správu, ale vlastníci majetek zaplatili už při pořízení; proto se ve stejné výši vrací zdroj krytí z 901 do záloh.
+    - Odepisuje se rovnoměrně po měsících od měsíce po zařazení, po celých korunách tak, aby součet odpisů přesně dal pořizovací cenu.
+    - Odpisy jsou náklad na správu, ale vlastníci majetek zaplatili už při pořízení; proto se ve stejné výši vrací zdroj krytí z 901 do fondu.
+    - U fondu oprav se odpis zároveň uhradí z fondu (955/649) jako každý jiný náklad, který fond kryje; fond oprav se tak kvůli majetku sníží jen jednou, při zařazení. Výsledek hospodaření je nulový.
+    - U fondu ze zisku (nezálohové příspěvky) je odpis ztrátou roku a vrácení 901/911 fond doplní (Durec s. 71).
     - Po úplném odepsání je 901 nulový.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 70–71 (kap. 9.1)"}
+    - {typ: zakon, odkaz: "zákon 563/1991 Sb., § 28 odst. 1 a 6"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Odpis sekačky za červenec až prosinec, fond oprav
+      vstupy: {opravky: opravky_majetku, castka: "3200.00", sluzba: "", zdroj: zalohy_dlouhodobe, vraceni: "3200.00", kryti: "3200.00"}
+      ocekavane:
+        - [md, naklady.odpisy, "3200.00", {}]
+        - [d, opravky_majetku, "3200.00", {}]
+        - [md, zdroj_majetku, "3200.00", {}]
+        - [d, zalohy_dlouhodobe, "3200.00", {}]
+        - [md, zalohy_dlouhodobe, "3200.00", {}]
+        - [d, vynosy.zuctovani_dlouhodobych_zaloh, "3200.00", {}]
+    - nazev: Odpis softwaru, který platí správa domu
+      vstupy: {opravky: opravky_nehmotneho, castka: "30000.00", sluzba: SPRAVA, zdroj: "", vraceni: "0", kryti: "0"}
+      ocekavane:
+        - [md, naklady.odpisy, "30000.00", {sluzba: SPRAVA}]
+        - [d, opravky_nehmotneho, "30000.00", {}]
+
+- id: majetek-vyrazeni
+  nazev: Vyřazení majetku
+  kdy: Majetek se prodá, zničí nebo přestane používat.
+  stav: navrh
+  doklad: ID
+  vstupy:
+    majetek: role majetku
+    opravky: role oprávek
+    cena: pořizovací cena
+    zbyva: "zůstatková cena, která se doodepíše (0 u plně odepsaného)"
+    sluzba: "položka správy, když odpisy hradí provozní zálohy; jinak prázdné"
+    zdroj: "zalohy_dlouhodobe | fond_ze_zisku | prázdné"
+    vraceni: "vrácení zdroje krytí ve výši zůstatkové ceny, nebo 0"
+    kryti: "úhrada doodepsání z fondu oprav, nebo 0"
+  zapisy:
+    - md: naklady.odpisy
+      d: "{opravky}"
+      castka: "{zbyva}"
+      dimenze: {sluzba: "{sluzba}"}
+    - md: zdroj_majetku
+      d: "{zdroj}"
+      castka: "{vraceni}"
+    - md: "{zdroj}"
+      d: vynosy.zuctovani_dlouhodobych_zaloh
+      castka: "{kryti}"
+    - md: "{opravky}"
+      d: "{majetek}"
+      castka: "{cena}"
+  pravidla:
+    - Vyřazuje-li se majetek dřív, než je odepsaný, nejdřív se doodepíše zůstatková cena; plně odepsaný majetek se jen odúčtuje proti oprávkám.
+    - Příjem z prodeje majetku je samostatný výnos (641 nebo 648 podle účetní) a do tohoto zápisu nepatří.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 71 (kap. 9.1)"}
   platnost: {od: 2014-01-01}
   priklady:
-    - nazev: Roční odpis sekačky
-      vstupy: {castka: "8000.00", zdroj: zalohy_dlouhodobe}
+    - nazev: Rozbitá sekačka vyřazená po dvou letech
+      vstupy: {majetek: majetek, opravky: opravky_majetku, cena: "38400.00", zbyva: "25600.00", sluzba: "", zdroj: zalohy_dlouhodobe, vraceni: "25600.00", kryti: "25600.00"}
       ocekavane:
-        - [md, naklady.odpisy, "8000.00", {}]
-        - [d, opravky_majetku, "8000.00", {}]
-        - [md, zdroj_majetku, "8000.00", {}]
-        - [d, zalohy_dlouhodobe, "8000.00", {}]
+        - [md, naklady.odpisy, "25600.00", {}]
+        - [d, opravky_majetku, "25600.00", {}]
+        - [md, zdroj_majetku, "25600.00", {}]
+        - [d, zalohy_dlouhodobe, "25600.00", {}]
+        - [md, zalohy_dlouhodobe, "25600.00", {}]
+        - [d, vynosy.zuctovani_dlouhodobych_zaloh, "25600.00", {}]
+        - [md, opravky_majetku, "38400.00", {}]
+        - [d, majetek, "38400.00", {}]
 
 - id: zasoby-konec-roku
   nazev: Nespotřebované zásoby na konci roku (způsob B)

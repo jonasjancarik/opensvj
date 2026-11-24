@@ -474,6 +474,41 @@ class Uver(Zaklad):
         return self.zapis is not None and not self.zapis.stornovany
 
 
+class Majetek(Zaklad):
+    """Karta dlouhodobého majetku SVJ (viz majetek.py)."""
+
+    __tablename__ = "majetek"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    nazev: Mapped[str] = mapped_column(String(150))
+    inventarni_cislo: Mapped[str] = mapped_column(String(32), default="")
+    poznamka: Mapped[str] = mapped_column(Text, default="")
+    druh: Mapped[str] = mapped_column(String(16))  # movity | stavba | pozemek | nehmotny
+    zarazeno: Mapped[date] = mapped_column(Date)
+    cena: Mapped[int] = mapped_column(BigInteger)
+    doba_mesicu: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    kryti: Mapped[str] = mapped_column(String(32))  # fond_oprav | fond_ze_zisku | položka
+    prevzato_k: Mapped[date | None] = mapped_column(Date, nullable=True)
+    opravky_prevzate: Mapped[int] = mapped_column(BigInteger, default=0)
+    # Zařazení do užívání; u majetku převzatého z počátečních stavů chybí.
+    zapis_id: Mapped[int | None] = mapped_column(ForeignKey("zapis.id"), nullable=True)
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    zapis: Mapped["Zapis | None"] = relationship()
+
+    @property
+    def kod(self) -> str:
+        """Kód karty v dimenzi služby na řádcích deníku."""
+        return f"MAJ-{self.id}"
+
+    @property
+    def platny(self) -> bool:
+        if self.prevzato_k is not None:
+            return True
+        return self.zapis is not None and not self.zapis.stornovany
+
+
 class Dokument(Zaklad):
     """Dokument přesně tak, jak odešel vlastníkovi. Po uložení se nemění (trigger)."""
 

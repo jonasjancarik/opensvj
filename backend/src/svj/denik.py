@@ -23,6 +23,18 @@ STORNO = "storno"
 UZAVERKA = ("uzavreni-vysledkovych", "uzavreni-rozvahovych")
 # Předpis podílů na úvěru: navazují na něj splátky se stejným kódem úvěru (viz uvery.py).
 OPERACE_PODILU_UVERU = "uver-predpis-mimoradnych-zaloh"
+# Zařazení majetku: navazují na něj odpisy a vyřazení se stejným kódem karty (viz majetek.py).
+OPERACE_ZARAZENI_MAJETKU = "majetek-zarazeni"
+# Zápisy, na které navazují další zápisy se stejným kódem v dimenzi služby.
+NAVAZNE = {
+    OPERACE_PODILU_UVERU: (
+        "Na předpis podílů na úvěru navazuje zápis {cislo} (splátka v předpisu záloh nebo"
+        " platba z úvěru). Nejdřív stornujte ten."
+    ),
+    OPERACE_ZARAZENI_MAJETKU: (
+        "Na zařazení majetku navazuje zápis {cislo} (odpis nebo vyřazení). Nejdřív stornujte ten."
+    ),
+}
 
 
 def nestornovany() -> ColumnElement[bool]:
@@ -184,7 +196,7 @@ def storno(
                 f"Na zápis {cislo} navazuje zápis {navazujici[0]}/{navazujici[1]} (např. úhrada"
                 " faktury). Nejdřív stornujte ten."
             )
-    if z.operace == OPERACE_PODILU_UVERU and kontrolovat_navaznost:
+    if z.operace in NAVAZNE and kontrolovat_navaznost:
         kody = {r.sluzba for r in z.radky if r.sluzba}
         splatka = session.execute(
             select(Zapis.poradove_cislo, Zapis.rok)
@@ -198,10 +210,7 @@ def storno(
             .order_by(Zapis.id)
         ).first()
         if splatka:
-            raise ChybaUctovani(
-                f"Na předpis podílů na úvěru navazuje zápis {splatka[0]}/{splatka[1]} (splátka"
-                " v předpisu záloh nebo platba z úvěru). Nejdřív stornujte ten."
-            )
+            raise ChybaUctovani(NAVAZNE[z.operace].format(cislo=f"{splatka[0]}/{splatka[1]}"))
     novy = _novy_zapis(
         session,
         datum=z.datum,

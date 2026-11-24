@@ -47,7 +47,7 @@ function dnes() {
 
 /**
  * Interní doklad podle operace z katalogu: pro věci, které nemají vlastní stránku
- * (časové rozlišení, majetek, dotace, odměny výboru…). Před zaúčtováním ukáže, na které
+ * (časové rozlišení, zásoby, dotace, odměny výboru…). Před zaúčtováním ukáže, na které
  * účty se zápis zapíše.
  */
 export function InterniDoklad({ zauctovano }: { zauctovano: (cislo: string, rok: number) => void }) {

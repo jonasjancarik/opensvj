@@ -1,12 +1,12 @@
 """Interní doklady podle operací z katalogu.
 
-Operace, které nemají vlastní stránku (časové rozlišení, dohadná položka, majetek, dotace,
+Operace, které nemají vlastní stránku (časové rozlišení, dohadná položka, zásoby, dotace,
 odměny výboru…), jde zaúčtovat obecným formulářem. U každé je tu popsané, jaká pole
 formulář ukáže a co v nich jde vybrat; hodnoty se před zaúčtováním zkontrolují. Operace,
 pro kterou profil SVJ nemá všechny účty, se nenabízí.
 
-Operace s vlastní stránkou (předpisy, faktury, úrok z prodlení, odpis dluhu, daň,
-vyúčtování, uzávěrka) se tu záměrně nenabízejí: tam aplikace hlídá víc než formulář.
+Operace s vlastní stránkou (předpisy, faktury, úvěr, majetek, úrok z prodlení, odpis dluhu,
+daň, vyúčtování, uzávěrka) se tu záměrně nenabízejí: tam aplikace hlídá víc než formulář.
 """
 
 from dataclasses import dataclass, field
@@ -86,19 +86,6 @@ FORMULARE: dict[str, Formular] = {
         (Pole("castka", "Součet výnosů, které se převádějí do fondu oprav"),),
         napoveda="Jen když společenství rozhodlo, že jeho výnosy (úroky, pacht, paušální složky "
         "předpisu) zvyšují fond oprav.",
-    ),
-    "majetek-zarazeni": Formular(
-        (
-            Pole("castka", "Pořizovací cena"),
-            Pole("zdroj", "Z čeho byl majetek zaplacen", "zdroj_majetku"),
-        ),
-        napoveda="Majetek je připravený k užívání. Odpisovat se začne od dalšího měsíce.",
-    ),
-    "majetek-odpisy": Formular(
-        (
-            Pole("castka", "Odpis za rok"),
-            Pole("zdroj", "Z čeho byl majetek zaplacen", "zdroj_majetku"),
-        ),
     ),
     "zasoby-konec-roku": Formular(
         (
@@ -201,11 +188,6 @@ def moznosti(profil: Profil, typ: str) -> dict[str, str] | None:
         return {k: u.get("nazev", k) for k, u in profil.sluzby.items()}
     if typ == "naklad_spravy":
         return {k: profil.sprava[k].get("nazev", k) for k in _naklady_spravy(profil)}
-    if typ == "zdroj_majetku":
-        return {"zalohy_dlouhodobe": "Fond oprav"} | {
-            f"zalohy_sprava.{k}": f"Zálohy na správu: {u.get('nazev', k)}"
-            for k, u in profil.sprava.items()
-        }
     return None
 
 

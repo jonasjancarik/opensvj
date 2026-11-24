@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from . import faktury, uvery
+from . import faktury, majetek, uvery
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -90,7 +90,18 @@ def model(x: faktury.StavFaktury) -> Faktura:
     )
 
 
+def _nabizet(kod: str, d: faktury.Druh, prof: profil.Profil) -> bool:
+    """Druhy pro úvěr a majetek jen u SVJ, které pro ně má v nastavení účty."""
+    if kod == "UVER":
+        return uvery.nastaveno(prof)
+    porizovani = d.vstupy.get("porizovani")
+    if porizovani:
+        return porizovani in prof.role and majetek.druhy(prof) != {}
+    return True
+
+
 def _prehled(rok: int) -> Faktury:
+    prof = profil.nacti(nastaveni().profil)
     with sezeni()() as s:
         vse = faktury.prehled(s)
     roku = [x for x in vse if x.faktura.rok == rok or (x.zbyva > 0 and not x.stornovana)]
@@ -99,7 +110,7 @@ def _prehled(rok: int) -> Faktury:
         druhy=[
             Druh(id=k, nazev=d.nazev, skupina=d.skupina)
             for k, d in faktury.DRUHY.items()
-            if k != "UVER" or uvery.nastaveno(profil.nacti(nastaveni().profil))
+            if _nabizet(k, d, prof)
         ],
         dodavatele=sorted({x.faktura.dodavatel for x in vse}, key=str.lower),
         faktury=[model(x) for x in roku],

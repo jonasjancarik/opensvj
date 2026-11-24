@@ -15,6 +15,7 @@ from .api_formulare import router as formulare_router
 from .api_historie import router as historie_router
 from .api_interni_doklady import router as interni_doklady_router
 from .api_lide import router as lide_router
+from .api_majetek import router as majetek_router
 from .api_meridla import router as meridla_router
 from .api_mimoradne_zalohy import router as mimoradne_zalohy_router
 from .api_oznameni import router as oznameni_router
@@ -56,6 +57,7 @@ app.include_router(dluznici_router)
 app.include_router(mimoradne_zalohy_router)
 app.include_router(pokladna_router)
 app.include_router(uvery_router)
+app.include_router(majetek_router)
 app.include_router(oznameni_router)
 app.include_router(formulare_router)
 app.include_router(meridla_router)

@@ -15,6 +15,7 @@ from . import (
     banka,
     denik,
     dluznici,
+    majetek,
     pocatecni,
     predpisy,
     rozhodnuti,
@@ -246,6 +247,8 @@ def kontroly(
             )
         )
 
+    vysledek.extend(_kontroly_majetku(session, profil, zust, rok, k_datu))
+
     bez = rozhodnuti.bez_rozhodnuti(session, profil, nastaveni, rok)
     vysledek.append(
         Kontrola("rozhodnuti", "Výše záloh, klíče a volby mají doložené rozhodnutí", "hotovo")
@@ -291,6 +294,51 @@ def kontroly(
             ),
         )
     )
+    return vysledek
+
+
+def _kontroly_majetku(
+    session: Session, profil: Profil, zust: dict[str, int], rok: int, k_datu: date
+) -> list[Kontrola]:
+    if not majetek.druhy(profil):
+        return []
+    vysledek = []
+    k_odepsani = majetek.k_odepsani(session, rok)
+    if k_odepsani or any(majetek.karty(session)):
+        nazev = "Odpisy majetku za rok jsou zaúčtované"
+        vysledek.append(
+            Kontrola(
+                "odpisy",
+                nazev,
+                "chybi",
+                "Chybí odpisy: "
+                + "; ".join(f"{m.nazev} {_kc(c)}" for m, c in k_odepsani)
+                + ". Zaúčtujte je k 31. 12. na stránce Majetek.",
+                "majetek",
+            )
+            if k_odepsani
+            else Kontrola("odpisy", nazev, "hotovo")
+        )
+    nesoulad = majetek.nesoulad(session, profil, zust, k_datu)
+    nazev = "Evidence majetku odpovídá účtům majetku a oprávek"
+    if nesoulad:
+        vysledek.append(
+            Kontrola(
+                "evidence-majetku",
+                nazev,
+                "chybi",
+                " ".join(
+                    f"{n.nazev} ({n.ucet}): v evidenci {_kc(n.v_evidenci)}, "
+                    f"v účetnictví {_kc(n.v_ucetnictvi)}."
+                    for n in nesoulad
+                )
+                + " Doplňte do evidence majetek převzatý z počátečních stavů, nebo opravte "
+                "zaúčtování.",
+                "majetek",
+            )
+        )
+    elif vysledek:
+        vysledek.append(Kontrola("evidence-majetku", nazev, "hotovo"))
     return vysledek
 
 
@@ -492,6 +540,7 @@ def soupisy(session: Session, profil: Profil, rok: int, k_datu: date) -> list[So
         .order_by(RadekZapisu.ucet)
     ).all()
     role_uctu = profil.role_uctu()
+    karty_majetku = majetek.soupis(session, profil, k_datu)
     vysledek = []
     for ucet, role_radku, z in ucty:
         if ucet[0] in "56" or ucet[:2] in vykazy.NEVYKAZUJE_SE:
@@ -518,6 +567,11 @@ def soupisy(session: Session, profil: Profil, rok: int, k_datu: date) -> list[So
             ]
         elif role == "dodavatele":
             s.polozky = _rozpis_dodavatelu(session, profil, rok, k_datu)
+        elif ucet in karty_majetku:
+            s.polozky = [PolozkaSoupisu(p, c) for p, c in karty_majetku[ucet]]
+            rozdil = int(z) - sum(c for _, c in karty_majetku[ucet])
+            if rozdil:
+                s.polozky.append(PolozkaSoupisu("mimo evidenci majetku", rozdil))
         vysledek.append(s)
     return vysledek
 
@@ -548,7 +602,7 @@ DAN_PODLE_ROLE = {
     "vynosy.cerpani_fondu": ("nezahrnuje", "Čerpání fondu ze zisku minulých let"),
     "vynosy.zuctovani_dlouhodobych_zaloh": (
         "nepredmetne",
-        "Úroky z úvěru hrazené z dlouhodobých záloh vlastníků",
+        "Náklady hrazené z dlouhodobých záloh vlastníků (úroky z úvěru, odpisy majetku)",
     ),
     "vynosy.odepsane_pohledavky": (
         "nepredmetne",

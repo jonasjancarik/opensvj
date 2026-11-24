@@ -30,6 +30,7 @@ from sqlalchemy.orm.util import identity_key
 
 from .db import (
     AuditniZaznam,
+    Majetek,
     Meridlo,
     Obdobi,
     Odecet,
@@ -209,6 +210,28 @@ def _podily_ploche(stav: dict[str, Any]) -> dict[str, str]:
     return vysledek
 
 
+def _kryti_majetku(x: str) -> str:
+    return {"fond_oprav": "fond oprav", "fond_ze_zisku": "fond ze zisku"}.get(
+        x, f"provozní zálohy ({x})"
+    )
+
+
+def _druh_majetku(x: str) -> str:
+    return {
+        "movity": "hmotná movitá věc",
+        "stavba": "stavba nebo jednotka",
+        "pozemek": "pozemek",
+        "nehmotny": "nehmotný majetek",
+    }.get(x, x)
+
+
+def _mesice(x: int | None) -> str:
+    if x is None:
+        return "neodepisuje se"
+    roky, mesice = divmod(x, 12)
+    return f"{roky} let" if not mesice else f"{x} měsíců"
+
+
 def _uroky_hradi(x: str) -> str:
     return {"fond_oprav": "fond oprav", "zaloha_na_uver": "záloha na úvěr"}.get(
         x, f"provozní zálohy ({x})"
@@ -323,6 +346,24 @@ SLEDOVANE: dict[type, Sledovani] = {
         nazev=lambda s, z: f"Podíly jednotek od {_d(z.plati_od)}",
         pole={"zdroj": Pole("Podle čeho"), "podily": Pole("")},
         ploche=_podily_ploche,
+    ),
+    Majetek: Sledovani(
+        "majetek",
+        "Majetek",
+        klic=lambda m: str(m.id),
+        nazev=lambda s, m: f"Majetek: {m.nazev}",
+        pole={
+            "nazev": Pole("Název"),
+            "inventarni_cislo": Pole("Inventární číslo"),
+            "poznamka": Pole("Poznámka"),
+            "druh": Pole("Druh", _druh_majetku),
+            "zarazeno": Pole("Zařazeno", _d),
+            "cena": Pole("Pořizovací cena", kc),
+            "doba_mesicu": Pole("Doba odpisování", _mesice),
+            "kryti": Pole("Pořízení kryje", _kryti_majetku),
+            "prevzato_k": Pole("Převzato z počátečních stavů k", _d),
+            "opravky_prevzate": Pole("Oprávky k převzetí", kc),
+        },
     ),
     Uver: Sledovani(
         "uver",

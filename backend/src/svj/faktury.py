@@ -64,6 +64,18 @@ DRUHY: dict[str, Druh] = {
     "UVER": Druh(
         "Oprava nebo investice hrazená z úvěru", "cerpani-zalohy-na-uver", {}, "Fond oprav"
     ),
+    "MAJETEK": Druh(
+        "Pořízení dlouhodobého majetku (věc, stavba, pozemek)",
+        "majetek-porizeni",
+        {"porizovani": "majetek_porizovani"},
+        "Majetek",
+    ),
+    "MAJETEK_NEHMOTNY": Druh(
+        "Pořízení nehmotného majetku (software na zakázku)",
+        "majetek-porizeni",
+        {"porizovani": "majetek_nehmotny_porizovani"},
+        "Majetek",
+    ),
 }
 # Druhy, u kterých je potřeba odkaz na rozhodnutí o čerpání.
 S_ROZHODNUTIM = {"FOND_OPRAV", "UVER"}
@@ -95,6 +107,9 @@ def _zkontroluj(session: Session, profil: Profil, f: NovaFaktura) -> None:
     druh = DRUHY[f.druh]
     if "sluzba" in druh.vstupy and druh.vstupy["sluzba"] not in {**profil.sluzby, **profil.sprava}:
         raise ChybaFaktury(f"SVJ nemá službu „{druh.nazev}“.")
+    porizovani = druh.vstupy.get("porizovani")
+    if porizovani and porizovani not in profil.role:
+        raise ChybaFaktury(f"SVJ nemá v nastavení účet pro {druh.nazev.lower()}.")
     if f.druh in S_ROZHODNUTIM and not (f.rozhodnuti or "").strip():
         odkud = "z úvěru" if f.druh == "UVER" else "z fondu oprav"
         raise ChybaFaktury(f"U opravy {odkud} napište, kdo ji schválil (např. výbor 3/2026).")

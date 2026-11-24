@@ -110,8 +110,14 @@ role:
   # Obecné role pro operace z knihy (Durec, Účetnictví SVJ, 3. vyd.: úvěry kap. 7, dotace 6.3.4,
   # majetek 9, dluhy vlastníků 10, odměny orgánů 15; syntetické účty podle vzorového rozvrhu
   # s. 111–114). Analytiky jsou návrh k ověření s účetní.
+  majetek_nehmotny: "013100"
+  majetek_stavby: "021100"
   majetek: "022100"
+  majetek_pozemky: "031100"
+  majetek_nehmotny_porizovani: "041100"
   majetek_porizovani: "042100"
+  opravky_nehmotneho: "073100"
+  opravky_staveb: "081100"
   opravky_majetku: "082100"
   zasoby: "112100"
   pokladna: "211100"
@@ -137,12 +143,22 @@ role:
   vynosy.odepsane_pohledavky: "649300"
   vynosy.dotace: "691100"
   zdroj_majetku: "901100"
+  fond_ze_zisku: "911100"
   uvery: "951100"
   zalohy_dlouhodobe_uver: "955300"
   zalohy_dlouhodobe_pochybne: "955900"
 
 # Názvy rozvahových účtů, jak je uvádí analytická rozvaha.
 nazvy_uctu:
+  "013100": Software
+  "021100": Stavby a jednotky
+  "022100": Hmotné movité věci
+  "031100": Pozemky
+  "041100": Nedokončený nehmotný majetek
+  "042100": Nedokončený hmotný majetek
+  "073100": Oprávky k softwaru
+  "081100": Oprávky ke stavbám
+  "082100": Oprávky k hmotným movitým věcem
   "221100": Provozní účet
   "221200": Účet fondu oprav
   "261100": Peníze na cestě
@@ -164,6 +180,8 @@ nazvy_uctu:
   "379900": Nevyjasněné příjmy
   "381100": Náklady příštích období
   "389100": Dohadné účty pasivní
+  "901100": Vlastní jmění (zdroj krytí majetku)
+  "911100": Fond ze zisku
   "955100": Fond oprav (dlouhodobé zálohy)
   "955200": Mimořádné zálohy do fondu oprav
   "955300": Zálohy na splácení úvěru
