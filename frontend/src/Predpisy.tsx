@@ -131,7 +131,8 @@ export function Predpisy() {
         <p>
           Předpis platí od {new Date(data.plati_od).toLocaleDateString('cs-CZ')}, splatný je do{' '}
           {data.splatnost_den}. dne v měsíci. Celý dům platí měsíčně {kc(data.mesicne_celkem)}.{' '}
-          <a href="#oznameni">Oznámení vlastníkům o výši záloh</a>
+          <a href="#oznameni">Oznámení vlastníkům o výši záloh</a> ·{' '}
+          <a href="#mimoradna-zaloha">Mimořádná záloha podle podílů</a>
         </p>
       ) : (
         <p>Pro tento rok zatím není zadaný předpis záloh.</p>

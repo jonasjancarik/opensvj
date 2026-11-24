@@ -54,14 +54,16 @@
   kdy: Shromáždění rozhodne o jednorázovém nebo dočasném příspěvku na konkrétní opravu nebo investici.
   stav: praxe
   doklad: PR
-  vstupy: {jednotka: označení jednotky, castka: částka, rozhodnuti: odkaz na usnesení}
+  vstupy: {jednotky: "seznam {jednotka, castka}", splatnost: den splatnosti, rozhodnuti: odkaz na usnesení}
   zapisy:
-    - md: pohledavky_vlastnici
+    - pro_kazde: jednotky
+      md: pohledavky_vlastnici
       d: zalohy_dlouhodobe_mimoradne
       castka: "{castka}"
-      dimenze: {jednotka: "{jednotka}"}
+      dimenze: {jednotka: "{jednotka}", splatnost: "{splatnost}"}
   pravidla:
     - Bez odkazu na rozhodnutí shromáždění operaci nelze zaúčtovat.
+    - Celková částka se rozdělí na jednotky podle podílů na společných částech platných ke dni předpisu metodou největších zbytků, pokud shromáždění neurčilo jinak.
     - Účel mimořádné zálohy se eviduje; její čerpání se sleduje zvlášť od běžného fondu oprav.
   zdroje:
     - {typ: zakon, odkaz: "OZ § 1180 odst. 1"}
@@ -69,7 +71,10 @@
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Mimořádná záloha jednotky
-      vstupy: {jednotka: "1001/2", castka: "1500.00", rozhodnuti: "shromáždění 2024, bod 5"}
+      vstupy:
+        jednotky: [{jednotka: "1001/2", castka: "1500.00"}]
+        splatnost: "2024-09-30"
+        rozhodnuti: "shromáždění 2024, bod 5"
       ocekavane:
-        - [md, pohledavky_vlastnici, "1500.00", {jednotka: "1001/2"}]
+        - [md, pohledavky_vlastnici, "1500.00", {jednotka: "1001/2", splatnost: "2024-09-30"}]
         - [d, zalohy_dlouhodobe_mimoradne, "1500.00", {jednotka: "1001/2"}]

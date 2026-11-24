@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from . import denik, faktury
 from .db import Zapis
 from .domena import katalog
-from .domena.penize import na_text
+from .domena.penize import kc, na_text
 from .domena.profil import NeznamaRole, Profil
 
 TYPY_CASTKY = ("castka", "castka_nula", "castka_se_znamenkem")
@@ -64,9 +64,23 @@ FORMULARE: dict[str, Formular] = {
     ),
     "dohadna-polozka": Formular(
         (Pole("sluzba", "Služba", "sluzba"), Pole("castka", "Odhad nákladu")),
-        kroky={"k_rozvahovemu_dni": "K 31. 12.: zapsat odhad nákladu, ke kterému nepřišla faktura"},
-        napoveda="Až faktura přijde, odhad se s ní vyrovná. Tento krok aplikace zatím neumí, "
-        "domluvte ho s účetní.",
+        kroky={
+            "k_rozvahovemu_dni": "K 31. 12.: zapsat odhad nákladu, ke kterému nepřišla faktura",
+            "po_doruceni_faktury": "Faktura přišla: zrušit odhad",
+        },
+        napoveda="Když faktura přijde, zaúčtujte ji celou na stránce Faktury a tady zrušte "
+        "odhad stejné služby ve stejné výši, jakou měl k 31. 12. V nákladech nového roku tak "
+        "zůstane jen rozdíl mezi fakturou a odhadem.",
+    ),
+    "vydaj-bez-faktury": Formular(
+        (
+            Pole("sluzba", "Položka správy, ze které se výdaj platí", "naklad_spravy"),
+            Pole("castka", "Částka"),
+        ),
+        kroky={"nahradni_doklad": "Náhradní doklad k výdaji, ke kterému chybí účtenka"},
+        napoveda="Platbu jste v Bance zaúčtovali jako výdaj, ke kterému chybí doklad. Náhradní "
+        "doklad ji převede do nákladů. Do popisu napište, co se koupilo, kdo o proplacení "
+        "žádal a kdo výdaj schválil; ten, kdo o proplacení žádá, ho nemá schvalovat sám.",
     ),
     "prevod-vynosu-do-fo": Formular(
         (Pole("castka", "Součet výnosů, které se převádějí do fondu oprav"),),
@@ -151,6 +165,23 @@ FORMULARE: dict[str, Formular] = {
         "a rozdělení dodá zúčtovatel.",
     ),
 }
+
+
+# Kroky, které jen vyřeší dřívější zápis: nesmí převést víc, než na účtu zbývá.
+# (operace, krok) → (role, strana zůstatku, co na účtu je)
+ZBYVA = {
+    ("vydaj-bez-faktury", "nahradni_doklad"): (
+        "nevyjasnene_vydaje",
+        "md",
+        "výdajů bez dokladu",
+    ),
+    ("dohadna-polozka", "po_doruceni_faktury"): ("dohadne_pasivni", "d", "odhadů nákladů"),
+}
+
+
+def _zbyva(session: Session, profil: Profil, role: str, strana: str, datum: date) -> int:
+    zustatek = denik.zustatky(session, datum.year, datum).get(profil.ucet(role), 0)
+    return zustatek if strana == "md" else -zustatek
 
 
 def _naklady_spravy(profil: Profil) -> dict[str, faktury.Druh]:
@@ -267,6 +298,15 @@ def zauctuj(
     if not popis:
         raise ChybaDokladu("Napište, čeho se doklad týká.")
     vstupy = _vstupy(profil, formular, zadane)
+    krok = _krok(formular, krok)
+    if (operace_id, krok) in ZBYVA:
+        role, strana, co = ZBYVA[(operace_id, krok)]
+        zbyva = _zbyva(session, profil, role, strana, datum)
+        if int(zadane["castka"]) > zbyva:  # type: ignore[arg-type]
+            raise ChybaDokladu(
+                f"K {datum.day}. {datum.month}. {datum.year} zbývá vyřešit {kc(max(zbyva, 0))} "
+                f"{co}, víc tímto dokladem vyřešit nejde."
+            )
     try:
         return denik.zauctuj(
             session,
@@ -277,7 +317,7 @@ def zauctuj(
             popis=popis,
             doklad=op.doklad,
             zauctoval=zauctoval,
-            krok=_krok(formular, krok),
+            krok=krok,
         )
     except (denik.ChybaUctovani, NeznamaRole) as e:
         raise ChybaDokladu(str(e)) from e

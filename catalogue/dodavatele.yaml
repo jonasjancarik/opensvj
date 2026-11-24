@@ -152,11 +152,13 @@
       dimenze: {sluzba: "{sluzba}"}
     - krok: po_doruceni_faktury
       md: dohadne_pasivni
-      d: dodavatele
+      d: "naklady_sluzeb.{sluzba}"
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
   pravidla:
     - Rozdíl mezi odhadem a fakturou se účtuje v roce doručení faktury.
     - Odhad musí mít podklad (smlouva, odečet, předchozí faktura).
+    - Došlá faktura se zaúčtuje celá jako každá jiná (náklad služby proti dodavateli). Krok po doručení faktury odhad rozpustí proti nákladu téže služby, takže v roce doručení zůstane v nákladech jen rozdíl mezi fakturou a odhadem. Rozpustit jde nejvýš tolik, kolik z odhadů zbývá.
   zdroje:
     - {typ: praxe, odkaz: "Běžná praxe SVJ: odhad nevyfakturované spotřeby energií k 31. 12. se rozpustí, až přijde faktura"}
   platnost: {od: 2014-01-01}
@@ -167,24 +169,32 @@
       ocekavane:
         - [md, naklady_sluzeb.ELEKTRINA, "3000.00", {sluzba: ELEKTRINA}]
         - [d, dohadne_pasivni, "3000.00", {}]
+    - nazev: Faktura za elektřinu přišla, odhad se rozpustí
+      krok: po_doruceni_faktury
+      vstupy: {castka: "3000.00", sluzba: ELEKTRINA}
+      ocekavane:
+        - [md, dohadne_pasivni, "3000.00", {}]
+        - [d, naklady_sluzeb.ELEKTRINA, "3000.00", {sluzba: ELEKTRINA}]
 
 - id: vydaj-bez-faktury
   nazev: Výdaj, ke kterému chybí doklad od dodavatele
   kdy: Odchozí platba nebo proplacení výdaje člena výboru, ke kterému nemáme fakturu ani účtenku.
   stav: overit
   doklad: ID
-  vstupy: {ucet: bankovní účet SVJ, zarazeni: role nákladu nebo fondu, castka: částka}
+  vstupy: {ucet: bankovní účet SVJ, sluzba: položka správy, kategorie: druh nákladu položky, castka: částka}
   zapisy:
     - krok: platba
       md: nevyjasnene_vydaje
       d: "banka.{ucet}"
       castka: "{castka}"
     - krok: nahradni_doklad
-      md: "{zarazeni}"
+      md: "naklady.{kategorie}"
       d: nevyjasnene_vydaje
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
   pravidla:
     - Do vyřešení zůstává částka na `nevyjasnene_vydaje`, ne v nákladech.
+    - Náklad nese položku správy, aby ho vyúčtování záloh na správu započítalo. Náhradním dokladem jde vyřešit nejvýš tolik, kolik na `nevyjasnene_vydaje` zbývá.
     - Náhradní vnitřní doklad obsahuje náležitosti § 11, odkaz na bankovní pohyb, prohlášení a podpisové záznamy. Žadatel o proplacení ho nesmí jako jediný schválit.
     - Limit, nad kterým náhradní doklad nestačí, si SVJ stanoví vnitřním předpisem; zákon žádný limit nemá.
   zdroje:
@@ -192,9 +202,9 @@
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Žárovka do společných prostor
-      vstupy: {castka: "150.00", ucet: provozni, zarazeni: naklady.opravy}
+      vstupy: {castka: "150.00", ucet: provozni, sluzba: DROBNE_OPRAVY, kategorie: opravy}
       ocekavane:
         - [md, nevyjasnene_vydaje, "150.00", {}]
         - [d, banka.provozni, "150.00", {}]
-        - [md, naklady.opravy, "150.00", {}]
+        - [md, naklady.opravy, "150.00", {sluzba: DROBNE_OPRAVY}]
         - [d, nevyjasnene_vydaje, "150.00", {}]

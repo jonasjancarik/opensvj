@@ -46,14 +46,16 @@
     - md: naklady.spotreba
       d: pokladna
       castka: "{castka}"
+      dimenze: {sluzba: "{sluzba}"}
   pravidla:
     - Kolky a jiné poplatky patří na 538, ostatní drobný materiál na 501 (kniha s. 36).
+    - Výdaj nesmí být vyšší než hotovost v pokladně ke dni výdaje.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 36 (kap. 6.1)"}
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Kancelářské potřeby
-      vstupy: {castka: "420.00"}
+      vstupy: {castka: "420.00", sluzba: ""}
       ocekavane:
         - [md, naklady.spotreba, "420.00", {}]
         - [d, pokladna, "420.00", {}]

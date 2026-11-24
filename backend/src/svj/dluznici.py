@@ -205,8 +205,8 @@ def _rozpis(
                 mesic = datum.replace(day=1)
             elif operace in (vyuctovani_spravy.OPERACE, "vyuctovani-sluzeb"):
                 splatnost, text = vyuctovani_spravy.splatnost(datum.year), popis
-            else:
-                splatnost, text = datum, popis
+            else:  # třeba mimořádná záloha nese vlastní splatnost
+                splatnost, text = splatnost_radku or datum, popis
             p = dluhy[skupina].setdefault(
                 ("zapis", zapis_id, role),
                 Polozka(text, splatnost, 0, role=role, vznik=datum, mesic=mesic),

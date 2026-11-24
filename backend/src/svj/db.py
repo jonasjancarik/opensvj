@@ -87,7 +87,8 @@ class RadekZapisu(Zaklad):
     popis: Mapped[str | None] = mapped_column(String(200), nullable=True)
     # Spojí závazek (faktura) s jeho úhradami, např. interní číslo faktury.
     parovaci_symbol: Mapped[str | None] = mapped_column(String(40), nullable=True)
-    # Jen u počátečních stavů převzatých z minulého roku: splatnost převedeného dluhu.
+    # Splatnost dluhu, když se liší od data zápisu: počáteční stavy převzaté z minulého
+    # roku a mimořádná záloha.
     splatnost: Mapped[date | None] = mapped_column(Date, nullable=True)
     # Jen u platby vlastníka: řádek dluhu, na který vlastník při platbě určil, že platí.
     urceno_na: Mapped[int | None] = mapped_column(

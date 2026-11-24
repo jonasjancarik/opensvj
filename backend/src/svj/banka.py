@@ -51,8 +51,14 @@ OPERACE = {
         "vraceni-preplatku": ["jednotka", "zdroj"],
         "zaloha-dodavateli": ["sluzba", "protistrana"],
         "prijmy-vlastniku-vyplata": ["jednotka"],
+        "vydaj-bez-faktury": [],
+        "pokladna-vyber": [],
     },
 }
+
+# Operace o více krocích, ze kterých se u bankovního pohybu účtuje jen jeden. Druhý krok
+# (náhradní doklad, příjem do pokladny) se zaúčtuje jinde.
+KROKY = {"vydaj-bez-faktury": "platba", "pokladna-vyber": "vyber"}
 
 # Operace, ve kterých se částka pohybu jmenuje jinak než `castka`.
 CASTKA_JAKO = {"urok-a-srazkova-dan": "urok"}
@@ -514,7 +520,7 @@ def _vstupy(
     if operace not in povolene:
         raise ChybaBanky("Tuto operaci u tohoto pohybu nejde použít.")
     vstupy = {"castka": na_text(abs(pohyb.castka)), "ucet": pohyb.ucet.ucel}
-    krok = None
+    krok = KROKY.get(operace)
     for pole in povolene[operace]:
         hodnota = str(zadane.get(pole) or "").strip()
         if not hodnota:

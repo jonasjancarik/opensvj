@@ -5,6 +5,8 @@ import { Znacka } from './Dum'
 import { PrepinacVzhledu } from './Vzhled'
 import { Denik } from './Denik'
 import { Dluznici } from './Dluznici'
+import { MimoradnaZaloha } from './MimoradnaZaloha'
+import { Pokladna } from './Pokladna'
 import { PotvrzeniPrevodu } from './PotvrzeniDluhu'
 import { Faktury } from './Faktury'
 import { Historie } from './Historie'
@@ -25,6 +27,7 @@ import { Zasilky } from './Zasilky'
 const STRANKY = {
   prehled: 'Přehled',
   banka: 'Banka',
+  pokladna: 'Pokladna',
   faktury: 'Faktury',
   predpisy: 'Předpisy',
   dluznici: 'Dlužníci',
@@ -44,6 +47,7 @@ const SKRYTE = {
   pocatecni: 'Počáteční stavy',
   oznameni: 'Oznámení o zálohách',
   podily: 'Podíly na společných částech',
+  'mimoradna-zaloha': 'Mimořádná záloha',
   'potvrzeni-prevodu': 'Potvrzení o dluzích k datu převodu',
 } as const
 type Stranka = keyof typeof STRANKY | keyof typeof SKRYTE
@@ -122,6 +126,10 @@ export default function App() {
           <Oznameni />
         ) : stranka === 'podily' ? (
           <Podily />
+        ) : stranka === 'pokladna' ? (
+          <Pokladna />
+        ) : stranka === 'mimoradna-zaloha' ? (
+          <MimoradnaZaloha />
         ) : stranka === 'potvrzeni-prevodu' ? (
           <PotvrzeniPrevodu />
         ) : stranka === 'dluznici' ? (
