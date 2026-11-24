@@ -73,7 +73,11 @@ testy a data jsou mimo veřejný repozitář.
   její náklady, zaúčtovat jde až se všemi předpisy roku.
 - Převod jednotky: dluhy splatné před převodem a předpis za měsíc převodu podle profilu
   se navrhnou převodci; po přesunu je saldo současného vlastníka bez nich a přesun se
-  nepočítá jako platba.
+  nepočítá jako platba. Převod 15. dne v měsíci: vyúčtování správy i služeb po
+  vlastnických obdobích podle obou voleb měsíce převodu, součet období přesně sedí na
+  jednotku, výsledek prodávajícího je mezi dřívějšími vlastníky; potvrzení o dluzích k datu
+  převodu bere jen zápisy do toho dne; část vyúčtování jde prodávajícímu a jeho doručení
+  nespouští lhůty jednotky.
 
 ### Vlastníci, měřidla a rozhodnutí
 
@@ -106,7 +110,6 @@ Tyto situace v provozu nastanou, ale aplikace je zatím neumí, nebo je umí jen
 
 | Případ | Co se má ověřit |
 | --- | --- |
-| Převod jednotky 15. dne v měsíci | vyúčtování na dvě vlastnická období, potvrzení o dluzích k datu převodu (předpis měsíce převodu podle profilu a přesun nepřešlých dluhů na prodávajícího už aplikace umí) |
 | Platba bez VS od neznámého účtu | `prijem-nesparovany`, uzávěrka zablokovaná, po vyjasnění `prijem-vyjasneni` |
 | Výdaj 150 Kč bez faktury proplacený členovi výboru | `vydaj-bez-faktury`; kdo o proplacení žádá, nemůže ho sám schválit; podpisové záznamy u náhradního dokladu |
 | Duplicitně zaúčtovaná faktura po doručení vyúčtování | storno, nová verze vyúčtování, původní verze zůstane dohledatelná |

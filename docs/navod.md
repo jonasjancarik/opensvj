@@ -121,6 +121,12 @@ a předpis za měsíc převodu podle profilu (`predpis_mesice_prevodu`: `dosavad
 `novy`). Přesunutý dluh je pak na stránce Předpisy mezi dřívějšími vlastníky a jeho
 platbu jde v Bance zaúčtovat jako úhradu dluhu dřívějšího vlastníka.
 
+Tamtéž je odkaz na potvrzení o dluzích prodávajícího k datu převodu, tedy k poslednímu
+dni, kdy jednotku vlastnil. Hodí se, když potvrzení chce prodávající nebo kupující až po
+převodu. Počítá se s předpisy a platbami zaúčtovanými s datem do toho dne a ze záloh za
+měsíc převodu jen s těmi, které podle profilu platil prodávající. Rozeslat ho jde
+prodávajícímu, i když už jednotku nevlastní.
+
 U každé položky po splatnosti je zákonný úrok z prodlení (nařízení vlády 351/2013 Sb.):
 repo sazba ČNB k prvnímu dni pololetí, kdy prodlení začalo, plus 8 procentních bodů.
 Tabulka repo sazeb je v `backend/src/svj/domena/urok.py` a po každé změně sazby ČNB je
@@ -212,6 +218,19 @@ podle klíče z profilu SVJ, například pojištění podle podílů na společn
 a odměna správce rovným dílem. Výsledkem je nedoplatek nebo přeplatek jednotky a tisková
 verze vyúčtování pro vlastníka. Když se podíly během roku změnily, dělí se podle průměrného
 podílu za měsíce roku a vyúčtování pro vlastníka uvede, jaký podíl kdy platil.
+
+Když jednotka během roku změnila vlastníka, dostane obě vyúčtování (správy i služeb)
+vlastník k 31. 12. a s prodávajícím se vyrovná sám. SVJ si ale v profilu může zvolit
+`vyuctovani_pri_prevodu: po_obdobich`: pak každý vlastník dostane vyúčtování za měsíce,
+za které platil předpis (měsíc převodu podle `predpis_mesice_prevodu`). Jeho zálohy jsou
+zálohy předepsané za ty měsíce a náklady jednotky se rozdělí podle měsíců: u klíče podle
+podílů podle podílu v každém měsíci, u klíče podle osob podle osob v předpisu, jinak
+rovným dílem na měsíc. Spotřeba z měřidel a výsledky zúčtovatele se tak dělí také podle
+měsíců, ne podle odečtu ke dni převodu. Rozpis je v rozbaleném řádku jednotky a každý
+vlastník má vlastní dokument; prodávajícímu se rozešle na jeho adresu. Nedoplatek nebo
+přeplatek prodávajícího se zaúčtuje na jeho jméno, takže je na stránce Předpisy mezi
+dřívějšími vlastníky a do dluhů kupujícího se nepočítá. Lhůty pro námitky a vyrovnání
+v tabulce jednotek běží od doručení kupujícímu.
 
 Před koncem roku jsou čísla průběžná. Zaúčtovat jde od 31. 12., když jsou zaúčtované
 předpisy všech měsíců. Nedoplatek se pak objeví na stránce Dlužníci se splatností 30. 4.

@@ -148,7 +148,7 @@ OZ). Literatura z toho dovozuje, že stačí jedno vyúčtování za celé obdob
 vlastníkovi a převodce s nabyvatelem se vyrovnají mezi sebou (výklad, Durec s. 29).
 Vyhláška 269/2015 přesto v § 5 odst. 5 a 6 popisuje, jak rozdělit náklady na teplo mezi
 původního a nového příjemce, takže zúčtovatel je někdy rozdělí. Co SVJ zvolí, má říct
-profil a stanovy. S dluhy převodce je to jinak: ty na nabyvatele přecházejí (§ 1186
+profil a stanovy (v aplikaci `vyuctovani_pri_prevodu`: `soucasnemu`, nebo `po_obdobich`). S dluhy převodce je to jinak: ty na nabyvatele přecházejí (§ 1186
 odst. 2 OZ, kapitola 7).
 
 ## Účtování

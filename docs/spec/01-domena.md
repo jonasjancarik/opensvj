@@ -61,6 +61,10 @@ kontakty po uplynutí archivační doby (§ 31 zákona o účetnictví).
   `uhrada-dluhu-drivejsiho`. Přesun není automatika; aplikace jen navrhne položky podle
   data převodu a volby v profilu a výbor vybere, co skutečně nepřešlo, typicky podle
   potvrzení o dluzích (§ 1186 odst. 3 OZ).
+- Potvrzení o dluzích jde vydat i k datu převodu (poslední den vlastnictví převodce,
+  nejpozději dnes): bere jen zápisy s datem do toho dne a z měsíčních záloh jen ty, které
+  podle `predpis_mesice_prevodu` platil převodce. Jde převodci, i když už jednotku
+  nevlastní.
 
 ### OsobyRozhodne
 
@@ -131,7 +135,7 @@ Osoby a vlastnictví jsou v databázi (stránka Vlastníci). Nové vlastnictví 
 zapsaném ho uzavře den před svým začátkem, takže mezera nevznikne; překryv odmítne
 i databáze. Smazat jde jen první nebo poslední záznam jednotky. Spoluvlastnické podíly osob
 jsou nepovinné a musí dát celek. Souhlas s doručováním e-mailem se ukládá s datem. Potvrzení
-o dluzích aplikace pořád vydá na jednotku, jen s jménem vlastníka. Dluhy, které při
+o dluzích aplikace vydá na jednotku, jen s jménem vlastníka. Dluhy, které při
 převodu zůstávají prodávajícímu, se zapisují u záznamu kupujícího v historii vlastnictví
 (tlačítko Dluhy při převodu); jeden převod jde zaúčtovat jednou, oprava je storno
 v deníku. Jméno dřívějšího vlastníka u počátečních stavů je pořád jen text.
@@ -498,8 +502,18 @@ a zápis `vyuctovani-sluzeb`. Proti návrhu výše se liší:
   zůstávají v saldu jako samostatný dluh a vyúčtování pro vlastníka je uvádí zvlášť.
   Vlastník tak dluží stejnou částku jako při porovnání s přijatými zálohami, jen se
   nemíchá dluh na zálohách s výsledkem vyúčtování.
-- Vyúčtování jde jen současnému vlastníkovi jednotky; s předchozím vlastníkem se vyrovná
-  sám (§ 1186 odst. 1 OZ).
+- Vyúčtování jde současnému vlastníkovi jednotky; s předchozím vlastníkem se vyrovná
+  sám (§ 1186 odst. 1 OZ). Profil může zvolit `vyuctovani_pri_prevodu: po_obdobich`
+  (platí pro služby i správu): jednotka, která v roce změnila vlastníka, se vyúčtuje po
+  vlastnických obdobích. Období tvoří měsíce, za které vlastník platil předpis
+  (`predpis_mesice_prevodu`); měsíce před prvním zapsaným vlastníkem připadnou nejbližšímu
+  známému. Zálohy období jsou předepsané zálohy jeho měsíců, náklad jednotky na položku se
+  rozdělí podle vah měsíců (osobo-měsíce u klíče `osoby`, podíl měsíce u `podil`, jinak
+  počet měsíců) metodou největších zbytků, takže období dají přesně výsledek jednotky.
+  Měřidla a zúčtovatel se dělí také podle měsíců, odečet ke dni převodu aplikace nepoužívá.
+  Výsledek dřívějšího vlastníka nese jeho jméno v dimenzi `protistrana`, takže je mezi
+  dluhy dřívějších vlastníků a saldo jednotky neovlivní. Dokument pro něj má vybrané
+  adresáty (`dokument.osoby`) a do lhůt doručení jednotky se nepočítá.
 - Zaúčtovat jde od 31. 12., když jsou zaúčtované předpisy všech měsíců a žádná služba nemá
   problém: chybějící měřidlo nebo odečet, výsledky zúčtovatele, které nesedí na náklady
   v účetnictví. Nedoplatek i přeplatek jsou splatné 30. 4. dalšího roku.
