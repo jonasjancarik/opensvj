@@ -4,8 +4,85 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "frontend", "dev"],
+      "runtimeArgs": [
+        "--dir",
+        "frontend",
+        "dev"
+      ],
       "port": 5180
+    },
+    {
+      "name": "auth",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "auth",
+        "dev"
+      ],
+      "port": 3010
+    },
+    {
+      "name": "api-ukazka",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgresql+psycopg://svj:svj@localhost:5440/svj_ukazka",
+        "PROFIL=ukazka",
+        "PROFILY=/Users/janca/projects/opensvj/profiles",
+        "AUTH_ALLOWED_EMAILS=vybor@ukazkova12.example",
+        "SMTP_FROM=SVJ Ukázková 12 <vybor@ukazkova12.example>",
+        "MAIL_DIR=/private/tmp/claude-501/-Users-janca--claude-spares-spare-LhrZXt/78b139b3-642c-4aa3-9a7e-e0b74d6c3a2a/scratchpad/maily",
+        "uv",
+        "run",
+        "--directory",
+        "backend",
+        "uvicorn",
+        "svj.api:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8010"
+      ],
+      "port": 8010
+    },
+    {
+      "name": "web-swiss",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "../svj-ucetnictvi-swiss/frontend",
+        "dev",
+        "--port",
+        "5182"
+      ],
+      "port": 5182
+    },
+    {
+      "name": "auth-ukazka",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "AUTH_DATABASE_URL=postgresql://svj:svj@localhost:5440/svj_ukazka",
+        "AUTH_ALLOWED_EMAILS=vybor@ukazkova12.example",
+        "AUTH_LINKS_TO_CONSOLE=1",
+        "pnpm",
+        "--dir",
+        "auth",
+        "dev"
+      ],
+      "port": 3010
+    },
+    {
+      "name": "prezentace",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5190",
+        "--bind",
+        "0.0.0.0",
+        "--directory",
+        "web"
+      ],
+      "port": 5190
     }
   ]
 }
