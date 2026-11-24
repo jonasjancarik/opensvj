@@ -28,6 +28,7 @@ export type Jednotka = {
   sankce: number
   polozky: Polozka[]
   vlastnici: Adresat[]
+  uvery: { nazev: string; zbyva: number; mesicne: number }[]
 }
 type Odpis = {
   datum: string

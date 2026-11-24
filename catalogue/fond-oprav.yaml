@@ -31,6 +31,31 @@
         - [md, zalohy_dlouhodobe, "120000.00", {protistrana: vytahy}]
         - [d, dodavatele, "120000.00", {protistrana: vytahy}]
 
+- id: cerpani-zalohy-na-uver
+  nazev: Oprava nebo investice hrazená z úvěru
+  kdy: Faktura za opravu nebo investici, na kterou si SVJ vzalo úvěr a kterou vlastníci splácejí mimořádnými zálohami.
+  stav: navrh
+  doklad: FP
+  vstupy: {protistrana: dodavatel, castka: částka, rozhodnuti: odkaz na rozhodnutí}
+  zapisy:
+    - md: zalohy_dlouhodobe_uver
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+  pravidla:
+    - Stejně jako oprava z fondu oprav snižuje přímo dlouhodobé zálohy, jen na analytice záloh na úvěr. Zálohy na úvěr vznikly předpisem podílů na jistině (uver-predpis-mimoradnych-zaloh).
+    - Fakturu pak zaplatí banka z úvěrového účtu (uver-uhrada-faktury), nebo SVJ z běžného účtu.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–65 (kap. 7.1)"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 1, B.II.4 Přijaté dlouhodobé zálohy"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Zateplení fasády z úvěru
+      vstupy: {castka: "1032000.00", protistrana: stavebni_firma, rozhodnuti: "shromáždění 12. 3. 2026, bod 4"}
+      ocekavane:
+        - [md, zalohy_dlouhodobe_uver, "1032000.00", {protistrana: stavebni_firma}]
+        - [d, dodavatele, "1032000.00", {protistrana: stavebni_firma}]
+
 - id: prevod-vynosu-do-fo
   nazev: Převod výnosů SVJ do fondu oprav
   kdy: Pokud SVJ rozhodlo, že jeho výnosy (paušální složky předpisu, úroky, pacht) zvyšují fond oprav.

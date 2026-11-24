@@ -132,6 +132,13 @@ export function PotvrzeniDluhu({
           </p>
         )}
         {j.preplatek > 0 && <p>Vlastník má u společenství přeplatek {kc(j.preplatek)}.</p>}
+        {j.uvery.map((u) => (
+          <p key={u.nazev}>
+            Na úvěr společenství ({u.nazev}) zbývá za jednotku splatit {kc(u.zbyva)}. Nejde o dluh vlastníka:
+            zbytek se splácí v měsíčních předpisech po {kc(u.mesicne)} a s jednotkou přechází na nového
+            vlastníka.
+          </p>
+        ))}
         <p>
           Při převodu jednotky se zálohy nevypořádávají (§ 1186 odst. 1 občanského zákoníku).
           Potvrzení nezahrnuje výsledek vyúčtování služeb a záloh na správu domu za období, které

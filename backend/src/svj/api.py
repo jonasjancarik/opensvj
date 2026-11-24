@@ -23,6 +23,7 @@ from .api_podily import router as podily_router
 from .api_pokladna import router as pokladna_router
 from .api_predpisy import router as predpisy_router
 from .api_rozhodnuti import router as rozhodnuti_router
+from .api_uvery import router as uvery_router
 from .api_uzaverka import router as uzaverka_router
 from .api_verze_predpisu import router as verze_predpisu_router
 from .api_vyuctovani import router as vyuctovani_router
@@ -54,6 +55,7 @@ app.include_router(faktury_router)
 app.include_router(dluznici_router)
 app.include_router(mimoradne_zalohy_router)
 app.include_router(pokladna_router)
+app.include_router(uvery_router)
 app.include_router(oznameni_router)
 app.include_router(formulare_router)
 app.include_router(meridla_router)

@@ -102,6 +102,12 @@ class Nezahrnuto(BaseModel):
     castka: int
 
 
+class ZDlouhodobych(BaseModel):
+    zdroj: str  # fond oprav | záloha na úvěr
+    popis: str
+    castka: int
+
+
 class Vyuctovani(BaseModel):
     rok: int
     dnes: date
@@ -111,6 +117,7 @@ class Vyuctovani(BaseModel):
     polozky: list[Polozka]
     jednotky: list[Jednotka]
     nezahrnuto: list[Nezahrnuto]
+    z_dlouhodobych: list[ZDlouhodobych]
     zapis: str | None  # "n/rok", když je zaúčtované
     proc_nejde: str | None
     rozeslani: str  # klíč zásilek s tímto vyúčtováním
@@ -175,6 +182,9 @@ def _prehled(rok: int) -> Vyuctovani:
         ],
         rozeslani=f"vyuctovani_spravy:{rok}",
         nezahrnuto=[Nezahrnuto(popis=n.popis, castka=n.castka) for n in v.nezahrnuto],
+        z_dlouhodobych=[
+            ZDlouhodobych(zdroj=x.zdroj, popis=x.popis, castka=x.castka) for x in v.z_dlouhodobych
+        ],
         zapis=zapis,
         proc_nejde=duvod,
     )

@@ -41,6 +41,7 @@ type Data = {
   polozky: Polozka[]
   jednotky: Jednotka[]
   nezahrnuto: { popis: string; castka: number }[]
+  z_dlouhodobych: { zdroj: string; popis: string; castka: number }[]
   zapis: string | null
   proc_nejde: string | null
   rozeslani: string
@@ -243,7 +244,45 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
               </li>
             ))}
           </ul>
+          {data.nezahrnuto.some((n) => n.popis === 'Úroky z úvěru') && (
+            <p>
+              Úroky z úvěru, které podle rozhodnutí shromáždění platí fond oprav nebo záloha na úvěr, se k 31. 12.
+              pokryjí na stránce <a href="#uvery">Úvěry</a>.
+            </p>
+          )}
         </div>
+      )}
+      {data.z_dlouhodobych.length > 0 && (
+        <>
+          <h3>
+            {data.z_dlouhodobych.some((x) => x.zdroj !== 'fond oprav')
+              ? 'Zaplaceno z fondu oprav a ze záloh na úvěr'
+              : 'Zaplaceno z fondu oprav'}
+          </h3>
+          <p className="tlumene">
+            Tyto výdaje vlastníci zaplatili z dlouhodobých záloh. Do vyúčtování záloh na správu se nezapočítávají.
+          </p>
+          <div className="tabulka-posun">
+            <table className="z-dlouhodobych">
+              <thead>
+                <tr>
+                  <th>Z čeho</th>
+                  <th>Co</th>
+                  <th className="cislo">Částka</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.z_dlouhodobych.map((x) => (
+                  <tr key={x.zdroj + x.popis}>
+                    <td>{x.zdroj === 'fond oprav' ? 'Fond oprav' : 'Záloha na úvěr'}</td>
+                    <td>{x.popis}</td>
+                    <td className="cislo">{kc(x.castka)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <h2>Jednotky</h2>

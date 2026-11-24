@@ -7,6 +7,10 @@ na tutéž položku. Rozdíl je nedoplatek nebo přeplatek. Služby se vyúčtov
 Výnosy označené položkou správy (pojistné plnění na opravu, dotace na úroky, bankovní úroky
 na poplatky) náklady té položky snižují: vlastníci nesou jen to, co výnosy nepokryly
 (Durec s. 55–61, souhrnné příklady 1 a 2).
+
+Co se v roce zaplatilo z dlouhodobých záloh (opravy z fondu oprav, oprava placená z úvěru,
+úroky z úvěru hrazené z fondu oprav nebo ze zálohy na úvěr), se do vyúčtování nezapočte;
+vyúčtování to ukáže zvlášť, s rozlišením fondu oprav a zálohy na úvěr.
 """
 
 from collections.abc import Iterable
@@ -38,7 +42,16 @@ NAZVY_NAKLADU = {
     "naklady.sprava": "Správa bez určené položky",
     "naklady.pojisteni": "Pojištění bez určené položky",
     "naklady.ostatni": "Ostatní náklady bez určené položky",
+    "naklady.uroky_uver": "Úroky z úvěru",
 }
+# Čerpání dlouhodobých záloh podle operace a role zálohy: jak ho ukázat lidem.
+ZDROJE = {"zalohy_dlouhodobe": "fond oprav", "zalohy_dlouhodobe_uver": "záloha na úvěr"}
+CERPANI = {
+    "cerpani-fo": "Opravy a údržba",
+    "cerpani-zalohy-na-uver": "Opravy a investice placené z úvěru",
+    "uver-kryti-uroku": "Úroky z úvěru",
+}
+OPERACE_KRYTI = "uver-kryti-uroku"
 
 
 class ChybaVyuctovani(ValueError):
@@ -82,12 +95,22 @@ class Nezahrnuto:
 
 
 @dataclass
+class ZDlouhodobych:
+    """Co se v roce zaplatilo z dlouhodobých záloh (fond oprav, záloha na úvěr)."""
+
+    zdroj: str
+    popis: str
+    castka: int
+
+
+@dataclass
 class Vyuctovani:
     rok: int
     polozky: list[Polozka]
     jednotky: list[Jednotka]
     nezahrnuto: list[Nezahrnuto]
     zapis: Zapis | None
+    z_dlouhodobych: list[ZDlouhodobych] = field(default_factory=list)
 
     @property
     def splatnost(self) -> date:
@@ -141,6 +164,14 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
         elif castka:
             popis = NAZVY_NAKLADU.get(role, role)
             nezahrnuto[popis] = nezahrnuto.get(popis, 0) + int(castka)
+    z_dlouhodobych = _z_dlouhodobych(session, profil, rok)
+    # Úroky pokryté dlouhodobými zálohami už vlastníci zaplatili, mezi nezahrnuté nepatří.
+    uroky = NAZVY_NAKLADU["naklady.uroky_uver"]
+    kryto = sum(x.castka for x in z_dlouhodobych if x.popis == CERPANI[OPERACE_KRYTI])
+    if uroky in nezahrnuto:
+        nezahrnuto[uroky] -= kryto
+        if not nezahrnuto[uroky]:
+            del nezahrnuto[uroky]
 
     # Zálohy = předepsané (D) minus případné opravy (MD), bez samotného vyúčtování. Hledají se
     # podle účtu, ne role: dřívější zápisy vedly tytéž zálohy pod rolí služby.
@@ -191,7 +222,31 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
         jednotky=list(jednotky.values()),
         nezahrnuto=[Nezahrnuto(p, c) for p, c in sorted(nezahrnuto.items())],
         zapis=zapis,
+        z_dlouhodobych=z_dlouhodobych,
     )
+
+
+def _z_dlouhodobych(session: Session, profil: Profil, rok: int) -> list[ZDlouhodobych]:
+    """Čerpání fondu oprav a zálohy na úvěr v roce po druzích (MD minus D na účtu zálohy)."""
+    ucty = {profil.ucet(r): r for r in ZDROJE if r in profil.role}
+    if not ucty:
+        return []
+    md_minus_d = func.sum(
+        case((RadekZapisu.strana == "md", RadekZapisu.castka), else_=-RadekZapisu.castka)
+    )
+    radky = session.execute(
+        select(RadekZapisu.ucet, Zapis.operace, md_minus_d)
+        .join(Zapis)
+        .where(
+            Zapis.rok == rok,
+            denik.platny(),
+            RadekZapisu.ucet.in_(list(ucty)),
+            Zapis.operace.in_(list(CERPANI)),
+        )
+        .group_by(RadekZapisu.ucet, Zapis.operace)
+        .order_by(RadekZapisu.ucet, Zapis.operace)
+    ).all()
+    return [ZDlouhodobych(ZDROJE[ucty[u]], CERPANI[op], int(c)) for u, op, c in radky if c]
 
 
 def rozpocitej(polozky: Iterable[Polozka], jednotky: dict[str, Jednotka]) -> None:

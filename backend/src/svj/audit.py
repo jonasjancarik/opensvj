@@ -36,6 +36,7 @@ from .db import (
     Osoba,
     Rozhodnuti,
     RozhodnutiPro,
+    Uver,
     VerzePredpisu,
     Vlastnictvi,
     VlastnikJednotky,
@@ -208,6 +209,12 @@ def _podily_ploche(stav: dict[str, Any]) -> dict[str, str]:
     return vysledek
 
 
+def _uroky_hradi(x: str) -> str:
+    return {"fond_oprav": "fond oprav", "zaloha_na_uver": "záloha na úvěr"}.get(
+        x, f"provozní zálohy ({x})"
+    )
+
+
 SLEDOVANE: dict[type, Sledovani] = {
     Osoba: Sledovani(
         "osoba",
@@ -316,6 +323,21 @@ SLEDOVANE: dict[type, Sledovani] = {
         nazev=lambda s, z: f"Podíly jednotek od {_d(z.plati_od)}",
         pole={"zdroj": Pole("Podle čeho"), "podily": Pole("")},
         ploche=_podily_ploche,
+    ),
+    Uver: Sledovani(
+        "uver",
+        "Úvěry",
+        klic=lambda u: str(u.id),
+        nazev=lambda s, u: f"Úvěr: {u.nazev}",
+        pole={
+            "nazev": Pole("Na co"),
+            "cislo_uctu": Pole("Úvěrový účet"),
+            "jistina": Pole("Jistina", kc),
+            "predepsano_dne": Pole("Podíly předepsané", _d),
+            "prvni_splatka": Pole("První splátka", _d),
+            "pocet_splatek": Pole("Počet měsíčních splátek", str),
+            "uroky_hradi": Pole("Úroky platí", _uroky_hradi),
+        },
     ),
     Obdobi: Sledovani(
         "obdobi",

@@ -164,7 +164,7 @@ function NovaFaktura({ data, poZadani }: { data: Data; poZadani: (d: Data) => vo
   const [hotovo, setHotovo] = useState<string | null>(null)
   const castka = naHalire(f.castka)
   const skupiny = [...new Set(data.druhy.map((d) => d.skupina))]
-  const zFonduOprav = f.druh === 'FOND_OPRAV'
+  const zFonduOprav = f.druh === 'FOND_OPRAV' || f.druh === 'UVER'
   const lzeOdeslat =
     f.dodavatel.trim() && castka !== null && castka > 0 && f.duzp && f.splatnost && f.druh &&
     (!zFonduOprav || f.rozhodnuti.trim())

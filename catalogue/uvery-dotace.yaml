@@ -13,7 +13,8 @@
       castka: "{castka}"
       dimenze: {protistrana: "{protistrana}"}
   pravidla:
-    - Doklad je výpis z úvěrového účtu. Samotná faktura se účtuje běžně do nákladů: oprava společných částí 547, technické zhodnocení 546 (příručka, kapitola 2).
+    - Doklad je výpis z úvěrového účtu. Samotná faktura se účtuje běžně do nákladů: oprava společných částí 547, technické zhodnocení 546 (příručka, kapitola 2). V aplikaci jde oprava placená z úvěru přímo proti záloze na úvěr (cerpani-zalohy-na-uver), stejně jako oprava z fondu oprav.
+    - Aplikace řádku úvěru doplní kód úvěru (`UVER-<číslo>`) do dimenze služby a řádku dodavatele číslo faktury jako párovací symbol, aby byla faktura vedená jako zaplacená.
     - Dlouhodobý úvěr je v rozvaze mezi dlouhodobými závazky (B.II).
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, př. bod 2)"}
@@ -38,8 +39,9 @@
       castka: "{castka}"
       dimenze: {jednotka: "{jednotka}"}
   pravidla:
-    - Podíly se obvykle dělí podle podílů na společných částech, stejně jako náklad, na který se úvěr čerpal.
-    - Do měsíčních předpisů se pak vkládají splátky operací uver-splatka-do-predpisu, dokud podíl jednotky na 378 není vyrovnaný.
+    - Podíly se obvykle dělí podle podílů na společných částech, stejně jako náklad, na který se úvěr čerpal. Aplikace je rozdělí podle podílů platných v den předpisu metodou největšího zbytku.
+    - Do měsíčních předpisů se pak vkládají splátky (uver-splatka-do-predpisu), dokud podíl jednotky na 378 není vyrovnaný.
+    - Aplikace oběma řádkům doplní kód úvěru (`UVER-<číslo>`) do dimenze služby. Předpis podílů nejde stornovat, dokud na něj navazuje zaúčtovaná splátka.
     - Jednorázové doplacení podílu vlastníkem neomezuje jeho ručení vůči bance (§ 1194 odst. 2 OZ).
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–65 (kap. 7.1, př. bod 3)"}
@@ -69,6 +71,8 @@
       dimenze: {jednotka: "{jednotka}"}
   pravidla:
     - Splátka se přidává k běžnému měsíčnímu předpisu; vlastník ji platí spolu se zálohami.
+    - V aplikaci je splátka složkou měsíčního předpisu (predpis-mesicni s účtem závazku pohledavky_uver a kódem úvěru jako složkou), řádky jsou proto stejné.
+    - Měsíční splátka jednotky je její podíl na jistině dělený počtem splátek, zaokrouhlený nahoru na celé koruny. Poslední splátka je zbytek, takže jednotka může doplatit dřív než za sjednaný počet měsíců.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 65 (kap. 7.1, př. bod 4)"}
   platnost: {od: 2014-01-01}
@@ -84,28 +88,35 @@
   kdy: Banka předepíše úroky nebo poplatky na úvěrový účet.
   stav: navrh
   doklad: BV
-  vstupy: {uroky: úroky za období, poplatky: poplatky za vedení úvěru}
+  vstupy:
+    uroky: úroky za období
+    poplatky: poplatky za vedení úvěru
+    sluzba_uroku: "kód úvěru, nebo položka správy, když úroky platí provozní zálohy"
+    sluzba_poplatku: položka správy, ze které se platí poplatky (může být prázdná)
   zapisy:
     - md: naklady.uroky_uver
       d: uvery
       castka: "{uroky}"
+      dimenze: {sluzba: "{sluzba_uroku}"}
     - md: naklady.banka
       d: uvery
       castka: "{poplatky}"
+      dimenze: {sluzba: "{sluzba_poplatku}"}
   pravidla:
     - Úroky nesou vlastníci obvykle podle podílů, poplatky za vedení úvěru jako vlastní správní činnost rovným dílem (kniha s. 64, pozn. 78).
-    - U zálohových příspěvků se náklady na konci roku vyúčtují ze záloh na správu nebo z fondu oprav podle rozhodnutí.
+    - U zálohových příspěvků se náklady na konci roku vyúčtují ze záloh na správu nebo z fondu oprav podle rozhodnutí. Úroky hrazené z fondu oprav nebo ze zálohy na úvěr nesou kód úvěru a na konci roku je pokryje uver-kryti-uroku; úroky a poplatky s položkou správy jdou do vyúčtování záloh na správu.
+    - Aplikace řádkům úvěru (951) doplní kód úvěru do dimenze služby.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, př. body 5 a 6)"}
   platnost: {od: 2014-01-01}
   priklady:
     - nazev: Roční úroky a poplatky
-      vstupy: {uroky: "31000.00", poplatky: "1500.00"}
+      vstupy: {uroky: "31000.00", poplatky: "1500.00", sluzba_uroku: UVER-1, sluzba_poplatku: SPRAVA}
       ocekavane:
-        - [md, naklady.uroky_uver, "31000.00", {}]
-        - [d, uvery, "31000.00", {}]
-        - [md, naklady.banka, "1500.00", {}]
-        - [d, uvery, "1500.00", {}]
+        - [md, naklady.uroky_uver, "31000.00", {sluzba: UVER-1}]
+        - [d, uvery, "31000.00", {sluzba: UVER-1}]
+        - [md, naklady.banka, "1500.00", {sluzba: SPRAVA}]
+        - [d, uvery, "1500.00", {sluzba: SPRAVA}]
 
 - id: uver-splatka
   nazev: Splátka úvěru z provozního účtu
@@ -124,6 +135,7 @@
       castka: "{castka}"
   pravidla:
     - Dva doklady: výpis z běžného účtu (odchod) a výpis z úvěrového účtu (příchod). Mezi nimi peníze leží na 261.
+    - Odchod se zaúčtuje v Bance, příchod na stránce Úvěry; příchod nesmí být vyšší než peníze na cestě k danému dni a aplikace řádku úvěru doplní kód úvěru.
   zdroje:
     - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 65 (kap. 7.1, př. body 7 a 8)"}
   platnost: {od: 2014-01-01}
@@ -140,6 +152,31 @@
       ocekavane:
         - [md, uvery, "10000.00", {}]
         - [d, penize_na_ceste, "10000.00", {}]
+
+- id: uver-kryti-uroku
+  nazev: Úroky z úvěru hrazené z fondu oprav nebo ze zálohy na úvěr
+  kdy: K 31. 12., když shromáždění rozhodlo, že úroky z úvěru se zaplatí z dlouhodobých záloh, ne z provozních záloh na správu.
+  stav: navrh
+  doklad: ID
+  vstupy: {zdroj: "zalohy_dlouhodobe | zalohy_dlouhodobe_uver", uver: kód úvěru, castka: úroky roku}
+  zapisy:
+    - md: "{zdroj}"
+      d: vynosy.zuctovani_dlouhodobych_zaloh
+      castka: "{castka}"
+      dimenze: {sluzba: "{uver}"}
+  pravidla:
+    - Úroky jsou náklad roku; zúčtováním záloh ve stejné výši zůstane výsledek hospodaření nulový (kniha s. 64–65, souhrnný příklad 31. 12.).
+    - Částka je součet úroků roku zaúčtovaných s kódem úvěru. Vyúčtování záloh na správu úroky pak ukáže jako kryté fondem oprav nebo zálohou na úvěr.
+    - Zúčtování dlouhodobých záloh je příspěvek vlastníků, není předmětem daně (§ 18 odst. 2 písm. f) ZDP).
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 64–66 (kap. 7.1, souhrnný příklad)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Úroky za rok z fondu oprav
+      vstupy: {zdroj: zalohy_dlouhodobe, uver: UVER-1, castka: "28000.00"}
+      ocekavane:
+        - [md, zalohy_dlouhodobe, "28000.00", {sluzba: UVER-1}]
+        - [d, vynosy.zuctovani_dlouhodobych_zaloh, "28000.00", {sluzba: UVER-1}]
 
 - id: dotace-rozhodnuti
   nazev: Rozhodnutí o poskytnutí dotace

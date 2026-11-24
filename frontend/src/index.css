@@ -625,6 +625,24 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
 .interni-doklad p { margin: 0; }
 .interni-doklad label { display: grid; gap: 0.3rem; align-content: start; }
 .interni-doklad-pole { display: grid; gap: 0.8rem 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+/* Dlouhý text volby (třeba rozhodnutí) nesmí roztáhnout sloupec mimo formulář. */
+.interni-doklad-pole > label { min-width: 0; }
+.interni-doklad-pole select { width: 100%; min-width: 0; }
+
+/* ---------- Úvěry ---------- */
+.uver { margin: 1.25rem 0 2rem; }
+.uver h2 { margin-bottom: 0.6rem; }
+.udaje-uveru {
+  display: grid; grid-template-columns: minmax(11rem, auto) 1fr; gap: 0.35rem 1rem; margin: 0 0 0.9rem; max-width: 52rem;
+}
+.udaje-uveru dt { color: var(--tlumeny); }
+.udaje-uveru dd { margin: 0; overflow-wrap: anywhere; }
+.uver details { margin-top: 0.5rem; }
+.uver summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 600px) {
+  .udaje-uveru { grid-template-columns: 1fr; gap: 0.1rem; }
+  .udaje-uveru dd { margin-bottom: 0.4rem; }
+}
 
 /* ---------- Faktury ---------- */
 .faktura-formular {
@@ -713,7 +731,9 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
   table.historie-zmeny td:first-child, table.podily th:first-child,
   table.podily td:first-child, table.pokladni-kniha th:first-child,
   table.pokladni-kniha td:first-child, table.mimoradne-zalohy th:first-child,
-  table.mimoradne-zalohy td:first-child { display: table-cell; }
+  table.mimoradne-zalohy td:first-child, table.z-dlouhodobych th:first-child,
+  table.z-dlouhodobych td:first-child, table.splatky-uveru th:first-child,
+  table.splatky-uveru td:first-child { display: table-cell; }
   th, td { padding: 0.55rem 0.65rem; }
   .pohyb-hlavicka .tlumene { margin-left: 0; width: 100%; }
 }

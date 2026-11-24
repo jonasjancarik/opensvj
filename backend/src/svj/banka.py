@@ -53,12 +53,13 @@ OPERACE = {
         "prijmy-vlastniku-vyplata": ["jednotka"],
         "vydaj-bez-faktury": [],
         "pokladna-vyber": [],
+        "uver-splatka": [],
     },
 }
 
 # Operace o více krocích, ze kterých se u bankovního pohybu účtuje jen jeden. Druhý krok
 # (náhradní doklad, příjem do pokladny) se zaúčtuje jinde.
-KROKY = {"vydaj-bez-faktury": "platba", "pokladna-vyber": "vyber"}
+KROKY = {"vydaj-bez-faktury": "platba", "pokladna-vyber": "vyber", "uver-splatka": "odchod"}
 
 # Operace, ve kterých se částka pohybu jmenuje jinak než `castka`.
 CASTKA_JAKO = {"urok-a-srazkova-dan": "urok"}

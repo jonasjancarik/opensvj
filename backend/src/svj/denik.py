@@ -21,6 +21,8 @@ STORNO = "storno"
 # Uzávěrkové zápisy k 31. 12. vynulují účty roku. Přehledy a výkazy roku je nevidí, jinak
 # by po uzavření ukazovaly samé nuly; deník a dotazy přes víc let (úhrady faktur) ano.
 UZAVERKA = ("uzavreni-vysledkovych", "uzavreni-rozvahovych")
+# Předpis podílů na úvěru: navazují na něj splátky se stejným kódem úvěru (viz uvery.py).
+OPERACE_PODILU_UVERU = "uver-predpis-mimoradnych-zaloh"
 
 
 def nestornovany() -> ColumnElement[bool]:
@@ -181,6 +183,24 @@ def storno(
             raise ChybaUctovani(
                 f"Na zápis {cislo} navazuje zápis {navazujici[0]}/{navazujici[1]} (např. úhrada"
                 " faktury). Nejdřív stornujte ten."
+            )
+    if z.operace == OPERACE_PODILU_UVERU and kontrolovat_navaznost:
+        kody = {r.sluzba for r in z.radky if r.sluzba}
+        splatka = session.execute(
+            select(Zapis.poradove_cislo, Zapis.rok)
+            .join(RadekZapisu)
+            .where(
+                RadekZapisu.sluzba.in_(kody),
+                Zapis.id > z.id,
+                Zapis.operace.not_in(UZAVERKA),
+                nestornovany(),
+            )
+            .order_by(Zapis.id)
+        ).first()
+        if splatka:
+            raise ChybaUctovani(
+                f"Na předpis podílů na úvěru navazuje zápis {splatka[0]}/{splatka[1]} (splátka"
+                " v předpisu záloh nebo platba z úvěru). Nejdřív stornujte ten."
             )
     novy = _novy_zapis(
         session,

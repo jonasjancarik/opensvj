@@ -546,6 +546,10 @@ DAN_PODLE_ROLE = {
     "vynosy.uroky": ("srazkova", "Úroky z bankovních účtů (daň srazila banka)"),
     "vynosy.urok_z_prodleni": ("predmetne", "Úroky z prodlení od vlastníků"),
     "vynosy.cerpani_fondu": ("nezahrnuje", "Čerpání fondu ze zisku minulých let"),
+    "vynosy.zuctovani_dlouhodobych_zaloh": (
+        "nepredmetne",
+        "Úroky z úvěru hrazené z dlouhodobých záloh vlastníků",
+    ),
     "vynosy.odepsane_pohledavky": (
         "nepredmetne",
         "Zaplacené dříve odepsané dluhy vlastníků na příspěvcích",

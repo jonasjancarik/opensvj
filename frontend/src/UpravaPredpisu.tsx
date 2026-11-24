@@ -397,7 +397,7 @@ function Editor({
               <tr key={s.kod}>
                 <td>
                   <select value={s.role} onChange={(e) => zmenRoli(i, e.target.value)} aria-label="Za co">
-                    {SKUPINY.map((sk) => (
+                    {SKUPINY.filter((sk) => sk.id !== 'uver').map((sk) => (
                       <optgroup key={sk.id} label={sk.nazev}>
                         {data.role
                           .filter((x) => x.skupina === sk.id)

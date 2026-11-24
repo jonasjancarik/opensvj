@@ -5,7 +5,7 @@ import { Chyba, Nacitani } from './ui'
 import { kc } from './penize'
 import { UpravaPredpisu } from './UpravaPredpisu'
 
-type Skupina = 'fond_oprav' | 'sprava' | 'sluzby'
+type Skupina = 'fond_oprav' | 'uver' | 'sprava' | 'sluzby'
 type Slozka = { kod: string; nazev: string; klic: string; sazba: number | null; skupina: Skupina }
 
 export const SKUPINY: { id: Skupina; nazev: string; popis: string }[] = [
@@ -13,6 +13,12 @@ export const SKUPINY: { id: Skupina; nazev: string; popis: string }[] = [
     id: 'fond_oprav',
     nazev: 'Fond oprav',
     popis: 'Dlouhodobé zálohy na opravy a údržbu domu. Nevyúčtovávají se každý rok, převádějí se dál.',
+  },
+  {
+    id: 'uver',
+    nazev: 'Splátky úvěru',
+    popis:
+      'Podíl jednotky na úvěru společenství, předepsaný najednou a splácený po měsících, dokud není splacený. Nevyúčtovává se.',
   },
   {
     id: 'sprava',
@@ -73,6 +79,8 @@ function jakSePocita(s: Slozka) {
       return `${sazba} měsíčně za celý dům, rozdělí se podle podílů`
     case 'jednotka':
       return `${sazba} měsíčně za celý dům, každá jednotka stejně`
+    case 'uver':
+      return 'podíl jednotky na úvěru rozdělený do měsíčních splátek'
     default:
       return 'pevná částka, u každé jednotky může být jiná'
   }

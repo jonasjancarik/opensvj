@@ -61,7 +61,12 @@ DRUHY: dict[str, Druh] = {
     "DROBNE_OPRAVY": _sprava("opravy", "DROBNE_OPRAVY", "Drobné opravy a údržba"),
     "OSTATNI": _sprava("ostatni", "OSTATNI", "Ostatní (revize, software, právní služby)"),
     "FOND_OPRAV": Druh("Oprava hrazená z fondu oprav", "cerpani-fo", {}, "Fond oprav"),
+    "UVER": Druh(
+        "Oprava nebo investice hrazená z úvěru", "cerpani-zalohy-na-uver", {}, "Fond oprav"
+    ),
 }
+# Druhy, u kterých je potřeba odkaz na rozhodnutí o čerpání.
+S_ROZHODNUTIM = {"FOND_OPRAV", "UVER"}
 
 
 @dataclass
@@ -90,8 +95,9 @@ def _zkontroluj(session: Session, profil: Profil, f: NovaFaktura) -> None:
     druh = DRUHY[f.druh]
     if "sluzba" in druh.vstupy and druh.vstupy["sluzba"] not in {**profil.sluzby, **profil.sprava}:
         raise ChybaFaktury(f"SVJ nemá službu „{druh.nazev}“.")
-    if f.druh == "FOND_OPRAV" and not (f.rozhodnuti or "").strip():
-        raise ChybaFaktury("U opravy z fondu oprav napište, kdo ji schválil (např. výbor 3/2026).")
+    if f.druh in S_ROZHODNUTIM and not (f.rozhodnuti or "").strip():
+        odkud = "z úvěru" if f.druh == "UVER" else "z fondu oprav"
+        raise ChybaFaktury(f"U opravy {odkud} napište, kdo ji schválil (např. výbor 3/2026).")
     if f.vystaveno and f.splatnost < f.vystaveno:
         raise ChybaFaktury("Splatnost je dřív než vystavení faktury.")
     if f.vs and not re.fullmatch(r"\d{1,10}", f.vs):

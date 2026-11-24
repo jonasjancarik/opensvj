@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import exists, func, select
 
-from . import banka, denik, dluznici, predpisy, prevody
+from . import banka, denik, dluznici, predpisy, prevody, uvery
 from .api_lide import Adresat, adresati, adresati_osob
 from .db import BankovniPohyb, BankovniUcet, sezeni
 from .domena import katalog, profil
@@ -28,6 +28,14 @@ class Polozka(BaseModel):
     sazba: int | None  # roční sazba úroku v setinách procenta
 
 
+class ZbytekUveru(BaseModel):
+    """Nesplacený podíl jednotky na úvěru: není to dluh, přechází s jednotkou."""
+
+    nazev: str
+    zbyva: int
+    mesicne: int
+
+
 class Jednotka(BaseModel):
     jednotka: str
     po_splatnosti: int
@@ -41,6 +49,7 @@ class Jednotka(BaseModel):
     sankce: int  # předepsaný úrok z prodlení a pokuty, které zbývá zaplatit
     polozky: list[Polozka]
     vlastnici: list[Adresat]  # k dnešku; prázdné, když je aplikace nezná
+    uvery: list[ZbytekUveru]  # nesplacené podíly na úvěrech (k datu potvrzení)
 
 
 class Odpis(BaseModel):
@@ -117,6 +126,7 @@ def _prehled(rok: int | None, prevod_id: int | None = None) -> Dluznici:
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         posledni = s.scalar(select(func.max(BankovniPohyb.datum)))
         odepsane = dluznici.odepsane(s)
+        zbytky = {d.jednotka: uvery.zbytky_jednotky(s, d.jednotka, k_datu) for d in vse}
         nezauctovane = s.scalar(
             select(func.count())
             .select_from(BankovniPohyb)
@@ -147,6 +157,10 @@ def _prehled(rok: int | None, prevod_id: int | None = None) -> Dluznici:
                 for p in d.polozky
             ],
             vlastnici=kdo.get(d.jednotka, []),
+            uvery=[
+                ZbytekUveru(nazev=z.nazev, zbyva=z.zbyva, mesicne=z.mesicne)
+                for z in zbytky[d.jednotka]
+            ],
         )
         for d in vse
     ]

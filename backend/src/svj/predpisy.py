@@ -6,7 +6,8 @@ pevné částky a počty osob, vše s platností od). Další verze zadává vý
 Složky podle podílů se počítají s podíly platnými pro daný měsíc (viz podily.py).
 Výpočet je deterministický: stejné nastavení dá stejné haléře. Předpis měsíce je jeden
 zápis v deníku s řádky po jednotkách a složkách; saldo jednotek se počítá z deníku, takže
-nevzniká druhá evidence.
+nevzniká druhá evidence. Splátky úvěru (viz uvery.py) jsou v předpisu jako další složka
+s kódem úvěru, dokud jednotka nesplatí svůj podíl na jistině.
 """
 
 from dataclasses import asdict, dataclass, field
@@ -20,13 +21,15 @@ from sqlalchemy.orm import Session
 
 from . import audit, denik, pocatecni
 from . import podily as podily_
-from .db import RadekZapisu, VerzePredpisu, Zapis
+from .db import RadekZapisu, Uver, VerzePredpisu, Zapis
 from .domena import katalog
 from .domena.penize import halire, na_text
 from .domena.profil import Profil, vychozi_cesta
 from .domena.rozdeleni import rozdel
 
 KLICE = {"plocha", "osoby", "pevna", "podil", "jednotka"}
+KLIC_UVERU = "uver"  # složka se splátkou úvěru; nezadává se ve verzi předpisu
+ROLE_UVERU = "pohledavky_uver"
 MESICE = [
     "leden", "únor", "březen", "duben", "květen", "červen",
     "červenec", "srpen", "září", "říjen", "listopad", "prosinec",
@@ -69,12 +72,66 @@ class Verze:
         )
 
 
+def _mesicu_mezi(od: date, do: date) -> int:
+    return (do.year - od.year) * 12 + do.month - od.month
+
+
+def plus_mesicu(d: date, n: int) -> date:
+    m = d.month - 1 + n
+    return date(d.year + m // 12, m % 12 + 1, 1)
+
+
+@dataclass(frozen=True)
+class SplaceniUveru:
+    """Jak jednotky splácejí podíl na jistině úvěru v měsíčních předpisech.
+
+    Měsíční splátka je podíl jednotky dělený počtem splátek, zaokrouhlený nahoru na celé
+    koruny; poslední splátka je zbytek. Jednotka s malým podílem tak doplatí dřív.
+    """
+
+    kod: str
+    nazev: str
+    prvni: date  # první den měsíce první splátky
+    pocet: int
+    podily: dict[str, int]  # jednotka → haléře jistiny
+
+    def mesicne(self, jednotka: str) -> int:
+        podil = self.podily.get(jednotka, 0)
+        return -(-podil // (self.pocet * 100)) * 100 if podil > 0 else 0
+
+    def splatka(self, jednotka: str, rok: int, mesic: int) -> int:
+        k = _mesicu_mezi(self.prvni, date(rok, mesic, 1))
+        m = self.mesicne(jednotka)
+        if k < 0 or not m:
+            return 0
+        return max(0, min(m, self.podily[jednotka] - k * m))
+
+    def zbyva_po(self, jednotka: str, rok: int, mesic: int) -> int:
+        """Nesplacený podíl jednotky po předpisu daného měsíce podle splátkového plánu."""
+        k = _mesicu_mezi(self.prvni, date(rok, mesic, 1)) + 1
+        return max(0, self.podily.get(jednotka, 0) - max(k, 0) * self.mesicne(jednotka))
+
+    def zmeny(self) -> set[date]:
+        """Měsíce, od kterých se splátka některé jednotky mění (začátek, zbytek, konec)."""
+        dny = {self.prvni}
+        for j, podil in self.podily.items():
+            m = self.mesicne(j)
+            if not m:
+                continue
+            plnych, zbytek = divmod(podil, m)
+            dny.add(plus_mesicu(self.prvni, plnych))
+            if zbytek:
+                dny.add(plus_mesicu(self.prvni, plnych + 1))
+        return dny
+
+
 @dataclass
 class Nastaveni:
     poznamka: str
     splatnost_den: int
     verze: list[Verze] = field(default_factory=list)
     podily: podily_.Podily | None = None  # None = jen podíly z profilu
+    uvery: list[SplaceniUveru] = field(default_factory=list)
 
     def pro_mesic(self, rok: int, mesic: int) -> Verze | None:
         den = date(rok, mesic, 1)
@@ -85,13 +142,26 @@ class Nastaveni:
         return self.podily.k_mesici(rok, mesic).podily if self.podily else None
 
     def zmeny_predpisu(self) -> list[date]:
-        """Měsíce, od kterých se mění předpis: nové verze a změny podílů."""
+        """Měsíce, od kterých se mění předpis: nové verze, změny podílů a splátky úvěrů."""
         dny = {v.plati_od for v in self.verze}
         for z in self.podily.zmeny if self.podily else []:
             v = self.pro_mesic(z.od_mesice.year, z.od_mesice.month)
             if v is not None and any(s.klic == "podil" for s in v.slozky):
                 dny.add(z.od_mesice)
+        for u in self.uvery:
+            dny |= {d for d in u.zmeny() if self.pro_mesic(d.year, d.month) is not None}
         return sorted(dny)
+
+    def slozky_mesice(self, rok: int, mesic: int) -> list[Slozka]:
+        """Složky předpisu měsíce včetně splátek úvěrů, které v něm jednotky platí."""
+        v = self.pro_mesic(rok, mesic)
+        if v is None:
+            return []
+        return v.slozky + [
+            Slozka(u.kod, f"Splátka úvěru: {u.nazev}", ROLE_UVERU, KLIC_UVERU, None)
+            for u in self.uvery
+            if any(u.splatka(j, rok, mesic) for j in u.podily)
+        ]
 
 
 def nacti(profil: Profil, session: Session | None = None, cesta: Path | None = None) -> Nastaveni:
@@ -131,8 +201,19 @@ def nacti(profil: Profil, session: Session | None = None, cesta: Path | None = N
             v.plati_od: v for v in map(_z_databaze, session.scalars(select(VerzePredpisu)))
         }
         n.verze = [v for v in n.verze if v.plati_od not in z_aplikace] + list(z_aplikace.values())
+        n.uvery = splaceni_uveru(session)
     n.verze.sort(key=lambda v: v.plati_od)
     return n
+
+
+def splaceni_uveru(session: Session) -> list[SplaceniUveru]:
+    """Splátkové plány platných úvěrů (úvěr se stornovaným předpisem podílů neplatí)."""
+    return [plan_uveru(u) for u in session.scalars(select(Uver).order_by(Uver.id)) if u.platny]
+
+
+def plan_uveru(u: Uver) -> SplaceniUveru:
+    podily = {j: int(c) for j, c in u.podily.items()}
+    return SplaceniUveru(u.kod, u.nazev, u.prvni_splatka, u.pocet_splatek, podily)
 
 
 def nacti_s(profil: Profil, tovarna) -> Nastaveni:
@@ -281,11 +362,17 @@ def spocitej(
 def castky_mesice(
     profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int
 ) -> dict[str, dict[str, int]]:
-    """Předpis měsíce po jednotkách a složkách (prázdné, když pro měsíc předpis není)."""
+    """Předpis měsíce po jednotkách a složkách (prázdné, když pro měsíc předpis není),
+    včetně splátek úvěrů pod kódem úvěru."""
     v = nastaveni.pro_mesic(rok, mesic)
     if v is None:
         return {}
-    return spocitej(profil, v, nastaveni.podily_mesice(rok, mesic))
+    castky = spocitej(profil, v, nastaveni.podily_mesice(rok, mesic))
+    for u in nastaveni.uvery:
+        for j, c in castky.items():
+            if splatka := u.splatka(j, rok, mesic):
+                c[u.kod] = splatka
+    return castky
 
 
 def mesicni_celkem(profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int) -> dict[str, int]:
@@ -323,7 +410,7 @@ def vygeneruj(
     chybi = dalsi_k_zauctovani(session, nastaveni, rok)
     if chybi is not None and chybi < mesic:
         raise ChybaPredpisu(f"Nejdřív je potřeba zaúčtovat předpis za {MESICE[chybi - 1]} {rok}.")
-    role = {s.kod: s.role for s in v.slozky}
+    role = {s.kod: s.role for s in nastaveni.slozky_mesice(rok, mesic)}
     vstupy = [
         {
             "jednotka": jednotka,

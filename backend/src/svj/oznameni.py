@@ -78,9 +78,9 @@ def oznameni(profil: Profil, nastaveni: predpisy.Nastaveni, plati_od: date) -> O
 
     nove = predpisy.castky_mesice(profil, nastaveni, plati_od.year, plati_od.month)
     puvodni = predpisy.castky_mesice(profil, nastaveni, rok, mesic) if stara else {}
-    slozky = {s.kod: s for s in nova.slozky}
+    slozky = {s.kod: s for s in nastaveni.slozky_mesice(plati_od.year, plati_od.month)}
     if stara:
-        for s in stara.slozky:
+        for s in nastaveni.slozky_mesice(rok, mesic):
             slozky.setdefault(s.kod, s)
 
     jednotky = [

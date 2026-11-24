@@ -442,6 +442,38 @@ class ZmenaPodilu(Zaklad):
     upraveno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class Uver(Zaklad):
+    """Úvěr SVJ splácený vlastníky v měsíčních předpisech podle podílů (viz uvery.py)."""
+
+    __tablename__ = "uver"
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    nazev: Mapped[str] = mapped_column(String(150))
+    cislo_uctu: Mapped[str] = mapped_column(String(64), default="")
+    jistina: Mapped[int] = mapped_column(BigInteger)
+    rozhodnuti_id: Mapped[int] = mapped_column(ForeignKey("rozhodnuti.id"))
+    predepsano_dne: Mapped[date] = mapped_column(Date)
+    prvni_splatka: Mapped[date] = mapped_column(Date)
+    pocet_splatek: Mapped[int] = mapped_column(Integer)
+    uroky_hradi: Mapped[str] = mapped_column(String(32))  # fond_oprav | zaloha_na_uver | položka
+    podily: Mapped[dict] = mapped_column(JSONB)  # jednotka → haléře jistiny
+    # Předpis podílů; doplní se ve stejné transakci hned po založení.
+    zapis_id: Mapped[int | None] = mapped_column(ForeignKey("zapis.id"), nullable=True)
+    upravil: Mapped[str] = mapped_column(String(128))
+    upraveno: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    zapis: Mapped["Zapis | None"] = relationship()
+
+    @property
+    def kod(self) -> str:
+        """Párovací symbol zápisů úvěru a kód složky splátky v předpisu."""
+        return f"UVER-{self.id}"
+
+    @property
+    def platny(self) -> bool:
+        return self.zapis is not None and not self.zapis.stornovany
+
+
 class Dokument(Zaklad):
     """Dokument přesně tak, jak odešel vlastníkovi. Po uložení se nemění (trigger)."""
 

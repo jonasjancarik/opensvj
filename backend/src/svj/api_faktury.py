@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from . import faktury
+from . import faktury, uvery
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -96,7 +96,11 @@ def _prehled(rok: int) -> Faktury:
     roku = [x for x in vse if x.faktura.rok == rok or (x.zbyva > 0 and not x.stornovana)]
     return Faktury(
         rok=rok,
-        druhy=[Druh(id=k, nazev=d.nazev, skupina=d.skupina) for k, d in faktury.DRUHY.items()],
+        druhy=[
+            Druh(id=k, nazev=d.nazev, skupina=d.skupina)
+            for k, d in faktury.DRUHY.items()
+            if k != "UVER" or uvery.nastaveno(profil.nacti(nastaveni().profil))
+        ],
         dodavatele=sorted({x.faktura.dodavatel for x in vse}, key=str.lower),
         faktury=[model(x) for x in roku],
         k_uhrade=sum(x.zbyva for x in vse if not x.stornovana and x.zbyva > 0),

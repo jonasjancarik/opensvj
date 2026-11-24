@@ -23,6 +23,8 @@ class Slozka(BaseModel):
 
 
 def _skupina(prof: profil.Profil, role: str) -> str:
+    if role == predpisy.ROLE_UVERU:
+        return "uver"
     if role.startswith("zalohy_dlouhodobe"):
         return "fond_oprav"
     return "sprava" if prof.je_sprava(role) else "sluzby"
@@ -144,10 +146,8 @@ def _prehled(rok: int) -> Predpisy:
             Slozka(
                 kod=x.kod, nazev=x.nazev, klic=x.klic, sazba=x.sazba, skupina=_skupina(prof, x.role)
             )
-            for x in verze.slozky
-        ]
-        if verze
-        else [],
+            for x in nast.slozky_mesice(rok, mesic)
+        ],
         jednotky=jednotky,
         mesice=mesice,
         mesicne_celkem=sum(j.mesicne for j in jednotky),

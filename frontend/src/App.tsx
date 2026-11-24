@@ -7,6 +7,7 @@ import { Denik } from './Denik'
 import { Dluznici } from './Dluznici'
 import { MimoradnaZaloha } from './MimoradnaZaloha'
 import { Pokladna } from './Pokladna'
+import { Uvery } from './Uvery'
 import { PotvrzeniPrevodu } from './PotvrzeniDluhu'
 import { Faktury } from './Faktury'
 import { Historie } from './Historie'
@@ -29,6 +30,7 @@ const STRANKY = {
   banka: 'Banka',
   pokladna: 'Pokladna',
   faktury: 'Faktury',
+  uvery: 'Úvěry',
   predpisy: 'Předpisy',
   dluznici: 'Dlužníci',
   vyuctovani: 'Vyúčtování',
@@ -128,6 +130,8 @@ export default function App() {
           <Podily />
         ) : stranka === 'pokladna' ? (
           <Pokladna />
+        ) : stranka === 'uvery' ? (
+          <Uvery />
         ) : stranka === 'mimoradna-zaloha' ? (
           <MimoradnaZaloha />
         ) : stranka === 'potvrzeni-prevodu' ? (
