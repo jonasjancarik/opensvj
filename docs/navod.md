@@ -72,7 +72,8 @@ průběžně ukládá, takže na něm může pokračovat i jiný člen výboru.
 Předpis záloh je v `profiles/<id>-predpisy.yaml`: od kdy platí, den splatnosti a složky
 (fond oprav, teplo, voda, správa…). Každá složka má způsob výpočtu: sazba za m² podlahové
 plochy, sazba za osobu, částka za dům rozdělená podle podílů nebo rovným dílem, nebo pevná
-částka u každé jednotky. Plochy a podíly jednotek jsou v profilu SVJ. Při změně předpisu
+částka u každé jednotky. Plochy a výchozí podíly jednotek jsou v profilu SVJ, změny podílů
+se zapisují na stránce Podíly na společných částech (viz Vlastníci). Při změně předpisu
 se přidá nová verze s pozdějším datem a starší měsíce zůstanou podle staré verze.
 
 Novou verzi (třeba po shromáždění od 1. ledna) jde zadat přímo na stránce Předpisy v části
@@ -131,6 +132,18 @@ Předepsaný úrok je pak vidět zvlášť od dluhů na zálohách, upomínka ho
 a spočtený úrok se dál počítá jen za dobu po předpisu. Platbu úroku jde v Bance zaúčtovat
 jako úhradu úroku z prodlení.
 
+Podíly jednotek na společných částech jsou na stránce Podíly na společných částech
+(odkaz je na stránce Vlastníci). Podíly z profilu SVJ platí, dokud se nezapíše změna:
+celá nová sada podílů všech jednotek s datem, od kdy platí (obvykle den zápisu změny
+prohlášení vlastníka do katastru), a s tím, podle čeho se mění. Součet podílů musí dát
+přesně 1, formulář hned ukáže, kolik chybí nebo přebývá, a když předpis dělí některou
+složku podle podílů, i jak se změní měsíční zálohy jednotek. Předpis a vyúčtování počítají
+po celých měsících, takže změna od 15. 7. se v předpisu projeví od srpna. Roční vyúčtování
+dělí náklady podle průměrného podílu za měsíce roku a vlastníkovi vypíše, jaký podíl kdy
+platil. Změnu, která by šla do už zaúčtovaných předpisů nebo do uzavřeného roku, aplikace
+neuloží; pokud opravdu platí dřív, je potřeba nejdřív stornovat předpisy od toho měsíce.
+Změna podílů se zapíše do historie změn.
+
 Ke každé jednotce jde vytisknout potvrzení o dluzích pro prodej (§ 1186 odst. 3 OZ). Na
 kupujícího přejdou jen dluhy uvedené v potvrzení, proto stránka varuje, když nejsou
 zaúčtované všechny bankovní pohyby nebo je poslední výpis starší než týden.
@@ -168,6 +181,8 @@ po jednotkách a složkách a připraví oznámení pro každou jednotku. Změn�
 lze požadovat nejdřív od prvního dne měsíce po doručení písemného odůvodněného oznámení
 (zákon 67/2013 § 4 odst. 3), takže stránka ukáže, do kdy musí oznámení dojít. Odůvodnění
 se napíše na stránce, uloží se ke konkrétní verzi předpisu a vytiskne se v každém oznámení.
+Když předpis dělí některou složku podle podílů, je změna podílů také změnou předpisu: stránka
+ji nabídne mezi verzemi od prvního měsíce, kdy se s novými podíly počítá.
 
 ## Rozesílání dokumentů
 
@@ -195,7 +210,8 @@ Stránka Vyúčtování porovná náklady roku na správu domu (pojištění, sp
 opravy) se zálohami na správu v předpisu. Náklady každé položky se rozdělí na jednotky
 podle klíče z profilu SVJ, například pojištění podle podílů na společných částech
 a odměna správce rovným dílem. Výsledkem je nedoplatek nebo přeplatek jednotky a tisková
-verze vyúčtování pro vlastníka.
+verze vyúčtování pro vlastníka. Když se podíly během roku změnily, dělí se podle průměrného
+podílu za měsíce roku a vyúčtování pro vlastníka uvede, jaký podíl kdy platil.
 
 Před koncem roku jsou čísla průběžná. Zaúčtovat jde od 31. 12., když jsou zaúčtované
 předpisy všech měsíců. Nedoplatek se pak objeví na stránce Dlužníci se splatností 30. 4.
@@ -250,7 +266,8 @@ jde s uvedením důvodu znovu otevřít a po opravě uzavřít znovu.
 ## Historie změn
 
 Stránka Historie změn ukazuje, kdo a kdy přidal, změnil nebo smazal vlastníka nebo
-vlastnictví jednotky, rozhodnutí a jeho přiřazení, předpis záloh, měřidlo, odečet, výsledek
+vlastnictví jednotky, podíly na společných částech, rozhodnutí a jeho přiřazení, předpis
+záloh, měřidlo, odečet, výsledek
 od zúčtovatele nebo stav účetního roku (uzavření a znovuotevření). U každé změny je stav
 předtím a potom a důvod, pokud ho aplikace vyžaduje. Záznamy nejde upravit ani smazat.
 Zaúčtované doklady se v deníku nemění, opravují se stornem, takže jejich historie je

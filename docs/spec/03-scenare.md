@@ -110,7 +110,6 @@ Tyto situace v provozu nastanou, ale aplikace je zatím neumí, nebo je umí jen
 | Platba bez VS od neznámého účtu | `prijem-nesparovany`, uzávěrka zablokovaná, po vyjasnění `prijem-vyjasneni` |
 | Výdaj 150 Kč bez faktury proplacený členovi výboru | `vydaj-bez-faktury`; kdo o proplacení žádá, nemůže ho sám schválit; podpisové záznamy u náhradního dokladu |
 | Duplicitně zaúčtovaná faktura po doručení vyúčtování | storno, nová verze vyúčtování, původní verze zůstane dohledatelná |
-| Změna podílů prohlášením vlastníka během roku | předpisy od data změny, součet podílů vždy přesně 1 |
 | Změna podkladu po podpisu | podpisový záznam se zneplatní a doklad se vrátí do stavu `uplny` |
 | Revize přiřazená ke službě | odmítnuto s odkazem na § 2 odst. 1 písm. d) zákona 67/2013 |
 | Vyúčtování služeb | porovnání s předepsanými zálohami, nezaplacené zálohy zvlášť, rozdělení přesně na haléře, výsledky zúčtovatele musí sedět na účetnictví, chybějící odečet zaúčtování zablokuje; lhůty podle § 7 a 8 zákona 67/2013 až se zásilkami |

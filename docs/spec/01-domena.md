@@ -24,8 +24,15 @@ kategorii účetní jednotky (mikro) a profil účtové osnovy (viz
 - Podíl na společných částech jako zlomek. **Součet podílů všech jednotek musí dát
   přesně 1**, jinak předpis nejde spočítat.
 - Variabilní symbol pro platby: předpona SVJ, číslo jednotky a pořadí vlastníka.
-- Podíl se může změnit (změna prohlášení vlastníka), proto má platnost:
-  `PodilJednotky(jednotka, citatel, jmenovatel, plati_od, plati_do, zdroj)`.
+- Podíl se může změnit (změna prohlášení vlastníka), proto má platnost. Podíly z profilu
+  platí do první změny; změna je `zmena_podilu(plati_od, podily, zdroj)` s podíly všech
+  jednotek (zápis jako v prohlášení, „718/8600“), jejichž součet je přesně 1. Platí do
+  další změny.
+- Předpis i vyúčtování počítají po celých měsících: měsíc má podíly platné k jeho prvnímu
+  dni, takže změna od 15. 7. se v předpisu projeví od srpna. Roční vyúčtování dělí náklady
+  podle průměru podílů za měsíce roku (součet zůstává 1). Změnu, která by zasáhla
+  zaúčtované předpisy nebo uzavřený rok, aplikace odmítne; v jednom měsíci smí začít platit
+  jen jedna změna.
 
 ### Osoba
 
@@ -113,7 +120,7 @@ změny údajů mimo deník. Zachytí je posluchač sezení SQLAlchemy po každé
 při commitu jeden řádek za věc a transakci (stav před prvním a po posledním zápisu); co
 vzniklo a zaniklo v jedné transakci, se nezapíše. Sledované jsou `osoba`, `vlastnictvi`
 (i se seznamem vlastníků a podílů), `meridlo`, `odecet`, `rozhodnuti`, `rozhodnuti_pro`,
-`verze_predpisu`, `vysledek_zuctovatele` a `obdobi`. Kdo změnu udělal, bere aplikace
+`verze_predpisu`, `zmena_podilu`, `vysledek_zuctovatele` a `obdobi`. Kdo změnu udělal, bere aplikace
 z přihlášeného uživatele, důvod z `audit.duvod()`. Trigger nedovolí záznam změnit ani
 smazat. Rozepsané formuláře, odškrtnutí uzávěrky (má vlastní záznam), naučená párování
 plateb a odeslané dokumenty se nesledují.

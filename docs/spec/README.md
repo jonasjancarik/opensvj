@@ -43,10 +43,10 @@ instalaci. Datový model je nesmí znemožnit, ale nemusí je řešit.
 
 | Oblast | Stav |
 | --- | --- |
-| Jednotky, plochy, podíly, počty osob | V profilu SVJ (YAML). Podíly zatím nemají platnost v čase. |
+| Jednotky, plochy, podíly, počty osob | Jednotky, plochy a výchozí podíly v profilu SVJ (YAML). Změny podílů s platností od data se zadávají v aplikaci (stránka Podíly na společných částech): vždy celá sada se součtem přesně 1, předpis s ní počítá od prvního celého měsíce, roční vyúčtování podle průměru podílů za měsíce roku. Změna podílů je i změnou předpisu pro oznámení o zálohách. |
 | Vlastníci | Osoby a vlastnictví jednotek s platností od–do, stránka Vlastníci. Jméno a adresa se tisknou v upomínce, oznámení o zálohách, vyúčtování a potvrzení o dluzích; účet vlastníka pomáhá párovat platby. Dluhy jdou s jednotkou; ty, které na kupujícího nepřešly, jde při převodu přesunout na prodávajícího a jeho pozdější platbu zaúčtovat v Bance. Kdo platí předpis za měsíc převodu, určuje profil. |
 | Rozhodnutí orgánů | Stránka Rozhodnutí: evidence usnesení a jejich přiřazení k verzím předpisu, splatnosti, klíčům vyúčtování správy a volbám v profilu. Přiřazení si pamatuje otisk schválené podoby; změněný předpis ukáže „Změněno po schválení“ a rozhodnutí jde potvrdit znovu. Chybějící nebo neplatné doložení hlásí uzávěrka. Zápis jako přílohu aplikace neukládá. |
-| Historie změn | Auditní záznam změn mimo deník (vlastníci, vlastnictví, rozhodnutí a jejich přiřazení, předpis záloh, měřidla, odečty, výsledky zúčtovatele, stav roku): kdo, kdy, stav před a po, důvod. Databáze záznam nedovolí změnit. Změny profilu SVJ a souborů s předpisem mimo aplikaci v něm nejsou. |
+| Historie změn | Auditní záznam změn mimo deník (vlastníci, vlastnictví, podíly na společných částech, rozhodnutí a jejich přiřazení, předpis záloh, měřidla, odečty, výsledky zúčtovatele, stav roku): kdo, kdy, stav před a po, důvod. Databáze záznam nedovolí změnit. Změny profilu SVJ a souborů s předpisem mimo aplikaci v něm nejsou. |
 | Měřidla a odečty | Stránka Měřidla: evidence měřidel jednotek i domu, hromadný odečet k datu, výměna měřidla a roční spotřeba. Roční spotřeba slouží jako klíč ve vyúčtování služeb; výsledky zúčtovatele tepla se opisují ručně na stránce Vyúčtování. |
 | Účetní období a archiv | Účetní období je jen kalendářní rok; hospodářský rok ani první období delší než 12 měsíců nejdou. Export deníku a dokladů pro archiv chybí a lhůty úschovy aplikace nehlídá. |
 | Předpisy záloh | Hotovo: verze s platností od, pět způsobů výpočtu, zaúčtování po měsících. |

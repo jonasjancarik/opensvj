@@ -32,8 +32,6 @@ záloh už aplikace má. Schvalování dokladů, podpisy a schválení závěrky
   operací. Chybí výdaj bez faktury (platba a náhradní doklad), vyrovnání dohadné položky
   po doručení faktury, mimořádná záloha pro všechny jednotky podle podílů a pokladna.
   Operace úvěru a pořízení majetku přijdou s jejich oblastmi níže.
-- **Podíly s platností v čase:** změna podílů prohlášením vlastníka během roku, předpisy
-  od data změny, součet podílů vždy přesně 1. Potřebují ji úvěr, nájemné i vyúčtování.
 - **Převod jednotky uprostřed měsíce:** vyúčtování na dvě vlastnická období a potvrzení
   o dluzích k datu převodu.
 
