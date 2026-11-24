@@ -681,6 +681,7 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
 .kontroly li::before { content: '● '; font-size: 0.7em; vertical-align: 0.15em; }
 
 /* ---------- Upomínka ---------- */
+.akce-radku { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 .upominka {
   max-width: 44rem; margin-top: 1.25rem; padding: clamp(1.5rem, 5vw, 3rem);
   font-size: 0.98rem; box-shadow: var(--stin-velky);
@@ -740,7 +741,8 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
   table.z-dlouhodobych td:first-child, table.splatky-uveru th:first-child,
   table.splatky-uveru td:first-child, table.plan-odpisu th:first-child,
   table.plan-odpisu td:first-child, table.pohyby-fondu th:first-child,
-  table.pohyby-fondu td:first-child { display: table-cell; }
+  table.pohyby-fondu td:first-child, table.podily-vlastniku th:first-child,
+  table.podily-vlastniku td:first-child { display: table-cell; }
   th, td { padding: 0.55rem 0.65rem; }
   .pohyb-hlavicka .tlumene { margin-left: 0; width: 100%; }
 }

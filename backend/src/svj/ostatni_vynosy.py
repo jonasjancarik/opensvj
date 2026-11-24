@@ -23,12 +23,14 @@ POJISTNE = "pohledavky_pojistne"
 ODHADY_POJISTNEHO = "dohadne_aktivni"
 DOTACE_POHLEDAVKY = "pohledavky_dotace"
 DOTACE_NAROK = "narok_dotace"
+NAJEMNE = "pohledavky_najemci"
 STRANA = {
     POKUTY: "md",
     POJISTNE: "md",
     ODHADY_POJISTNEHO: "md",
     DOTACE_POHLEDAVKY: "md",
     DOTACE_NAROK: "d",
+    NAJEMNE: "md",
 }
 OPERACE_ZAPOCTU = "smluvni-pokuta-zapocet"
 

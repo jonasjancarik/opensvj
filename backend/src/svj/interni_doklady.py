@@ -190,12 +190,9 @@ FORMULARE: dict[str, Formular] = {
     ),
     "najem-predpis": Formular(
         (Pole("najemce", "Nájemce", "text"), Pole("castka", "Nájemné za období")),
-    ),
-    "prijmy-vlastniku-prevod-do-fo": Formular(
-        (
-            Pole("jednotka", "Jednotka", "jednotka"),
-            Pole("castka", "Podíl vlastníka, který zůstane ve fondu oprav"),
-        ),
+        napoveda="Nájemné za společné části patří vlastníkům, ne společenství. Nájemce pište "
+        "pokaždé stejně: v Bance se pak nabídne k úhradě a na stránce Příjmy vlastníků se jeho "
+        "platby rozdělí mezi vlastníky podle podílů.",
     ),
     "dotace-rozhodnuti": Formular(
         (Pole("poskytovatel", "Kdo dotaci poskytl", "text"), Pole("castka", "Přiznaná dotace")),

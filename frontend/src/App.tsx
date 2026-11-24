@@ -22,6 +22,7 @@ import { FondZeZisku } from './FondZeZisku'
 import { Majetek } from './Majetek'
 import { Meridla } from './Meridla'
 import { RozhodnutiOrganu } from './Rozhodnuti'
+import { PrijmyVlastniku } from './PrijmyVlastniku'
 import { Vlastnici } from './Vlastnici'
 import { Vyuctovani } from './Vyuctovani'
 import { Zasilky } from './Zasilky'
@@ -38,6 +39,7 @@ const STRANKY = {
   vyuctovani: 'Vyúčtování',
   uzaverka: 'Uzávěrka',
   'fond-ze-zisku': 'Fond ze zisku',
+  'prijmy-vlastniku': 'Příjmy vlastníků',
   vlastnici: 'Vlastníci',
   meridla: 'Měřidla',
   majetek: 'Majetek',
@@ -140,6 +142,8 @@ export default function App() {
           <Majetek />
         ) : stranka === 'fond-ze-zisku' ? (
           <FondZeZisku />
+        ) : stranka === 'prijmy-vlastniku' ? (
+          <PrijmyVlastniku />
         ) : stranka === 'mimoradna-zaloha' ? (
           <MimoradnaZaloha />
         ) : stranka === 'potvrzeni-prevodu' ? (

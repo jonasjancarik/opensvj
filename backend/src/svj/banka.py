@@ -79,6 +79,7 @@ OTEVRENE = {
     "dodavatel": (ostatni_vynosy.POKUTY, "nezaplacená pokuta"),
     "udalost": (ostatni_vynosy.POJISTNE, "pojišťovna dluží"),
     "poskytovatel": (ostatni_vynosy.DOTACE_POHLEDAVKY, "zbývá vyplatit"),
+    "najemce": (ostatni_vynosy.NAJEMNE, "dluží nájemné"),
 }
 
 

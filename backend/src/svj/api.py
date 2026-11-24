@@ -24,6 +24,7 @@ from .api_pocatecni import router as pocatecni_router
 from .api_podily import router as podily_router
 from .api_pokladna import router as pokladna_router
 from .api_predpisy import router as predpisy_router
+from .api_prijmy_vlastniku import router as prijmy_vlastniku_router
 from .api_rozhodnuti import router as rozhodnuti_router
 from .api_uvery import router as uvery_router
 from .api_uzaverka import router as uzaverka_router
@@ -60,6 +61,7 @@ app.include_router(pokladna_router)
 app.include_router(uvery_router)
 app.include_router(majetek_router)
 app.include_router(fond_ze_zisku_router)
+app.include_router(prijmy_vlastniku_router)
 app.include_router(oznameni_router)
 app.include_router(formulare_router)
 app.include_router(meridla_router)
