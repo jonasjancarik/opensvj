@@ -202,11 +202,14 @@ S účetní je potřeba potvrdit účtový rozvrh: 311, nebo 315 pro pohledávky
 
 ## V aplikaci
 
-- Profil SVJ má volbu `prispevky: zalohove | nezalohove`. Zatím ovlivňuje jen text přílohy
-  k účetní závěrce.
-- Měsíční předpis ([`predpis-mesicni`](../../catalogue/predpisy.yaml)) účtuje zálohy na
-  správu na 324 a fond oprav na 955 a rozvrhuje je podle klíče z profilu: podíl, nebo
-  jednotka.
+- Profil SVJ má volbu `prispevky: zalohove | nezalohove`. U nezálohových příspěvků jde
+  měsíční předpis složek správy a fondu oprav rovnou do výnosů (311/649, varianta
+  `nezalohove-prispevky` operace [`predpis-mesicni`](../../catalogue/predpisy.yaml)),
+  vyúčtování správy se nedělá a příloha k závěrce popisuje nezálohový způsob. Zálohy na
+  služby a splátky úvěru se nemění.
+- U zálohových příspěvků měsíční předpis ([`predpis-mesicni`](../../catalogue/predpisy.yaml))
+  účtuje zálohy na správu na 324 a fond oprav na 955 a rozvrhuje je podle klíče z profilu:
+  podíl, nebo jednotka.
 - Roční vyúčtování záloh na správu ([`vyuctovani-spravy`](../../catalogue/vyuctovani.yaml))
   je zatím návrh. Účtuje přes vnitřní zúčtování 395; výsledné zůstatky jsou stejné jako
   při postupu 311/649 a 324/311 popsaném výše.
@@ -215,7 +218,16 @@ S účetní je potřeba potvrdit účtový rozvrh: 311, nebo 315 pro pohledávky
   `overit`.
 - Převod výnosů do fondu oprav ([`prevod-vynosu-do-fo`](../../catalogue/fond-oprav.yaml))
   odpovídá běžné praxi, ale ne doporučení knihy.
-- Nezálohové příspěvky a fond ze zisku 911 zatím aplikace nepodporuje.
+- Rozdělení výsledku minulého roku ([`rozdeleni-vysledku`](../../catalogue/fond-ze-zisku.yaml))
+  zaúčtuje stránka Fond ze zisku po rozhodnutí shromáždění: zisk nejdřív uhradí neuhrazené
+  ztráty (931/932), zbytek jde do fondu (931/911); ztráta jde na 932. Aplikace to dělá
+  v obou režimech, protože i u zálohových příspěvků může vzniknout zisk třeba z úroků.
+- Oprava hrazená z fondu ze zisku ([`cerpani-fondu-ze-zisku`](../../catalogue/fond-ze-zisku.yaml))
+  je druh faktury: náklad 511/321 a rozpuštění fondu 911/648 ve stejné výši. Aplikace ji
+  nezaúčtuje, když by fond šel do záporu.
+- Příklad z této kapitoly je převedený na test. Předpis v aplikaci zaokrouhluje každou
+  jednotku na celé koruny, takže příspěvky za rok vyjdou o 24 Kč vyšší (697 944 Kč) než
+  při výpočtu z celé plochy domu.
 
 ## Příklad
 

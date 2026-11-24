@@ -486,6 +486,20 @@ opravky_prevzate)`
   oprávkám; předtím musí být zaúčtované odpisy minulých let.
 - Uzávěrka porovná součet karet s účty majetku a oprávek.
 
+### Nezálohové příspěvky a fond ze zisku
+
+- Profil `prispevky: nezalohove` mění jen předpis: složky s rolí `zalohy_sprava.*`
+  a `zalohy_dlouhodobe` jdou na `vynosy.prispevky` (649) s kódem složky v dimenzi služby.
+  Verze předpisu zůstává stejná. Vyúčtování správy se nedělá a uzávěrka ho nekontroluje.
+- Rozdělení výsledku (`rozdeleni-vysledku`) je jeden zápis v roce, idempotenční klíč
+  `rozdeleni-vysledku:<rok>`. Bere zůstatek 931 po otevření roku: zisk nejdřív uhradí
+  zůstatek 932, zbytek jde na 911; ztráta jde na 932. Odkaz na rozhodnutí shromáždění je
+  povinný.
+- Čerpání fondu (`cerpani-fondu-ze-zisku`) je druh faktury: 511/321 a 911/648. Částka nesmí
+  být vyšší než zůstatek 911 k DUZP ani na konci roku. Stejně se kontroluje zařazení
+  majetku krytého fondem ze zisku (911/901).
+- Uzávěrka hlásí nerozdělený výsledek minulého roku a fond 911 v záporu.
+
 ### Uzávěrka
 
 Kroky, které aplikace vede a které blokují uzavření roku, dokud nejsou splněné:

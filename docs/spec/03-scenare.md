@@ -126,6 +126,20 @@ Příklad se sekačkou z příručky (kapitola 6):
 - Převzatý majetek: zbytek ceny ve zbývajících měsících, bez počátečních stavů uzávěrka
   hlásí nesoulad, kartu bez odpisů jde odebrat. Pozemek se neodepisuje a vyřadit nejde.
 
+### Nezálohové příspěvky
+
+Příklad Ukázkové 12 z příručky (kapitola 2):
+
+- Předpis jde rovnou do výnosů: správa a fond oprav na 649 s kódem složky, služby dál na
+  324. Za rok 697 944 Kč (příručka počítá s celkem za dům 697 920 Kč; předpis zaokrouhluje
+  každou jednotku na koruny).
+- Oprava střechy 260 000 Kč z fondu ze zisku: bez rozhodnutí ani nad zůstatek fondu nejde,
+  jinak 511/321 a 911/648. Výnosy 957 944 Kč, náklady 479 000 Kč, zisk 478 944 Kč.
+- Vyúčtování správy nejde a uzávěrka ho nekontroluje; příloha popisuje fond ze zisku.
+- Zisk minulého roku 478 920 Kč na 931: uzávěrka hlásí nerozdělený výsledek, faktura
+  z fondu upozorní, že zisk ještě není ve fondu. Rozdělení 931/911 jde jen jednou.
+- Zisk nejdřív uhradí neuhrazenou ztrátu; ztráta 120 000 Kč jde na 932.
+
 ### Vlastníci, měřidla a rozhodnutí
 
 - Období vlastnictví jedné jednotky na sebe navazují a nepřekrývají se.

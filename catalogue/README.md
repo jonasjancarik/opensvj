@@ -12,6 +12,7 @@ Každý soubor pokrývá jednu oblast:
 | `banka.yaml` | úhrady vlastníků, nespárované platby, převody mezi účty, úhrady faktur, poplatky a úroky |
 | `dodavatele.yaml` | faktury za služby a správu, zálohy dodavatelům, časové rozlišení, dohadné položky |
 | `fond-oprav.yaml` | opravy z fondu oprav, převod výnosů do fondu, pojistné plnění |
+| `fond-ze-zisku.yaml` | rozdělení výsledku minulého roku, opravy z fondu ze zisku |
 | `vyuctovani.yaml` | vyúčtování služeb a správy, přeúčtování mezi službami, zaokrouhlovací rozdíl |
 | `pohledavky.yaml` | úrok z prodlení, pochybné a nedobytné pohledávky |
 | `majetek-pokladna.yaml` | majetek, zásoby, hotovostní pokladna |

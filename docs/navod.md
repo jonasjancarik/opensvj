@@ -13,6 +13,7 @@ vysvětluje [příručka](prirucka/README.md); co aplikace zatím neumí, je v t
 | Když si SVJ vezme úvěr | [Úvěry](#úvěry) |
 | Když SVJ koupí dražší věc, pozemek nebo jednotku | [Majetek](#majetek) |
 | Po skončení roku | [Vyúčtování správy](#vyúčtování-správy), [Vyúčtování služeb](#vyúčtování-služeb), [Uzávěrka roku](#uzávěrka-roku) |
+| Když shromáždění rozhodne o zisku nebo ztrátě | [Fond ze zisku](#fond-ze-zisku) |
 | Když se něco zaúčtuje špatně | [Deník a storno](#deník-a-storno) |
 | Kdo co změnil | [Historie změn](#historie-změn) |
 
@@ -82,7 +83,8 @@ stránka jen upozorní, že je potřeba ho doplnit.
 Přijatá faktura se zadá na stránce Faktury: dodavatel, za co je (teplo, úklid, správa,
 oprava z fondu oprav…), částka, DUZP a splatnost, nepovinně číslo faktury, VS, účet a IČO
 dodavatele. Zadáním se faktura schvaluje a hned se zaúčtuje podle druhu nákladu; u opravy
-z fondu oprav nebo opravy hrazené z úvěru se musí uvést, kdo ji schválil. Oprava hrazená
+z fondu oprav, z fondu ze zisku nebo z úvěru se musí uvést, kdo ji schválil. Opravu z fondu
+ze zisku aplikace nezaúčtuje, když ve fondu není dost peněz (viz [Fond ze zisku](#fond-ze-zisku)). Oprava hrazená
 z úvěru se nabízí, jen když má SVJ v profilu účty pro úvěr; platí se ze záloh vlastníků
 na úvěr, ne z běžného fondu oprav, a zaplatí ji banka (viz [Úvěry](#úvěry)). Faktura za
 pořízení dlouhodobého majetku jde na pořizování majetku a do nákladů se dostane až
@@ -99,7 +101,9 @@ a rozpis pohledávek za vlastníky po jednotkách. U každé položky jde napsat
 („Vyúčtování 2024“), a u dluhů dřívějších vlastníků jejich jméno; ty se současnému
 vlastníkovi nezapočítají a stránka Předpisy je ukazuje zvlášť. Zaúčtuje se jeden zápis
 k 1. 1. proti počátečnímu účtu rozvažnému (961), v každém roce jen jednou. U bankovních
-účtů aplikace porovná zadaný zůstatek s prvním výpisem roku. Rozepsaný formulář se
+účtů aplikace porovná zadaný zůstatek s prvním výpisem roku. Nerozdělený výsledek
+minulého roku se zadá na účet 931 a neuhrazená ztráta z dřívějších let na 932; rozdělení
+výsledku se pak zaúčtuje na stránce [Fond ze zisku](#fond-ze-zisku). Rozepsaný formulář se
 průběžně ukládá, takže na něm může pokračovat i jiný člen výboru.
 
 ## Předpisy
@@ -121,6 +125,12 @@ Složky jsou ve třech skupinách: fond oprav, zálohy na správu domu (pojišt�
 revize, drobné opravy) a zálohy na služby. Splátky úvěru jsou čtvrtá skupina; nezadávají
 se tady, ale přidá je stránka [Úvěry](#úvěry). Zálohy na správu nejsou služby podle § 2 zákona
 67/2013, a proto se nevyúčtovávají spolu se službami, ale zvlášť.
+
+Když stanovy určují, že příspěvky na správu nejsou zálohové (v profilu SVJ
+`prispevky: nezalohove`), složky správy a fondu oprav se předepisují rovnou jako výnos
+SVJ (příspěvky vlastníků, 649) a nevyúčtovávají se. Zálohy na služby se předepisují
+a vyúčtovávají stejně jako jinde. Předpis vypadá pro vlastníky stejně, mění se jen
+účtování; nevyčerpané peníze pak nejsou ve fondu oprav, ale ve fondu ze zisku.
 
 Na stránce Předpisy se zaúčtuje předpis za měsíc jedním zápisem pro všechny jednotky.
 Měsíce jdou postupně a opakované zaúčtování nic nezdvojí. U jednotek je vidět rozpis
@@ -327,7 +337,8 @@ když oznámení došlo pozdě. Obojí je vidět v tabulce jednotek na stránce 
 
 ## Vyúčtování správy
 
-Stránka Vyúčtování porovná náklady roku na správu domu (pojištění, správa, revize, drobné
+U nezálohových příspěvků se správa nevyúčtovává a stránka to jen oznámí. Jinak stránka
+Vyúčtování porovná náklady roku na správu domu (pojištění, správa, revize, drobné
 opravy) se zálohami na správu v předpisu. Náklady každé položky se rozdělí na jednotky
 podle klíče z profilu SVJ, například pojištění podle podílů na společných částech
 a odměna správce rovným dílem. Výsledkem je nedoplatek nebo přeplatek jednotky a tisková
@@ -381,7 +392,8 @@ Stránka Uzávěrka má pět částí:
 
 - co zbývá udělat: kontroly, které aplikace ověří sama z účetnictví (počáteční stavy,
   předpisy, nezaúčtované pohyby, zůstatky proti výpisům, vyrovnané pomocné účty,
-  vyúčtování, odpisy a evidence majetku, doložená rozhodnutí), a body, které se odškrtávají ručně,
+  vyúčtování, odpisy a evidence majetku, rozdělení výsledku minulého roku, fond ze zisku,
+  doložená rozhodnutí), a body, které se odškrtávají ručně,
 - rozvaha a výsledovka ve zkráceném rozsahu, v tisících Kč i přesně,
 - inventura: zůstatky rozvahových účtů s rozpisem po jednotkách nebo fakturách a tisk
   inventurních soupisů se zákonnými náležitostmi,
@@ -403,6 +415,24 @@ peníze na účtech, nezaplacené faktury i dluhy a přeplatky vlastníků po je
 položkách se splatností, takže Dlužníci v novém roce správně počítají, co je po splatnosti.
 Do uzavřeného roku už nic zaúčtovat nejde. Když se před schválením závěrky najde chyba, rok
 jde s uvedením důvodu znovu otevřít a po opravě uzavřít znovu.
+
+## Fond ze zisku
+
+Výsledek hospodaření roku se při jeho uzavření převede do dalšího roku jako výsledek
+čekající na rozhodnutí shromáždění (931). U zálohových příspěvků bývá nulový, u
+nezálohových je to obvykle zisk. Stránka Fond ze zisku ukáže, kolik z minulého roku
+čeká, a po rozhodnutí shromáždění ho jedním tlačítkem zaúčtuje: zadá se den a odkaz na
+rozhodnutí. Zisk nejdřív uhradí neuhrazené ztráty z minulých let a zbytek jde do fondu ze
+zisku (911); ztráta se převede mezi neuhrazené ztráty (932) a uhradí ji zisky dalších let.
+Do fondu oprav zisk nepatří: fond oprav jsou zálohy jednotlivých vlastníků. Opravit
+rozdělení jde stornem v Deníku.
+
+Pod tím je přehled fondu v roce: stav na začátku, co do něj přibylo a co se z něj čerpalo,
+a stav teď nebo na konci roku. Z fondu se platí opravy zadané na stránce Faktury jako
+„Oprava hrazená z fondu ze zisku“: oprava jde do nákladů a fond se ve stejné výši
+rozpustí do výnosů, takže výsledek roku nezhorší. Fondem ze zisku jde krýt i pořízení
+majetku (viz [Majetek](#majetek)). Fond nesmí jít do záporu; aplikace takovou fakturu ani
+zařazení majetku nezaúčtuje a uzávěrka hlásí nerozdělený výsledek i fond v záporu.
 
 ## Historie změn
 

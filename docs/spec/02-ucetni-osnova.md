@@ -80,6 +80,9 @@ výboru, sankce a pochybné pohledávky). Účty jsou z ukázkového profilu pod
 | `majetek_nehmotny`, `majetek_nehmotny_porizovani`, `opravky_nehmotneho` | software na zakázku, jeho pořizování a oprávky | 013100, 041100, 073100 |
 | `zdroj_majetku` | zdroj krytí majetku placeného z fondu oprav nebo fondu ze zisku | 901100 |
 | `fond_ze_zisku` | fond ze zisku minulých let | 911100 |
+| `neuhrazena_ztrata` | neuhrazená ztráta minulých let | 932000 |
+| `vynosy.prispevky` | nezálohové příspěvky vlastníků na správu (`prispevky: nezalohove`) | 649500 |
+| `vynosy.cerpani_fondu` | rozpuštění fondu ze zisku ve výši oprav, které z něj byly hrazené | 648100 |
 | `naklady.odpisy` | účetní odpisy | 551100 |
 | `zasoby` | nespotřebované zásoby k 31. 12. | 112100 |
 | `pokladna`, `naklady.spotreba` | hotovostní pokladna a drobný materiál | 211100, 501100 |
