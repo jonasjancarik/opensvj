@@ -26,7 +26,7 @@ from datetime import date
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik
+from . import denik, fond_ze_zisku
 from .db import Majetek, RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import kc, na_text
@@ -366,6 +366,11 @@ def zarad(
                 f"Na pořizování majetku je nezařazeno jen {kc(volne)}. Nejdřív zadejte "
                 "faktury za pořízení na stránce Faktury jako pořízení majetku."
             )
+        if kryti_kod == "fond_ze_zisku":
+            try:
+                fond_ze_zisku.zkontroluj_cerpani(s, profil, cena, zarazeno)
+            except fond_ze_zisku.ChybaFondu as e:
+                raise ChybaMajetku(str(e)) from e
     m = Majetek(
         nazev=nazev[:150],
         inventarni_cislo=inventarni_cislo.strip()[:32],

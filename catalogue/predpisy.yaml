@@ -24,6 +24,10 @@
     - id: ucet-pohledavek-315
       kdy: Profil SVJ vede předpisy na 315 (Ostatní pohledávky) místo 311.
       zmena: Role `pohledavky_vlastnici` ukazuje na 315; předkontace se nemění.
+    - id: nezalohove-prispevky
+      kdy: "Stanovy určují, že příspěvky na správu nejsou zálohové (profil `prispevky: nezalohove`)."
+      stav: navrh
+      zmena: "Složky správy a fondu oprav jdou rovnou do výnosů: MD pohledavky_vlastnici / D vynosy.prispevky, dimenze služby nese kód složky. Zálohy na služby (324) a splátky úvěru zůstávají beze změny. Kniha Durec, Účetnictví SVJ, 3. vyd., s. 42–48."
   zdroje:
     - {typ: zakon, odkaz: "OZ § 1180 (příspěvky na správu), § 1181 (zálohy na služby)"}
     - {typ: zakon, odkaz: "zákon 67/2013 § 4 (zálohy na služby)"}

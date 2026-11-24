@@ -12,7 +12,7 @@ from datetime import date
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session, selectinload
 
-from . import denik
+from . import denik, fond_ze_zisku
 from .db import Faktura, RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import kc, na_text
@@ -61,6 +61,9 @@ DRUHY: dict[str, Druh] = {
     "DROBNE_OPRAVY": _sprava("opravy", "DROBNE_OPRAVY", "Drobné opravy a údržba"),
     "OSTATNI": _sprava("ostatni", "OSTATNI", "Ostatní (revize, software, právní služby)"),
     "FOND_OPRAV": Druh("Oprava hrazená z fondu oprav", "cerpani-fo", {}, "Fond oprav"),
+    "FOND_ZE_ZISKU": Druh(
+        "Oprava hrazená z fondu ze zisku", "cerpani-fondu-ze-zisku", {}, "Fond oprav"
+    ),
     "UVER": Druh(
         "Oprava nebo investice hrazená z úvěru", "cerpani-zalohy-na-uver", {}, "Fond oprav"
     ),
@@ -78,7 +81,8 @@ DRUHY: dict[str, Druh] = {
     ),
 }
 # Druhy, u kterých je potřeba odkaz na rozhodnutí o čerpání.
-S_ROZHODNUTIM = {"FOND_OPRAV", "UVER"}
+S_ROZHODNUTIM = {"FOND_OPRAV", "FOND_ZE_ZISKU", "UVER"}
+ODKUD = {"FOND_OPRAV": "z fondu oprav", "FOND_ZE_ZISKU": "z fondu ze zisku", "UVER": "z úvěru"}
 
 
 @dataclass
@@ -111,8 +115,14 @@ def _zkontroluj(session: Session, profil: Profil, f: NovaFaktura) -> None:
     if porizovani and porizovani not in profil.role:
         raise ChybaFaktury(f"SVJ nemá v nastavení účet pro {druh.nazev.lower()}.")
     if f.druh in S_ROZHODNUTIM and not (f.rozhodnuti or "").strip():
-        odkud = "z úvěru" if f.druh == "UVER" else "z fondu oprav"
-        raise ChybaFaktury(f"U opravy {odkud} napište, kdo ji schválil (např. výbor 3/2026).")
+        raise ChybaFaktury(
+            f"U opravy {ODKUD[f.druh]} napište, kdo ji schválil (např. výbor 3/2026)."
+        )
+    if f.druh == "FOND_ZE_ZISKU":
+        try:
+            fond_ze_zisku.zkontroluj_cerpani(session, profil, f.castka, f.duzp)
+        except fond_ze_zisku.ChybaFondu as e:
+            raise ChybaFaktury(str(e)) from e
     if f.vystaveno and f.splatnost < f.vystaveno:
         raise ChybaFaktury("Splatnost je dřív než vystavení faktury.")
     if f.vs and not re.fullmatch(r"\d{1,10}", f.vs):

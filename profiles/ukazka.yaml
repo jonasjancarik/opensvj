@@ -142,8 +142,12 @@ role:
   vynosy.urok_z_prodleni: "641100"
   vynosy.odepsane_pohledavky: "649300"
   vynosy.dotace: "691100"
+  # Jen u nezálohových příspěvků (prispevky: nezalohove) a u fondu ze zisku.
+  vynosy.prispevky: "649500"
+  vynosy.cerpani_fondu: "648100"
   zdroj_majetku: "901100"
   fond_ze_zisku: "911100"
+  neuhrazena_ztrata: "932000"
   uvery: "951100"
   zalohy_dlouhodobe_uver: "955300"
   zalohy_dlouhodobe_pochybne: "955900"
@@ -187,6 +191,9 @@ nazvy_uctu:
   "955300": Zálohy na splácení úvěru
   "951100": Úvěr
   "931000": Výsledek hospodaření ve schvalovacím řízení
+  "932000": Neuhrazená ztráta minulých let
+  "648100": Čerpání fondu ze zisku
+  "649500": Příspěvky vlastníků na správu (nezálohové)
   "961000": Počáteční účet rozvažný
   "962000": Konečný účet rozvažný
   "963000": Účet výsledku hospodaření

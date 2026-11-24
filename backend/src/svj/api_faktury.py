@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from . import faktury, majetek, uvery
+from . import faktury, fond_ze_zisku, majetek, uvery
 from .db import sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -91,9 +91,11 @@ def model(x: faktury.StavFaktury) -> Faktura:
 
 
 def _nabizet(kod: str, d: faktury.Druh, prof: profil.Profil) -> bool:
-    """Druhy pro úvěr a majetek jen u SVJ, které pro ně má v nastavení účty."""
+    """Druhy pro úvěr, fond ze zisku a majetek jen u SVJ, které pro ně má v nastavení účty."""
     if kod == "UVER":
         return uvery.nastaveno(prof)
+    if kod == "FOND_ZE_ZISKU":
+        return fond_ze_zisku.nastaveno(prof) and "vynosy.cerpani_fondu" in prof.role
     porizovani = d.vstupy.get("porizovani")
     if porizovani:
         return porizovani in prof.role and majetek.druhy(prof) != {}

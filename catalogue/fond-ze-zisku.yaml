@@ -1,0 +1,81 @@
+# Výsledek hospodaření a fond ze zisku minulých let (účet 911). Hlavně pro SVJ s nezálohovými
+# příspěvky, kde výsledek bývá nenulový. Formát viz README.md v této složce.
+
+- id: rozdeleni-vysledku
+  nazev: Rozdělení výsledku hospodaření minulého roku
+  kdy: Po otevření roku, když shromáždění rozhodlo o výsledku minulého roku (obvykle se zprávou o hospodaření).
+  stav: navrh
+  doklad: ID
+  vstupy:
+    zisk_do_fondu: část zisku převedená do fondu ze zisku
+    zisk_na_ztraty: část zisku, která uhradí neuhrazené ztráty minulých let
+    ztrata: ztráta převedená mezi neuhrazené ztráty
+    rozhodnuti: odkaz na rozhodnutí shromáždění
+  zapisy:
+    - md: vysledek_ve_schvalovani
+      d: fond_ze_zisku
+      castka: "{zisk_do_fondu}"
+    - md: vysledek_ve_schvalovani
+      d: neuhrazena_ztrata
+      castka: "{zisk_na_ztraty}"
+    - md: neuhrazena_ztrata
+      d: vysledek_ve_schvalovani
+      castka: "{ztrata}"
+  pravidla:
+    - Výsledek minulého roku se při otevření převede na 931 a čeká na rozhodnutí shromáždění. Rozdělením se 931 vynuluje.
+    - Zisk nejdřív uhradí neuhrazené ztráty minulých let (932), zbytek jde do fondu ze zisku (911). Ztráta jde na 932 a uhradí ji zisky dalších let.
+    - Zisk se nepřevádí do fondu oprav (955). Fond oprav jsou zálohy jednotlivých vlastníků, takže převod by fakticky byl výplatou podílu na zisku.
+    - Shromáždění má zároveň určit, na co se fond ze zisku smí použít.
+  zdroje:
+    - {typ: zakon, odkaz: "OZ § 1208 písm. c) (rozhodnutí o vypořádání nevyčerpaných příspěvků), § 1221 a § 217 odst. 3 (zisk jen pro činnost)"}
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 42–48"}
+    - {typ: vyhlaska, odkaz: "vyhláška 504/2002, příloha 3, účtové skupiny 91 a 93"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Zisk 478 920 Kč do fondu ze zisku
+      vstupy: {zisk_do_fondu: "478920.00", zisk_na_ztraty: "0.00", ztrata: "0.00", rozhodnuti: "shromáždění 15. 4. 2027, bod 3"}
+      ocekavane:
+        - [md, vysledek_ve_schvalovani, "478920.00", {}]
+        - [d, fond_ze_zisku, "478920.00", {}]
+    - nazev: Zisk 50 000 Kč, z toho 30 000 Kč na ztrátu z minulých let
+      vstupy: {zisk_do_fondu: "20000.00", zisk_na_ztraty: "30000.00", ztrata: "0.00", rozhodnuti: "shromáždění 15. 4. 2027"}
+      ocekavane:
+        - [md, vysledek_ve_schvalovani, "20000.00", {}]
+        - [d, fond_ze_zisku, "20000.00", {}]
+        - [md, vysledek_ve_schvalovani, "30000.00", {}]
+        - [d, neuhrazena_ztrata, "30000.00", {}]
+    - nazev: Ztráta 120 000 Kč z roku velké opravy
+      vstupy: {zisk_do_fondu: "0.00", zisk_na_ztraty: "0.00", ztrata: "120000.00", rozhodnuti: "shromáždění 15. 4. 2027"}
+      ocekavane:
+        - [md, neuhrazena_ztrata, "120000.00", {}]
+        - [d, vysledek_ve_schvalovani, "120000.00", {}]
+
+- id: cerpani-fondu-ze-zisku
+  nazev: Oprava hrazená z fondu ze zisku
+  kdy: Faktura za opravu nebo údržbu, o jejímž hrazení z fondu ze zisku rozhodl výbor nebo shromáždění.
+  stav: navrh
+  doklad: FP
+  vstupy: {protistrana: dodavatel, castka: částka, rozhodnuti: odkaz na rozhodnutí}
+  zapisy:
+    - md: naklady.opravy
+      d: dodavatele
+      castka: "{castka}"
+      dimenze: {protistrana: "{protistrana}"}
+    - md: fond_ze_zisku
+      d: vynosy.cerpani_fondu
+      castka: "{castka}"
+  pravidla:
+    - Oprava je nákladem SVJ a patří do výsledovky. Fond se ve stejné výši rozpustí do výnosů, takže oprava výsledek roku nezhorší.
+    - Fond nesmí jít do záporu; aplikace fakturu nezaúčtuje, když ve fondu není dost peněz.
+    - Čerpání fondu se do základu daně nezahrnuje, pokud kryje náklady, které také nejsou daňové.
+  zdroje:
+    - {typ: literatura, odkaz: "Durec, Účetnictví SVJ, 3. vyd., s. 42–48 (čerpání fondu ze zisku výnosově)"}
+  platnost: {od: 2014-01-01}
+  priklady:
+    - nazev: Oprava střechy z fondu ze zisku
+      vstupy: {castka: "260000.00", protistrana: klempirstvi, rozhodnuti: "shromáždění 12. 3. 2026, bod 5"}
+      ocekavane:
+        - [md, naklady.opravy, "260000.00", {protistrana: klempirstvi}]
+        - [d, dodavatele, "260000.00", {protistrana: klempirstvi}]
+        - [md, fond_ze_zisku, "260000.00", {}]
+        - [d, vynosy.cerpani_fondu, "260000.00", {}]

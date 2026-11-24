@@ -15,6 +15,7 @@ from . import (
     banka,
     denik,
     dluznici,
+    fond_ze_zisku,
     majetek,
     pocatecni,
     predpisy,
@@ -173,17 +174,18 @@ def kontroly(
         )
 
     v = vyuctovani_spravy.spocitej(session, profil, rok)
-    vysledek.append(
-        Kontrola("vyuctovani-spravy", "Zálohy na správu domu jsou vyúčtované", "hotovo")
-        if v.zapis
-        else Kontrola(
-            "vyuctovani-spravy",
-            "Zálohy na správu domu jsou vyúčtované",
-            "chybi",
-            "Zaúčtujte vyúčtování správy k 31. 12.",
-            "vyuctovani",
+    if not profil.nezalohove:
+        vysledek.append(
+            Kontrola("vyuctovani-spravy", "Zálohy na správu domu jsou vyúčtované", "hotovo")
+            if v.zapis
+            else Kontrola(
+                "vyuctovani-spravy",
+                "Zálohy na správu domu jsou vyúčtované",
+                "chybi",
+                "Zaúčtujte vyúčtování správy k 31. 12.",
+                "vyuctovani",
+            )
         )
-    )
 
     zalohy_sluzeb = sum(
         c for u, c in zust.items() if profil.role_uctu().get(u, "").startswith("zalohy_sluzby.")
@@ -248,6 +250,7 @@ def kontroly(
         )
 
     vysledek.extend(_kontroly_majetku(session, profil, zust, rok, k_datu))
+    vysledek.extend(_kontroly_fondu_ze_zisku(session, profil, rok))
 
     bez = rozhodnuti.bez_rozhodnuti(session, profil, nastaveni, rok)
     vysledek.append(
@@ -294,6 +297,40 @@ def kontroly(
             ),
         )
     )
+    return vysledek
+
+
+def _kontroly_fondu_ze_zisku(session: Session, profil: Profil, rok: int) -> list[Kontrola]:
+    if not fond_ze_zisku.nastaveno(profil):
+        return []
+    st = fond_ze_zisku.stav(session, profil, rok)
+    vysledek = []
+    nazev = f"Výsledek hospodaření roku {rok - 1} je rozdělený"
+    if st.rozdeleni is not None:
+        vysledek.append(Kontrola("rozdeleni-vysledku", nazev, "hotovo"))
+    elif st.vysledek:
+        co = f"Zisk {_kc(st.vysledek)}" if st.vysledek > 0 else f"Ztráta {_kc(-st.vysledek)}"
+        vysledek.append(
+            Kontrola(
+                "rozdeleni-vysledku",
+                nazev,
+                "chybi",
+                f"{co} z roku {rok - 1} čeká na rozhodnutí shromáždění. Po rozhodnutí ho "
+                "zaúčtujte do fondu ze zisku, nebo mezi neuhrazené ztráty.",
+                "fond-ze-zisku",
+            )
+        )
+    if st.konec < 0:
+        vysledek.append(
+            Kontrola(
+                "fond-ze-zisku",
+                "Fond ze zisku není v záporu",
+                "chybi",
+                f"Z fondu se čerpalo o {_kc(-st.konec)} víc, než v něm bylo. Část oprav "
+                "nebo majetku je potřeba hradit z jiného zdroje.",
+                "fond-ze-zisku",
+            )
+        )
     return vysledek
 
 
@@ -599,6 +636,7 @@ DAN_PODLE_ROLE = {
     "vynosy.dotace": ("nepredmetne", "Dotace"),
     "vynosy.uroky": ("srazkova", "Úroky z bankovních účtů (daň srazila banka)"),
     "vynosy.urok_z_prodleni": ("predmetne", "Úroky z prodlení od vlastníků"),
+    "vynosy.prispevky": ("nepredmetne", "Příspěvky vlastníků na správu domu"),
     "vynosy.cerpani_fondu": ("nezahrnuje", "Čerpání fondu ze zisku minulých let"),
     "vynosy.zuctovani_dlouhodobych_zaloh": (
         "nepredmetne",
@@ -877,8 +915,11 @@ def priloha(
     metody = []
     if any(r.startswith("zalohy_sluzby") for r in role_uctu.values()):
         metody.append(
-            "Předpis záloh na služby a na správu domu se účtuje na účtech účtových skupin 31 "
-            "(pohledávky za vlastníky) a 32 (přijaté zálohy); dlouhodobé zálohy na opravy "
+            "Předpis záloh na služby se účtuje na účtech účtových skupin 31 (pohledávky za "
+            "vlastníky) a 32 (přijaté zálohy)."
+            if profil.nezalohove
+            else "Předpis záloh na služby a na správu domu se účtuje na účtech účtových skupin "
+            "31 (pohledávky za vlastníky) a 32 (přijaté zálohy); dlouhodobé zálohy na opravy "
             "(fond oprav) na účtu 955."
         )
     if profil.prispevky == "zalohove":
@@ -888,7 +929,12 @@ def priloha(
             "vlastníkům vyúčtuje."
         )
     elif profil.prispevky == "nezalohove":
-        metody.append("Příspěvky vlastníků na správu domu a pozemku se nehradí zálohově.")
+        metody.append(
+            "Příspěvky vlastníků na správu domu a pozemku se nehradí zálohově. Předepisují se "
+            "měsíčně jako výnos a s vlastníky se nevyúčtovávají. O zisku rozhoduje shromáždění; "
+            "převádí se do fondu ze zisku minulých let, ze kterého se hradí schválené opravy. "
+            "Čerpání fondu se účtuje do výnosů ve výši nákladů, které kryje."
+        )
     else:
         metody.append(f"Způsob úhrady příspěvků na správu: {DOPLNTE}.")
     if any(r.startswith("naklady_sluzeb") for r in role_uctu.values()):

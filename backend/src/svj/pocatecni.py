@@ -55,11 +55,12 @@ def ucty_vlastniku(profil: Profil) -> set[str]:
 
 
 def rozvahove_ucty(profil: Profil) -> dict[str, str]:
-    """Účty, na kterých může být počáteční stav: číslo → role. Bez nákladů, výnosů a závěrky."""
+    """Účty, na kterých může být počáteční stav: číslo → role. Bez nákladů, výnosů, vnitřního
+    zúčtování a závěrkových účtů; výsledek minulých let (931, 932) sem patří."""
     return {
         u: r
         for u, r in sorted(profil.role_uctu().items())
-        if u[0] not in "56" and u[:2] not in ("39", "96", "93")
+        if u[0] not in "56" and u[:2] not in ("39", "96")
     }
 
 

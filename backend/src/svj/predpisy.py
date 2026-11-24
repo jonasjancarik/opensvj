@@ -380,6 +380,21 @@ def mesicni_celkem(profil: Profil, nastaveni: Nastaveni, rok: int, mesic: int) -
     return {j: sum(c.values()) for j, c in castky_mesice(profil, nastaveni, rok, mesic).items()}
 
 
+ROLE_PRISPEVKU = "vynosy.prispevky"
+
+
+def je_prispevek(profil: Profil, role: str) -> bool:
+    """Složka je nezálohovým příspěvkem na správu (správa nebo fond oprav)."""
+    return profil.nezalohove and (
+        profil.je_sprava(role) or role.partition(".")[0] == "zalohy_dlouhodobe"
+    )
+
+
+def ucet_predpisu(profil: Profil, role: str) -> str:
+    """Role, na kterou jde složka předpisu: u nezálohových příspěvků rovnou do výnosů."""
+    return ROLE_PRISPEVKU if je_prispevek(profil, role) else role
+
+
 def klic_mesice(rok: int, mesic: int) -> str:
     return f"predpis:{rok}-{mesic:02d}"
 
@@ -410,7 +425,7 @@ def vygeneruj(
     chybi = dalsi_k_zauctovani(session, nastaveni, rok)
     if chybi is not None and chybi < mesic:
         raise ChybaPredpisu(f"Nejdřív je potřeba zaúčtovat předpis za {MESICE[chybi - 1]} {rok}.")
-    role = {s.kod: s.role for s in nastaveni.slozky_mesice(rok, mesic)}
+    role = {s.kod: ucet_predpisu(profil, s.role) for s in nastaveni.slozky_mesice(rok, mesic)}
     vstupy = [
         {
             "jednotka": jednotka,
@@ -429,7 +444,8 @@ def vygeneruj(
             katalog.nacti()["predpis-mesicni"],
             vstupy,
             datum=date(rok, mesic, 1),
-            popis=f"Předpis záloh za {MESICE[mesic - 1]} {rok}",
+            popis=f"Předpis {'příspěvků a záloh' if profil.nezalohove else 'záloh'} za "
+            f"{MESICE[mesic - 1]} {rok}",
             doklad=f"PR {rok}-{mesic:02d}",
             zauctoval=zauctoval,
             idempotencni_klic=klic_mesice(rok, mesic),

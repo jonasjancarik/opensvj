@@ -115,6 +115,7 @@ class Vyuctovani:
     nezahrnuto: list[Nezahrnuto]
     zapis: Zapis | None
     z_dlouhodobych: list[ZDlouhodobych] = field(default_factory=list)
+    nezalohove: bool = False  # příspěvky nejsou zálohové, správa se nevyúčtovává
 
     @property
     def splatnost(self) -> date:
@@ -229,6 +230,7 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
         nezahrnuto=[Nezahrnuto(p, c) for p, c in sorted(nezahrnuto.items())],
         zapis=zapis,
         z_dlouhodobych=z_dlouhodobych,
+        nezalohove=profil.nezalohove,
     )
 
 
@@ -273,6 +275,11 @@ def proc_nejde(
     """Důvod, proč vyúčtování ještě nejde zaúčtovat (None = jde)."""
     if v.zapis is not None:
         return None
+    if v.nezalohove:
+        return (
+            "Příspěvky na správu jsou podle stanov nezálohové: předepisují se rovnou jako výnos "
+            "a s vlastníky se nevyúčtovávají."
+        )
     if dnes < date(v.rok, 12, 31):
         return f"Vyúčtování půjde zaúčtovat od 31. 12. {v.rok}, až budou známé náklady celého roku."
     if any(m.kryti not in majetek.FONDY for m, _ in majetek.k_odepsani(session, v.rok)):

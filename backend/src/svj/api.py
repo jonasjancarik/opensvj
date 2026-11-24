@@ -11,6 +11,7 @@ from .api_banka import router as banka_router
 from .api_denik import router as denik_router
 from .api_dluznici import router as dluznici_router
 from .api_faktury import router as faktury_router
+from .api_fond_ze_zisku import router as fond_ze_zisku_router
 from .api_formulare import router as formulare_router
 from .api_historie import router as historie_router
 from .api_interni_doklady import router as interni_doklady_router
@@ -58,6 +59,7 @@ app.include_router(mimoradne_zalohy_router)
 app.include_router(pokladna_router)
 app.include_router(uvery_router)
 app.include_router(majetek_router)
+app.include_router(fond_ze_zisku_router)
 app.include_router(oznameni_router)
 app.include_router(formulare_router)
 app.include_router(meridla_router)

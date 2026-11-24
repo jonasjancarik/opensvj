@@ -55,6 +55,11 @@ class Profil:
     vyuctovani_pri_prevodu: str = "soucasnemu"
 
     @property
+    def nezalohove(self) -> bool:
+        """Příspěvky na správu jsou nezálohové: předepisují se rovnou jako výnos."""
+        return self.prispevky == "nezalohove"
+
+    @property
     def jednotky(self) -> list[str]:
         return [j.oznaceni for j in self.udaje_jednotek]
 

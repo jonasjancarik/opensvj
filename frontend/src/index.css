@@ -735,7 +735,8 @@ tr.bez-dluhu > td { color: var(--tlumeny); }
   table.mimoradne-zalohy td:first-child, table.z-dlouhodobych th:first-child,
   table.z-dlouhodobych td:first-child, table.splatky-uveru th:first-child,
   table.splatky-uveru td:first-child, table.plan-odpisu th:first-child,
-  table.plan-odpisu td:first-child { display: table-cell; }
+  table.plan-odpisu td:first-child, table.pohyby-fondu th:first-child,
+  table.pohyby-fondu td:first-child { display: table-cell; }
   th, td { padding: 0.55rem 0.65rem; }
   .pohyb-hlavicka .tlumene { margin-left: 0; width: 100%; }
 }
