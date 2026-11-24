@@ -113,7 +113,12 @@ def sestav(op: Operace, vstupy: dict[str, Any], krok: str | None = None) -> list
             md, d = _dosad(z["md"], k), _dosad(z["d"], k)
             if castka < 0:
                 md, d, castka = d, md, -castka
-            dimenze = {n: _dosad(v, k) for n, v in (z.get("dimenze") or {}).items()}
+            # Prázdná dimenze (třeba protistrana u současného vlastníka) se nezapíše.
+            dimenze = {
+                n: hodnota
+                for n, v in (z.get("dimenze") or {}).items()
+                if (hodnota := _dosad(v, k)) != ""
+            }
             radky.append(Radek("md", md, castka, dimenze))
             radky.append(Radek("d", d, castka, dimenze))
     zkontroluj_vyrovnanost(radky)

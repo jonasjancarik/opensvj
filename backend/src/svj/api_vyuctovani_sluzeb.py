@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from . import meridla, predpisy, vyuctovani_sluzeb, zasilky
 from .api_lide import Adresat, adresati
+from .api_vyuctovani import ObdobiVlastnika, obdobi_vlastniku
 from .db import BankovniUcet, VysledekZuctovatele, sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -52,6 +53,8 @@ class Jednotka(BaseModel):
     doruceno: date | None  # kdy vlastníkovi došlo vyúčtování
     namitky_do: date | None  # 30 dní od doručení (§ 8 odst. 1 zákona 67/2013)
     vyrovnani_do: date | None  # 4 měsíce od doručení (§ 7 odst. 2 zákona 67/2013)
+    # Jen když se vyúčtování dělí na vlastnická období a jednotka v roce změnila vlastníka.
+    obdobi: list[ObdobiVlastnika]
 
 
 class Vyuctovani(BaseModel):
@@ -95,6 +98,8 @@ def _prehled(rok: int) -> Vyuctovani:
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
         kdo = adresati(s, dnes)
+        kody = [x.kod for x in v.sluzby]
+        obdobi = {j.jednotka: obdobi_vlastniku(s, j.obdobi, kody, dnes) for j in v.jednotky}
         zuctovatel = _zuctovatel(s, rok)
         doruceno = zasilky.doruceni_jednotek(s, klic_rozeslani(rok))
     return Vyuctovani(
@@ -147,6 +152,7 @@ def _prehled(rok: int) -> Vyuctovani:
                 vyrovnani_do=(
                     zasilky.plus_mesice(doruceno[j.jednotka], 4) if j.jednotka in doruceno else None
                 ),
+                obdobi=obdobi[j.jednotka],
             )
             for j in v.jednotky
         ],

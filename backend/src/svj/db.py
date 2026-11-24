@@ -25,7 +25,7 @@ from sqlalchemy import (
     create_engine,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
 from .nastaveni import nastaveni
@@ -452,6 +452,9 @@ class Dokument(Zaklad):
     nazev: Mapped[str] = mapped_column(String(200))
     html: Mapped[str] = mapped_column(Text)
     sha256: Mapped[str] = mapped_column(String(64))
+    # Komu byl dokument určen, když to nejsou vlastníci jednotky ke dni přípravy
+    # (část vyúčtování pro dřívějšího vlastníka).
+    osoby: Mapped[list[int] | None] = mapped_column(ARRAY(BigInteger), nullable=True)
     vytvoril: Mapped[str] = mapped_column(String(128))
     vytvoreno: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

@@ -5,6 +5,7 @@ import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import { Rozeslat } from './Rozeslat'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
+import { ObdobiVRozpisu, UvodObdobi, type ObdobiVlastnika } from './VlastnickaObdobi'
 import './vyuctovani.css'
 
 type Sluzba = {
@@ -36,6 +37,7 @@ type Jednotka = {
   doruceno: string | null
   namitky_do: string | null
   vyrovnani_do: string | null
+  obdobi: ObdobiVlastnika[] // jen když se vyúčtování dělí mezi vlastníky
 }
 type Data = {
   rok: number
@@ -295,6 +297,7 @@ export function VyuctovaniSluzeb({ rok, zahlavi }: { rok: number; zahlavi: React
                                 </li>
                               ))}
                           </ul>
+                          <ObdobiVRozpisu obdobi={j.obdobi} />
                           <button className="vedlejsi" onClick={() => setTisk([j])}>
                             Vyúčtování pro vlastníka
                           </button>
@@ -420,6 +423,10 @@ function VysledkyZuctovatele({
 }
 
 function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka[]; zpet: () => void }) {
+  // Jednotka, která v roce změnila vlastníka, má vyúčtování pro každého z nich.
+  const dokumenty = jednotky.flatMap((j): { j: Jednotka; o: ObdobiVlastnika | null; vlastnici: Adresat[] }[] =>
+    j.obdobi.length ? j.obdobi.map((o) => ({ j, o, vlastnici: o.vlastnici })) : [{ j, o: null, vlastnici: j.vlastnici }],
+  )
   return (
     <>
       <div className="radek neni-v-tisku">
@@ -436,32 +443,49 @@ function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka
       {data.zapis && (
         <Rozeslat druh="vyuctovani_sluzeb" klic={data.rozeslani} nazev={`Vyúčtování služeb za rok ${data.rok}`} />
       )}
-      {jednotky.length > 1 && <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>}
-      <ChybiVlastnici jednotky={jednotky} />
-      {jednotky.map((j) => (
-        <Dokument key={j.jednotka} data={data} j={j} />
+      {dokumenty.length > 1 && (
+        <p className="tlumene neni-v-tisku">Každý vlastník má vyúčtování na samostatné stránce.</p>
+      )}
+      <ChybiVlastnici jednotky={dokumenty} />
+      {dokumenty.map(({ j, o }) => (
+        <Dokument key={`${j.jednotka}-${o?.od ?? ''}`} data={data} j={j} o={o} />
       ))}
     </>
   )
 }
 
-function Dokument({ data, j }: { data: Data; j: Jednotka }) {
+function Dokument({ data, j: jednotka, o }: { data: Data; j: Jednotka; o: ObdobiVlastnika | null }) {
   const sluzby = Object.fromEntries(data.sluzby.map((x) => [x.kod, x]))
   const sOsobami = data.sluzby.some((x) => x.klic === 'osoby')
+  // Část vyúčtování za vlastnické období: spotřeba za celý rok by tu byla zavádějící
+  // a nezaplacené zálohy dřívějšího vlastníka se vedou zvlášť.
+  const j = o
+    ? {
+        ...jednotka,
+        ...o,
+        polozky: o.polozky.map((p) => ({ ...p, spotreba: null })),
+        nezaplacene: o.soucasny ? jednotka.nezaplacene : 0,
+      }
+    : jednotka
+  const drivejsi = o !== null && !o.soucasny
   return (
     <>
-      <article className="upominka" data-jednotka={j.jednotka}>
+      <article className="upominka" data-jednotka={j.jednotka} data-osoby={drivejsi ? o.osoby.join(',') : undefined}>
         <p>
           <strong>{data.svj}</strong>
         </p>
-        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} />
+        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} drivejsi={drivejsi} />
         <p className="vpravo">Dne {datum(data.dnes)}</p>
         <h2>Vyúčtování služeb za rok {data.rok}</h2>
-        <p>
-          Posíláme vyúčtování záloh na služby spojené s užíváním jednotky {j.jednotka} za období od 1. 1. do 31. 12.{' '}
-          {data.rok}
-          {sOsobami && `. V jednotce bylo podle předpisu záloh v průměru ${osoby(j.osobomesice)}`}.
-        </p>
+        {o ? (
+          <UvodObdobi o={o} jednotka={j.jednotka} rok={data.rok} />
+        ) : (
+          <p>
+            Posíláme vyúčtování záloh na služby spojené s užíváním jednotky {j.jednotka} za období od 1. 1. do 31.
+            12. {data.rok}
+            {sOsobami && `. V jednotce bylo podle předpisu záloh v průměru ${osoby(j.osobomesice)}`}.
+          </p>
+        )}
         <table className="polozky-dluhu">
           <thead>
             <tr>
@@ -509,8 +533,8 @@ function Dokument({ data, j }: { data: Data; j: Jednotka }) {
         {j.rozdil > 0 && (
           <p>
             Nedoplatek prosíme uhraďte do {datum(data.splatnost)}
-            {data.ucet ? ` na účet ${data.ucet}` : ' na účet společenství'} s variabilním symbolem, kterým platíte
-            zálohy.
+            {data.ucet ? ` na účet ${data.ucet}` : ' na účet společenství'} s variabilním symbolem,
+            {drivejsi ? ' kterým jste platili zálohy.' : ' kterým platíte zálohy.'}
           </p>
         )}
         {j.rozdil < 0 && (

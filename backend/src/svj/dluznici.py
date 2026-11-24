@@ -126,13 +126,15 @@ def _rozpis(
     nastaveni: predpisy.Nastaveni,
     rok: int,
     podle_uctu: bool,
+    do: date | None = None,
 ) -> tuple[dict, dict]:
     """Dluhy a nevyčerpané platby po jednotkách (nebo po jednotkách a účtech).
 
     Vrací (skupina → klíč → položka, skupina → kredit). Skupina je jednotka, nebo
-    dvojice (jednotka, role), když se platby započítávají jen v rámci účtu.
+    dvojice (jednotka, role), když se platby započítávají jen v rámci účtu. S `do` jen
+    ze zápisů s datem nejpozději v ten den.
     """
-    radky = session.execute(
+    dotaz = (
         predpisy._radky_vlastniku(
             rok,
             RadekZapisu.jednotka,
@@ -150,7 +152,10 @@ def _rozpis(
         )
         .where(RadekZapisu.protistrana.is_(None))
         .order_by(Zapis.datum, Zapis.id)
-    ).all()
+    )
+    if do is not None:
+        dotaz = dotaz.where(Zapis.datum <= do)
+    radky = session.execute(dotaz).all()
 
     dluhy: dict = {}
     kredit: dict = {}
@@ -283,9 +288,11 @@ def prehled(
     nastaveni: predpisy.Nastaveni,
     rok: int,
     dnes: date | None = None,
+    do: date | None = None,
 ) -> list[DluhJednotky]:
+    """Nezaplacené dluhy jednotek k `dnes`; s `do` jen ze zápisů do toho dne."""
     dnes = dnes or date.today()
-    dluhy, kredit = _rozpis(session, profil, nastaveni, rok, podle_uctu=False)
+    dluhy, kredit = _rozpis(session, profil, nastaveni, rok, podle_uctu=False, do=do)
     urok_do = urok_predepsan_do(session)
     sankce = nezaplacene_sankce(session, rok)
     vysledek = []

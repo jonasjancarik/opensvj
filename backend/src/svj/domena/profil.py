@@ -50,6 +50,9 @@ class Profil:
     # Kdo platí předpis za měsíc, ve kterém se jednotka převedla: "dosavadni" (vlastník
     # k prvnímu dni měsíce), nebo "novy" (vlastník, kterému jednotka patří od převodu).
     predpis_mesice_prevodu: str = "dosavadni"
+    # Komu jde roční vyúčtování jednotky, která v roce změnila vlastníka: "soucasnemu"
+    # (celý rok vlastníkovi na konci roku), nebo "po_obdobich" (každému za jeho měsíce).
+    vyuctovani_pri_prevodu: str = "soucasnemu"
 
     @property
     def jednotky(self) -> list[str]:
@@ -147,6 +150,7 @@ def nacti(nazev: str, cesta: Path | None = None) -> Profil:
         statutarni_organ=d.get("statutarni_organ"),
         prispevky=d.get("prispevky"),
         predpis_mesice_prevodu=_volba_prevodu(d.get("predpis_mesice_prevodu")),
+        vyuctovani_pri_prevodu=_volba(d, "vyuctovani_pri_prevodu", ("soucasnemu", "po_obdobich")),
     )
 
 
@@ -156,6 +160,13 @@ def _volba_prevodu(hodnota: str | None) -> str:
     raise ValueError(
         f"predpis_mesice_prevodu v profilu musí být dosavadni nebo novy, ne {hodnota!r}"
     )
+
+
+def _volba(d: dict, klic: str, moznosti: tuple[str, ...]) -> str:
+    hodnota = d.get(klic) or moznosti[0]
+    if hodnota not in moznosti:
+        raise ValueError(f"{klic} v profilu musí být {' nebo '.join(moznosti)}, ne {hodnota!r}")
+    return hodnota
 
 
 def _jednotka(d: dict) -> Jednotka:

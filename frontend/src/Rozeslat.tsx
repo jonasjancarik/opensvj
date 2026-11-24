@@ -69,12 +69,12 @@ function shrnuti(z: Zasilka[]) {
   return casti.join(', ')
 }
 
-/** Vytiskne jen dokumenty pro vlastníky, kterým jde dopis. */
-function tiskniJen(jednotky: string[]) {
+/** Vytiskne jen dokumenty (podle pořadí na stránce), které jdou dopisem. */
+function tiskniJen(poradi: number[]) {
   const styl = document.createElement('style')
   styl.media = 'print'
-  styl.textContent = `article[data-jednotka]:not(${jednotky
-    .map((j) => `[data-jednotka="${CSS.escape(j)}"]`)
+  styl.textContent = `article[data-jednotka]:not(${poradi
+    .map((i) => `[data-poradi="${i}"]`)
     .join(',')}){display:none!important}`
   document.head.appendChild(styl)
   window.addEventListener('afterprint', () => styl.remove(), { once: true })
@@ -104,6 +104,7 @@ export function Rozeslat({ druh, klic, nazev }: { druh: string; klic: string; na
   async function priprav() {
     const clanky = Array.from(document.querySelectorAll<HTMLElement>('article[data-jednotka]'))
     if (clanky.length === 0) return
+    clanky.forEach((el, i) => (el.dataset.poradi = String(i)))
     setPracuji(true)
     setChyba(null)
     try {
@@ -115,7 +116,12 @@ export function Rozeslat({ druh, klic, nazev }: { druh: string; klic: string; na
             druh,
             klic,
             nazev,
-            dokumenty: clanky.map((el) => ({ jednotka: el.dataset.jednotka, html: dokument(el, nazev, css) })),
+            dokumenty: clanky.map((el) => ({
+              jednotka: el.dataset.jednotka,
+              html: dokument(el, nazev, css),
+              // část vyúčtování pro dřívějšího vlastníka jde jemu, ne dnešnímu vlastníkovi
+              osoby: el.dataset.osoby ? el.dataset.osoby.split(',').map(Number) : [],
+            })),
           },
         }),
       )
@@ -195,7 +201,9 @@ export function Rozeslat({ druh, klic, nazev }: { druh: string; klic: string; na
   const dopisy = davka.zasilky.filter((z) => z.kanal === 'posta')
   const kOdeslani = emaily.filter((z) => z.stav === 'pripravena')
   const nepovedlo = emaily.filter((z) => z.stav === 'nedorucena')
-  const dopisyJednotek = [...new Set(dopisy.map((z) => z.jednotka))]
+  // Dokumenty dávky vznikají v pořadí článků na stránce, takže n-tý dokument je n-tý článek.
+  const dokumentyDavky = [...new Set(davka.zasilky.map((z) => z.dokument_id))].sort((a, b) => a - b)
+  const dopisyPoradi = [...new Set(dopisy.map((z) => dokumentyDavky.indexOf(z.dokument_id)))]
 
   return (
     <section className="rozeslat-davka neni-v-tisku">
@@ -251,7 +259,7 @@ export function Rozeslat({ druh, klic, nazev }: { druh: string; klic: string; na
         )}
         {dopisy.length > 0 && (
           <>
-            <button className={kOdeslani.length ? 'vedlejsi' : undefined} onClick={() => tiskniJen(dopisyJednotek)}>
+            <button className={kOdeslani.length ? 'vedlejsi' : undefined} onClick={() => tiskniJen(dopisyPoradi)}>
               Vytisknout dopisy ({dopisy.length})
             </button>
             <button className="vedlejsi" onClick={dopisyOdeslany} disabled={pracuji}>

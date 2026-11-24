@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
+import { api } from './auth'
 import type { Data, Jednotka } from './Dluznici'
 import { datum, SeznamPolozek } from './Dluznici'
 import { kc } from './penize'
 import { Rozeslat } from './Rozeslat'
+import { Chyba, Nacitani } from './ui'
 import './tisk.css'
 
 const DNI_STARY_VYPIS = 7
@@ -15,22 +18,40 @@ function pohybu(n: number) {
  * Na kupujícího přejdou jen dluhy, které z potvrzení zjistit mohl, proto musí být
  * účetnictví aktuální.
  */
-export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednotka: Jednotka; zpet: () => void }) {
+export function PotvrzeniDluhu({
+  data,
+  jednotka: j,
+  zpet,
+  zpetText = 'Zpět na dlužníky',
+}: {
+  data: Data
+  jednotka: Jednotka
+  zpet: () => void
+  zpetText?: string
+}) {
   const splatne = j.polozky.filter((p) => p.po_splatnosti)
   const nesplatne = j.polozky.filter((p) => !p.po_splatnosti)
+  // Po převodu se potvrzuje stav k poslednímu dni, kdy jednotku vlastnil prodávající.
+  const k = data.k_datu ?? data.dnes
   const stariVypisu = data.posledni_vypis
-    ? (new Date(data.dnes).getTime() - new Date(data.posledni_vypis).getTime()) / 86_400_000
+    ? (new Date(k).getTime() - new Date(data.posledni_vypis).getTime()) / 86_400_000
     : null
 
   return (
     <>
       <div className="radek neni-v-tisku">
         <button className="vedlejsi" onClick={zpet}>
-          Zpět na dlužníky
+          {zpetText}
         </button>
         <button onClick={() => window.print()}>Vytisknout</button>
       </div>
       <div className="neni-v-tisku">
+        {data.k_datu && (
+          <p className="tlumene">
+            Potvrzení je k {datum(data.k_datu)}, poslednímu dni, kdy jednotku vlastnil prodávající. Počítá se
+            s předpisy a platbami zaúčtovanými s datem do toho dne a se zálohami za měsíce, které platil prodávající.
+          </p>
+        )}
         {data.nezauctovane_pohyby > 0 && (
           <p className="upozorneni">
             Na stránce <a href="#banka">Banka</a> zbývá zaúčtovat {pohybu(data.nezauctovane_pohyby)}.
@@ -52,10 +73,18 @@ export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednot
           s jeho souhlasem. Výdaje za vydání (např. faktura účetní) může společenství přeúčtovat
           prodávajícímu, ale ne víc, než skutečně stály.
         </p>
-        <Rozeslat druh="potvrzeni" klic={`potvrzeni:${j.jednotka}`} nazev="Potvrzení o dluzích vlastníka jednotky" />
+        <Rozeslat
+          druh="potvrzeni"
+          klic={data.k_datu ? `potvrzeni:${j.jednotka}:${data.k_datu}` : `potvrzeni:${j.jednotka}`}
+          nazev="Potvrzení o dluzích vlastníka jednotky"
+        />
       </div>
 
-      <article className="upominka" data-jednotka={j.jednotka}>
+      <article
+        className="upominka"
+        data-jednotka={j.jednotka}
+        data-osoby={data.k_datu ? data.osoby.join(',') : undefined}
+      >
         <p>
           <strong>{data.svj}</strong>
           {data.ico && <>, IČ {data.ico}</>}
@@ -70,19 +99,20 @@ export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednot
         <p className="tlumene">podle § 1186 odst. 3 občanského zákoníku</p>
         {j.vlastnici.length > 0 && (
           <p>
-            Vlastník jednotky: {j.vlastnici.map((v) => v.jmeno).join(', ')}
+            {data.k_datu ? `Vlastník jednotky do ${datum(data.k_datu)}` : 'Vlastník jednotky'}:{' '}
+            {j.vlastnici.map((v) => v.jmeno).join(', ')}
           </p>
         )}
         {splatne.length === 0 ? (
           <p>
-            Společenství potvrzuje, že k {datum(data.dnes)} u jednotky č. {j.jednotka} neeviduje
+            Společenství potvrzuje, že k {datum(k)} u jednotky č. {j.jednotka} neeviduje
             žádné splatné dluhy vlastníka na příspěvcích na správu domu a pozemku, na zálohách na
             služby ani na nedoplatcích z jejich vyúčtování.
           </p>
         ) : (
           <>
             <p>
-              Společenství potvrzuje, že k {datum(data.dnes)} u jednotky č. {j.jednotka} eviduje
+              Společenství potvrzuje, že k {datum(k)} u jednotky č. {j.jednotka} eviduje
               tyto splatné dluhy vlastníka na příspěvcích na správu domu a pozemku, na zálohách
               na služby a na nedoplatcích z jejich vyúčtování:
             </p>
@@ -121,5 +151,30 @@ export function PotvrzeniDluhu({ data, jednotka: j, zpet }: { data: Data; jednot
         </div>
       </article>
     </>
+  )
+}
+
+/** Potvrzení o dluzích pro prodávajícího k datu převodu (#potvrzeni-prevodu?vlastnictvi=…). */
+export function PotvrzeniPrevodu() {
+  const id = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('vlastnictvi')
+  const [data, setData] = useState<Data | null>(null)
+  const [chyba, setChyba] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+    api<Data>(`/api/dluznici/prevod/${encodeURIComponent(id)}`)
+      .then(setData)
+      .catch((e) => setChyba(e.message))
+  }, [id])
+
+  if (!id) return <Chyba text="Chybí, ke kterému převodu potvrzení vystavit. Otevřete ho ze stránky Vlastníci." />
+  if (!data) return chyba ? <Chyba text={chyba} /> : <Nacitani />
+  return (
+    <PotvrzeniDluhu
+      data={data}
+      jednotka={data.jednotky[0]}
+      zpet={() => (window.location.hash = '#vlastnici')}
+      zpetText="Zpět na vlastníky"
+    />
   )
 }

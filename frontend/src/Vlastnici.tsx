@@ -45,7 +45,15 @@ function jmena(v: Vlastnictvi, osoby: Map<number, Osoba>) {
 }
 
 /** Hlavička dopisu: jména a adresa vlastníků, nebo aspoň číslo jednotky. */
-export function HlavickaVlastnika({ jednotka, vlastnici }: { jednotka: string; vlastnici: Adresat[] }) {
+export function HlavickaVlastnika({
+  jednotka,
+  vlastnici,
+  drivejsi = false,
+}: {
+  jednotka: string
+  vlastnici: Adresat[]
+  drivejsi?: boolean
+}) {
   if (vlastnici.length === 0) return <p>Vlastník jednotky {jednotka}</p>
   const adresy = [...new Set(vlastnici.map((v) => v.adresa.trim()).filter(Boolean))]
   return (
@@ -62,7 +70,7 @@ export function HlavickaVlastnika({ jednotka, vlastnici }: { jednotka: string; v
         </span>
       ))}
       <br />
-      <span className="tlumene">vlastník jednotky {jednotka}</span>
+      <span className="tlumene">{drivejsi ? 'dřívější vlastník' : 'vlastník'} jednotky {jednotka}</span>
     </p>
   )
 }
@@ -783,6 +791,9 @@ function DluhyPriPrevodu({ vlastnictviId }: { vlastnictviId: number }) {
 
   return (
     <div className="dluhy-prevodu">
+      <p>
+        <a href={`#potvrzeni-prevodu?vlastnictvi=${vlastnictviId}`}>Potvrzení o dluzích prodávajícího k datu převodu</a>
+      </p>
       {p.zapis ? (
         <p className="uspech">
           Prodávajícímu ({p.prevodce}) zůstal dluh {kc(p.zauctovano)}, zápis {p.zapis}. Je vidět

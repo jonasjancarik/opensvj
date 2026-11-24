@@ -8,7 +8,7 @@ vlastníka už není.
 """
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -59,6 +59,51 @@ def _patri_prevodci(p: dluznici.Polozka, od: date, volba: str, rok: int) -> bool
     return p.vznik is not None and p.vznik < od
 
 
+def _s_predchozim(s: Session, vlastnictvi_id: int) -> tuple[Vlastnictvi, Vlastnictvi]:
+    v = s.get(Vlastnictvi, vlastnictvi_id)
+    if v is None:
+        raise ChybaPrevodu("Takové vlastnictví v evidenci není.")
+    historie = lide.vlastnictvi(s, v.jednotka)
+    i = next(k for k, x in enumerate(historie) if x.id == v.id)
+    if i == 0:
+        raise ChybaPrevodu("Tohle je první zapsané vlastnictví jednotky, žádný převodce není.")
+    return v, historie[i - 1]
+
+
+@dataclass
+class PotvrzeniPrevodce:
+    vlastnictvi: Vlastnictvi
+    predchozi: Vlastnictvi
+    k_datu: date  # poslední den, kdy jednotku vlastnil převodce (nejpozději dnes)
+    dluhy: dluznici.DluhJednotky
+
+
+def potvrzeni_k_prevodu(
+    s: Session,
+    profil: Profil,
+    nastaveni: predpisy.Nastaveni,
+    vlastnictvi_id: int,
+    dnes: date | None = None,
+) -> PotvrzeniPrevodce:
+    """Dluhy převodce k poslednímu dni jeho vlastnictví, pro potvrzení o dluzích vydané
+    i po převodu. Bere jen zápisy do toho dne a z měsíčních záloh jen ty, které podle
+    volby `predpis_mesice_prevodu` platil převodce."""
+    dnes = dnes or date.today()
+    v, predchozi = _s_predchozim(s, vlastnictvi_id)
+    k = min(v.plati_od - timedelta(days=1), dnes)
+    d = next(
+        x
+        for x in dluznici.prehled(s, profil, nastaveni, k.year, k, do=k)
+        if x.jednotka == v.jednotka
+    )
+    d.polozky = [
+        p
+        for p in d.polozky
+        if _patri_prevodci(p, v.plati_od, profil.predpis_mesice_prevodu, k.year)
+    ]
+    return PotvrzeniPrevodce(v, predchozi, k, d)
+
+
 def prevod(
     s: Session,
     profil: Profil,
@@ -68,14 +113,7 @@ def prevod(
 ) -> Prevod:
     """Nezaplacené dluhy jednotky a návrh, které z nich zůstávají převodci."""
     dnes = dnes or date.today()
-    v = s.get(Vlastnictvi, vlastnictvi_id)
-    if v is None:
-        raise ChybaPrevodu("Takové vlastnictví v evidenci není.")
-    historie = lide.vlastnictvi(s, v.jednotka)
-    i = next(k for k, x in enumerate(historie) if x.id == v.id)
-    if i == 0:
-        raise ChybaPrevodu("Tohle je první zapsané vlastnictví jednotky, žádný převodce není.")
-    predchozi = historie[i - 1]
+    v, predchozi = _s_predchozim(s, vlastnictvi_id)
     prevodce = ", ".join(c.osoba.jmeno for c in predchozi.vlastnici)
     rok = dnes.year  # dluhy, jak je jednotka má teď, v otevřeném roce
     zapis = denik.aktivni(s, _klic(v.id))

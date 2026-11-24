@@ -75,7 +75,7 @@
   vstupy:
     zalohy: "seznam {jednotka, sluzba, castka}: předepsané zálohy jednotky na službu za rok"
     naklady: "seznam {sluzba, castka}: náklady služby za rok (zůstatek sběrného účtu služby)"
-    vysledky: "seznam {jednotka, rozdil}: náklady jednotky za všechny služby minus její zálohy"
+    vysledky: "seznam {jednotka, rozdil, protistrana}: náklady jednotky za všechny služby minus její zálohy; protistrana je jméno dřívějšího vlastníka, jinak prázdná"
   zapisy:
     - pro_kazde: zalohy
       md: "zalohy_sluzby.{sluzba}"
@@ -91,11 +91,12 @@
       md: pohledavky_vyuctovani
       d: vnitrni_zuctovani
       castka: "{rozdil}"
-      dimenze: {jednotka: "{jednotka}"}
+      dimenze: {jednotka: "{jednotka}", protistrana: "{protistrana}"}
   pravidla:
     - Záporná částka (přeplatek) se zapíše s opačnými stranami.
     - Náklady služby se rozdělí na jednotky podle klíče služby metodou největšího zbytku na haléře, takže součet podílů je přesně rovný nákladům a na 395 nic nezůstane. U tepla a teplé vody se převezmou výsledky zúčtovatele; jejich součet musí přesně sedět na náklady v účetnictví.
     - Po zaúčtování mají `zalohy_sluzby.*` a `naklady_sluzeb.*` nulový zůstatek a jednotka má jeden řádek s nedoplatkem nebo přeplatkem.
+    - Když SVJ vyúčtovává jednotku po vlastnických obdobích (profil `vyuctovani_pri_prevodu: po_obdobich`), má jednotka řádek za každé období a výsledek dřívějšího vlastníka nese jeho jméno v dimenzi `protistrana`. Vymáhá se nebo vrací jemu, ne současnému vlastníkovi.
     - Jen služby podle zákona 67/2013. Zálohy na správu (`zalohy_sprava.*`: pojištění, správce, revize, drobné opravy) se sem nezahrnují a vyúčtují se zvlášť.
     - Vyúčtování porovnává náklady se zálohami (zákon 67/2013 § 7 odst. 1). Účet 324 se vede v předepsané výši, proto vyúčtování pro vlastníka ukazuje nezaplacené zálohy zvlášť; ty zůstávají dluhem na 311100.
     - Zda účtovat k 31. 12., nebo až po sestavení vyúčtování, musí potvrdit účetní; obvyklé je k 31. 12.
@@ -112,8 +113,8 @@
         naklady:
           - {sluzba: UKLID, castka: "1200.50"}
         vysledky:
-          - {jednotka: "1001/1", rozdil: "500.25"}
-          - {jednotka: "1001/2", rozdil: "-99.75"}
+          - {jednotka: "1001/1", rozdil: "500.25", protistrana: ""}
+          - {jednotka: "1001/2", rozdil: "-99.75", protistrana: ""}
       ocekavane:
         - [md, zalohy_sluzby.UKLID, "300.00", {jednotka: "1001/1", sluzba: UKLID}]
         - [d, vnitrni_zuctovani, "300.00", {jednotka: "1001/1", sluzba: UKLID}]
@@ -134,7 +135,7 @@
   vstupy:
     zalohy: "seznam {jednotka, sluzba, castka}: předepsané zálohy jednotky na položku správy za rok"
     naklady: "seznam {sluzba, castka}: náklady roku s dimenzí položky správy (třída 5) snížené o výnosy s toutéž položkou (třída 6)"
-    vysledky: "seznam {jednotka, rozdil}: podíl jednotky na nákladech minus její zálohy"
+    vysledky: "seznam {jednotka, rozdil, protistrana}: podíl jednotky na nákladech minus její zálohy; protistrana je jméno dřívějšího vlastníka, jinak prázdná"
   zapisy:
     - pro_kazde: zalohy
       md: "zalohy_sprava.{sluzba}"
@@ -150,11 +151,12 @@
       md: pohledavky_vyuctovani
       d: vnitrni_zuctovani
       castka: "{rozdil}"
-      dimenze: {jednotka: "{jednotka}"}
+      dimenze: {jednotka: "{jednotka}", protistrana: "{protistrana}"}
   pravidla:
     - Zálohový způsob, pokud ho určují stanovy: náklady na správu se stanoví jako příspěvek vlastníků (výnos 649) a uhradí se z jejich krátkodobých záloh; rozdíl je nedoplatek nebo přeplatek jednotky.
     - Náklady položky se rozdělí podle klíče z profilu (podíl na společných částech, nebo rovným dílem na jednotku) metodou největšího zbytku na haléře, takže součet podílů je přesně rovný nákladům a na 395 nic nezůstane.
     - Porovnávají se předepsané zálohy; nezaplacené měsíční zálohy zůstávají dluhem na 311100 zvlášť.
+    - Po vlastnických obdobích (profil `vyuctovani_pri_prevodu: po_obdobich`) má jednotka řádek za každé období; výsledek dřívějšího vlastníka nese jeho jméno v dimenzi `protistrana`.
     - Výsledné zůstatky odpovídají postupu z knihy (311/649 a 324/311); vnitřní zúčtování 395 jen zajistí, že jednotka má jeden řádek s rozdílem.
     - Náklady třídy 5 bez položky správy (bankovní poplatky, převod do fondu oprav, srážková daň) se nezahrnují; ze kterých záloh se hradí, rozhodne účetní.
     - Výnosy označené položkou správy (pojistné plnění na opravu, dotace na úroky, bankovní úroky na poplatky) náklady položky snižují; vlastníci nesou jen zbytek (kniha s. 55–61, souhrnné příklady 1 a 2, převedené na testy).
@@ -171,8 +173,8 @@
         naklady:
           - {sluzba: POJISTENI, castka: "1000.00"}
         vysledky:
-          - {jednotka: "1001/1", rozdil: "50.00"}
-          - {jednotka: "1001/2", rozdil: "-100.00"}
+          - {jednotka: "1001/1", rozdil: "50.00", protistrana: ""}
+          - {jednotka: "1001/2", rozdil: "-100.00", protistrana: ""}
       ocekavane:
         - [md, zalohy_sprava.POJISTENI, "450.00", {jednotka: "1001/1"}]
         - [d, vnitrni_zuctovani, "450.00", {jednotka: "1001/1"}]

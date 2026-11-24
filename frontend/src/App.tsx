@@ -5,6 +5,7 @@ import { Znacka } from './Dum'
 import { PrepinacVzhledu } from './Vzhled'
 import { Denik } from './Denik'
 import { Dluznici } from './Dluznici'
+import { PotvrzeniPrevodu } from './PotvrzeniDluhu'
 import { Faktury } from './Faktury'
 import { Historie } from './Historie'
 import { Oznameni } from './Oznameni'
@@ -43,6 +44,7 @@ const SKRYTE = {
   pocatecni: 'Počáteční stavy',
   oznameni: 'Oznámení o zálohách',
   podily: 'Podíly na společných částech',
+  'potvrzeni-prevodu': 'Potvrzení o dluzích k datu převodu',
 } as const
 type Stranka = keyof typeof STRANKY | keyof typeof SKRYTE
 
@@ -120,6 +122,8 @@ export default function App() {
           <Oznameni />
         ) : stranka === 'podily' ? (
           <Podily />
+        ) : stranka === 'potvrzeni-prevodu' ? (
+          <PotvrzeniPrevodu />
         ) : stranka === 'dluznici' ? (
           <Dluznici />
         ) : stranka === 'vlastnici' ? (

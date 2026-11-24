@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from . import podily, predpisy, vyuctovani_spravy, zasilky
-from .api_lide import Adresat, adresati
+from . import podily, predpisy, vlastnicka_obdobi, vyuctovani_spravy, zasilky
+from .api_lide import Adresat, adresati, adresati_osob
 from .db import BankovniUcet, sezeni
 from .domena import profil
 from .nastaveni import nastaveni
@@ -32,6 +32,50 @@ class PolozkaJednotky(BaseModel):
     zalohy: int
 
 
+class PolozkaObdobi(BaseModel):
+    kod: str
+    naklady: int
+    zalohy: int
+
+
+class ObdobiVlastnika(BaseModel):
+    """Část vyúčtování jednotky za dobu, kdy ji vlastnil jeden vlastník."""
+
+    od: date
+    do: date
+    mesice: list[int]  # měsíce, za které platil předpis
+    soucasny: bool  # vlastník na konci roku
+    osoby: list[int]  # komu se tato část vyúčtování posílá
+    vlastnici: list[Adresat]
+    zalohy: int
+    naklady: int
+    rozdil: int  # kladný = nedoplatek
+    polozky: list[PolozkaObdobi]
+
+
+def obdobi_vlastniku(
+    s, obdobi: list[vlastnicka_obdobi.Obdobi], kody: list[str], dnes: date
+) -> list[ObdobiVlastnika]:
+    return [
+        ObdobiVlastnika(
+            od=o.od,
+            do=o.do,
+            mesice=o.mesice,
+            soucasny=o.soucasny,
+            osoby=o.osoby,
+            vlastnici=adresati_osob(s, o.osoby, dnes),
+            zalohy=sum(o.zalohy.values()),
+            naklady=sum(o.naklady.values()),
+            rozdil=o.rozdil,
+            polozky=[
+                PolozkaObdobi(kod=k, naklady=o.naklady.get(k, 0), zalohy=o.zalohy.get(k, 0))
+                for k in kody
+            ],
+        )
+        for o in obdobi
+    ]
+
+
 class ObdobiPodilu(BaseModel):
     od_mesice: int
     do_mesice: int
@@ -43,6 +87,8 @@ class Jednotka(BaseModel):
     podil: str  # "543/8600"; když se podíl v roce měnil, průměr za měsíce roku
     # Jen když se podíl během roku měnil: které měsíce platil jaký podíl.
     podily_v_roce: list[ObdobiPodilu]
+    # Jen když se vyúčtování dělí na vlastnická období a jednotka v roce změnila vlastníka.
+    obdobi: list[ObdobiVlastnika]
     zalohy: int
     naklady: int
     rozdil: int  # kladný = nedoplatek
@@ -81,6 +127,8 @@ def _prehled(rok: int) -> Vyuctovani:
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         zapis = f"{v.zapis.poradove_cislo}/{v.zapis.rok}" if v.zapis else None
         kdo = adresati(s, dnes)
+        kody = [p.kod for p in v.polozky]
+        obdobi = {j.jednotka: obdobi_vlastniku(s, j.obdobi, kody, dnes) for j in v.jednotky}
         doruceno = zasilky.doruceni_jednotek(s, f"vyuctovani_spravy:{rok}")
     return Vyuctovani(
         rok=rok,
@@ -121,6 +169,7 @@ def _prehled(rok: int) -> Vyuctovani:
                 ],
                 vlastnici=kdo.get(j.jednotka, []),
                 doruceno=doruceno.get(j.jednotka),
+                obdobi=obdobi[j.jednotka],
             )
             for j in v.jednotky
         ],

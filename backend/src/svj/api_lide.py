@@ -115,6 +115,23 @@ def adresati(s, datum: date) -> dict[str, list[Adresat]]:
     }
 
 
+def adresati_osob(s, osoby: list[int], datum: date) -> list[Adresat]:
+    """Konkrétní osoby (třeba dřívější vlastníci) do hlavičky dopisu."""
+    vysledek = []
+    for osoba_id in osoby:
+        o = s.get(OsobaDb, osoba_id)
+        if o is not None:
+            vysledek.append(
+                Adresat(
+                    jmeno=o.jmeno,
+                    adresa=o.adresa,
+                    email=o.email,
+                    souhlas_email=o.souhlas_email is not None and o.souhlas_email <= datum,
+                )
+            )
+    return vysledek
+
+
 def _osoba(o: OsobaDb) -> Osoba:
     return Osoba(
         id=o.id,

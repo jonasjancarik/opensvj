@@ -5,6 +5,7 @@ import { potvrdit } from './potvrdit'
 import { Chyba, Nacitani } from './ui'
 import { Rozeslat } from './Rozeslat'
 import { ChybiVlastnici, HlavickaVlastnika, type Adresat } from './Vlastnici'
+import { ObdobiVRozpisu, UvodObdobi, type ObdobiVlastnika } from './VlastnickaObdobi'
 import { VyuctovaniSluzeb } from './VyuctovaniSluzeb'
 import './vyuctovani.css'
 
@@ -23,6 +24,7 @@ type Jednotka = {
   jednotka: string
   podil: string
   podily_v_roce: ObdobiPodilu[] // jen když se podíl během roku měnil
+  obdobi: ObdobiVlastnika[] // jen když se vyúčtování dělí mezi vlastníky
   zalohy: number
   naklady: number
   rozdil: number
@@ -298,6 +300,7 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
                           </li>
                         ))}
                       </ul>
+                      <ObdobiVRozpisu obdobi={j.obdobi} />
                       <button className="vedlejsi" onClick={() => setTisk([j])}>
                         Vyúčtování pro vlastníka
                       </button>
@@ -324,6 +327,10 @@ function VyuctovaniSpravy({ rok, zahlavi }: { rok: number; zahlavi: ReactNode })
 }
 
 function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka[]; zpet: () => void }) {
+  // Jednotka, která v roce změnila vlastníka, má vyúčtování pro každého z nich.
+  const dokumenty = jednotky.flatMap((j): { j: Jednotka; o: ObdobiVlastnika | null; vlastnici: Adresat[] }[] =>
+    j.obdobi.length ? j.obdobi.map((o) => ({ j, o, vlastnici: o.vlastnici })) : [{ j, o: null, vlastnici: j.vlastnici }],
+  )
   return (
     <>
       <div className="radek neni-v-tisku">
@@ -344,26 +351,32 @@ function ProVlastnika({ data, jednotky, zpet }: { data: Data; jednotky: Jednotka
           nazev={`Vyúčtování záloh na správu domu za rok ${data.rok}`}
         />
       )}
-      {jednotky.length > 1 && <p className="tlumene neni-v-tisku">Každá jednotka je na samostatné stránce.</p>}
-      <ChybiVlastnici jednotky={jednotky} />
-      {jednotky.map((j) => (
-        <Dokument key={j.jednotka} data={data} j={j} />
+      {dokumenty.length > 1 && (
+        <p className="tlumene neni-v-tisku">Každý vlastník má vyúčtování na samostatné stránce.</p>
+      )}
+      <ChybiVlastnici jednotky={dokumenty} />
+      {dokumenty.map(({ j, o }) => (
+        <Dokument key={`${j.jednotka}-${o?.od ?? ''}`} data={data} j={j} o={o} />
       ))}
     </>
   )
 }
 
-function Dokument({ data, j }: { data: Data; j: Jednotka }) {
+function Dokument({ data, j: jednotka, o }: { data: Data; j: Jednotka; o: ObdobiVlastnika | null }) {
   const nazvy = Object.fromEntries(data.polozky.map((p) => [p.kod, p]))
+  // Část vyúčtování za vlastnické období má vlastní adresáty, zálohy, náklady a výsledek.
+  const j = o ? { ...jednotka, ...o } : jednotka
+  const drivejsi = o !== null && !o.soucasny
   return (
     <>
-      <article className="upominka" data-jednotka={j.jednotka}>
+      <article className="upominka" data-jednotka={j.jednotka} data-osoby={drivejsi ? o.osoby.join(',') : undefined}>
         <p>
           <strong>{data.svj}</strong>
         </p>
-        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} />
+        <HlavickaVlastnika jednotka={j.jednotka} vlastnici={j.vlastnici} drivejsi={drivejsi} />
         <p className="vpravo">Dne {datum(data.dnes)}</p>
         <h2>Vyúčtování záloh na správu domu a pozemku za rok {data.rok}</h2>
+        {o && <UvodObdobi o={o} jednotka={j.jednotka} rok={data.rok} />}
         <p>
           <PodilJednotky j={j} rok={data.rok} />
         </p>
@@ -414,13 +427,14 @@ function Dokument({ data, j }: { data: Data; j: Jednotka }) {
           <p>
             Nedoplatek prosíme uhraďte do {datum(data.splatnost)}
             {data.ucet ? ` na účet ${data.ucet}` : ' na účet společenství'} s variabilním symbolem,
-            kterým platíte zálohy.
+            {drivejsi ? ' kterým jste platili zálohy.' : ' kterým platíte zálohy.'}
           </p>
         )}
         {j.rozdil < 0 && (
           <p>
             Přeplatek vám vrátíme do {datum(data.splatnost)}. Pokud máte nezaplacené zálohy,
             započteme ho nejdřív na ně.
+            {drivejsi && ' Pokud jste od převodu změnili číslo účtu, dejte nám prosím vědět.'}
           </p>
         )}
         <p>

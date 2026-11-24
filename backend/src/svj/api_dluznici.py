@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import exists, func, select
 
-from . import banka, denik, dluznici, predpisy
-from .api_lide import Adresat, adresati
+from . import banka, denik, dluznici, predpisy, prevody
+from .api_lide import Adresat, adresati, adresati_osob
 from .db import BankovniPohyb, BankovniUcet, sezeni
 from .domena import katalog, profil
 from .domena import urok as urok_z_prodleni
@@ -80,18 +80,42 @@ class Dluznici(BaseModel):
     jednotky: list[Jednotka]
     odepsane: list[OdepsanaJednotka]  # odepsané dluhy přes všechny roky
     polozky_spravy: list[PolozkaSpravy]
+    # Potvrzení pro prodávajícího po převodu: k jakému dni a komu (jinak k dnešku vlastníkům).
+    k_datu: date | None = None
+    osoby: list[int] = []
+
+
+@router.get("/prevod/{vlastnictvi_id}")
+def k_prevodu(vlastnictvi_id: int, _: Prihlaseny) -> Dluznici:
+    """Dluhy prodávajícího k poslednímu dni jeho vlastnictví, pro potvrzení o dluzích."""
+    return _prehled(None, vlastnictvi_id)
 
 
 @router.get("/{rok}")
 def prehled(rok: int, _: Prihlaseny) -> Dluznici:
+    return _prehled(rok)
+
+
+def _prehled(rok: int | None, prevod_id: int | None = None) -> Dluznici:
+    """Přehled za rok k dnešku, nebo (s `prevod_id`) jen jednotka převodu k jeho datu."""
     prof = profil.nacti(nastaveni().profil)
     nast = predpisy.nacti_s(prof, sezeni)
     dnes = date.today()
     with sezeni()() as s:
-        vse = dluznici.prehled(s, prof, nast, rok, dnes)
+        k_datu, osoby = None, []
+        if prevod_id is None:
+            vse = dluznici.prehled(s, prof, nast, rok, dnes)
+            kdo = adresati(s, dnes)
+        else:
+            try:
+                p = prevody.potvrzeni_k_prevodu(s, prof, nast, prevod_id, dnes)
+            except prevody.ChybaPrevodu as e:
+                raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
+            k_datu, rok, vse = p.k_datu, p.k_datu.year, [p.dluhy]
+            osoby = [c.osoba_id for c in p.predchozi.vlastnici]
+            kdo = {p.dluhy.jednotka: adresati_osob(s, osoby, dnes)}
         ucet = s.scalar(select(BankovniUcet.cislo).where(BankovniUcet.ucel == "provozni"))
         posledni = s.scalar(select(func.max(BankovniPohyb.datum)))
-        kdo = adresati(s, dnes)
         odepsane = dluznici.odepsane(s)
         nezauctovane = s.scalar(
             select(func.count())
@@ -116,8 +140,8 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
                     splatnost=p.splatnost,
                     castka=p.castka,
                     zbyva=p.zbyva,
-                    po_splatnosti=p.po_splatnosti(dnes),
-                    urok=p.urok(dnes, d.urok_do),
+                    po_splatnosti=p.po_splatnosti(d.dnes),
+                    urok=p.urok(d.dnes, d.urok_do),
                     sazba=p.sazba(),
                 )
                 for p in d.polozky
@@ -162,6 +186,8 @@ def prehled(rok: int, _: Prihlaseny) -> Dluznici:
         polozky_spravy=[
             PolozkaSpravy(kod=k, nazev=u.get("nazev", k)) for k, u in prof.sprava.items()
         ],
+        k_datu=k_datu,
+        osoby=osoby,
     )
 
 

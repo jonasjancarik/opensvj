@@ -59,6 +59,8 @@ export type Data = {
   jednotky: Jednotka[]
   odepsane: OdepsanaJednotka[]
   polozky_spravy: { kod: string; nazev: string }[]
+  k_datu: string | null // potvrzení pro prodávajícího k poslednímu dni jeho vlastnictví
+  osoby: number[] // komu takové potvrzení poslat
 }
 
 export const datum = (d: string) => new Date(d).toLocaleDateString('cs-CZ')

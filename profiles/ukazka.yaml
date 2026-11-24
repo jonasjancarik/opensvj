@@ -12,6 +12,9 @@ statutarni_organ: výbor společenství (3 členové)
 prispevky: zalohove
 # Kdo platí předpis za měsíc převodu jednotky: dosavadni (vlastník k 1. dni měsíce) nebo novy.
 predpis_mesice_prevodu: dosavadni
+# Komu jde roční vyúčtování jednotky, která během roku změnila vlastníka: soucasnemu
+# (celé vlastníkovi k 31. 12.) nebo po_obdobich (každému vlastníkovi za jeho měsíce).
+vyuctovani_pri_prevodu: soucasnemu
 
 # Jednotky: označení (číslo popisné/číslo jednotky), podlahová plocha v m² a podíl na
 # společných částech (tady podle plochy, jmenovatel 8600).

@@ -15,14 +15,14 @@ import hashlib
 import secrets
 import uuid
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import lide, posta
-from .db import Dokument, Zasilka
+from .db import Dokument, Osoba, Zasilka
 from .nastaveni import nastaveni
 
 DRUHY = {
@@ -43,6 +43,9 @@ class ChybaZasilky(ValueError):
 class NovyDokument:
     jednotka: str
     html: str
+    # Vybraní adresáti místo dnešních vlastníků; musí jednotku někdy vlastnit
+    # (část vyúčtování pro dřívějšího vlastníka).
+    osoby: list[int] = field(default_factory=list)
 
 
 def _hash(token: str) -> str:
@@ -69,7 +72,7 @@ def priprav(
         raise ChybaZasilky("Není co rozeslat.")
     dnes = dnes or date.today()
     vlastnici = lide.vlastnici_k(s, dnes)
-    bez = [d.jednotka for d in dokumenty if not vlastnici.get(d.jednotka)]
+    bez = [d.jednotka for d in dokumenty if not d.osoby and not vlastnici.get(d.jednotka)]
     if bez:
         raise ChybaZasilky(
             f"Jednotky {', '.join(bez)} nemají k dnešku zapsaného vlastníka. "
@@ -79,6 +82,7 @@ def priprav(
     for d in dokumenty:
         if len(d.html) > MAX_HTML:
             raise ChybaZasilky(f"Dokument jednotky {d.jednotka} je příliš velký.")
+        adresati = _vybrani(s, d) if d.osoby else vlastnici[d.jednotka]
         dok = Dokument(
             druh=druh,
             klic=klic,
@@ -86,12 +90,13 @@ def priprav(
             nazev=nazev,
             html=d.html,
             sha256=hashlib.sha256(d.html.encode()).hexdigest(),
+            osoby=list(d.osoby) or None,
             vytvoril=kdo,
         )
         s.add(dok)
         s.flush()
         emaily: set[str] = set()
-        for o in vlastnici[d.jednotka]:
+        for o in adresati:
             email = (o.email or "").strip().lower() or None
             souhlas = o.souhlas_email is not None and o.souhlas_email <= dnes
             kanal = "email" if email and souhlas else "posta"
@@ -114,6 +119,15 @@ def priprav(
             )
     s.flush()
     return davka
+
+
+def _vybrani(s: Session, d: NovyDokument) -> list[Osoba]:
+    """Vybraní adresáti dokumentu; každý musí jednotku někdy vlastnit."""
+    kdy_vlastnili = {c.osoba_id for v in lide.vlastnictvi(s, d.jednotka) for c in v.vlastnici}
+    if len(set(d.osoby)) != len(d.osoby) or not set(d.osoby) <= kdy_vlastnili:
+        raise ChybaZasilky(f"Dokument jednotky {d.jednotka} je určen někomu, kdo ji nevlastnil.")
+    podle_id = {o.id: o for o in s.scalars(select(Osoba).where(Osoba.id.in_(d.osoby)))}
+    return [podle_id[i] for i in d.osoby]
 
 
 def v_davce(s: Session, davka: str) -> list[Zasilka]:
@@ -263,10 +277,13 @@ def potvrzeno(s: Session, z: Zasilka) -> None:
 
 def doruceni_jednotek(s: Session, klic: str) -> dict[str, date]:
     """Jednotka → kdy došel poslední rozeslaný dokument s tímto klíčem (nejdřív doručená
-    zásilka). Jednotky, kterým zatím nic nedošlo, chybí."""
+    zásilka). Jednotky, kterým zatím nic nedošlo, chybí. Části určené dřívějším
+    vlastníkům se nepočítají, lhůty se řídí doručením vlastníkovi jednotky."""
     posledni: dict[str, int] = {}
     for dok_id, jednotka in s.execute(
-        select(Dokument.id, Dokument.jednotka).where(Dokument.klic == klic).order_by(Dokument.id)
+        select(Dokument.id, Dokument.jednotka)
+        .where(Dokument.klic == klic, Dokument.osoby.is_(None))
+        .order_by(Dokument.id)
     ):
         posledni[jednotka] = dok_id
     vysledek: dict[str, date] = {}

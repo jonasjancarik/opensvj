@@ -17,7 +17,7 @@ from fractions import Fraction
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from . import denik, podily, predpisy
+from . import denik, podily, predpisy, vlastnicka_obdobi
 from .db import RadekZapisu, Zapis
 from .domena import katalog
 from .domena.penize import na_text
@@ -66,6 +66,8 @@ class Jednotka:
     podil: Fraction
     zalohy: dict[str, int] = field(default_factory=dict)
     naklady: dict[str, int] = field(default_factory=dict)
+    # Jen když se vyúčtování dělí na vlastnická období a jednotka v roce změnila vlastníka.
+    obdobi: list[vlastnicka_obdobi.Obdobi] = field(default_factory=list)
 
     @property
     def rozdil(self) -> int:
@@ -143,8 +145,9 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
     # Zálohy = předepsané (D) minus případné opravy (MD), bez samotného vyúčtování. Hledají se
     # podle účtu, ne role: dřívější zápisy vedly tytéž zálohy pod rolí služby.
     ucty_zaloh = {profil.ucet(f"zalohy_sprava.{kod}") for kod in polozky}
+    mesic = func.extract("month", Zapis.datum)
     zalohy = session.execute(
-        select(RadekZapisu.jednotka, RadekZapisu.sluzba, -md_minus_d)
+        select(RadekZapisu.jednotka, RadekZapisu.sluzba, mesic, -md_minus_d)
         .join(Zapis)
         .where(
             *v_roce,
@@ -152,17 +155,36 @@ def spocitej(session: Session, profil: Profil, rok: int) -> Vyuctovani:
             RadekZapisu.jednotka.is_not(None),
             Zapis.operace != OPERACE,
         )
-        .group_by(RadekZapisu.jednotka, RadekZapisu.sluzba)
+        .group_by(RadekZapisu.jednotka, RadekZapisu.sluzba, mesic)
     ).all()
     # Podíl za rok: průměr podílů za měsíce, stejně jako se z nich počítaly zálohy.
-    za_rok = podily.nacti(session, profil).v_roce(rok)
+    pod = podily.nacti(session, profil)
+    za_rok = pod.v_roce(rok)
     jednotky = {j: Jednotka(j, za_rok[j]) for j in profil.jednotky}
-    for jednotka, sluzba, castka in zalohy:
+    zalohy_mesicu: dict[str, dict[tuple[str, int], int]] = {}
+    for jednotka, sluzba, m, castka in zalohy:
         if jednotka in jednotky and sluzba in polozky and castka:
-            jednotky[jednotka].zalohy[sluzba] = int(castka)
+            u = jednotky[jednotka]
+            u.zalohy[sluzba] = u.zalohy.get(sluzba, 0) + int(castka)
             polozky[sluzba].zalohy += int(castka)
+            zalohy_mesicu.setdefault(jednotka, {})[(sluzba, int(m))] = int(castka)
+    for u in jednotky.values():  # opravy záloh v jiném měsíci je mohou v součtu vynulovat
+        u.zalohy = {k: c for k, c in u.zalohy.items() if c}
 
     rozpocitej(polozky.values(), jednotky)
+    if profil.vyuctovani_pri_prevodu == vlastnicka_obdobi.PO_OBDOBICH:
+        klice = {p.kod: p.klic for p in polozky.values()}
+        for j, obdobi in vlastnicka_obdobi.obdobi(session, profil, rok).items():
+
+            def vahy(kod: str, j: str = j) -> list[Fraction | int]:
+                if klice.get(kod) == "podil":
+                    return [pod.k_mesici(rok, m).podily[j] for m in range(1, 13)]
+                return [1] * 12
+
+            vlastnicka_obdobi.rozdel_jednotku(
+                obdobi, jednotky[j].naklady, zalohy_mesicu.get(j, {}), vahy
+            )
+            jednotky[j].obdobi = obdobi
     return Vyuctovani(
         rok=rok,
         polozky=list(polozky.values()),
@@ -223,7 +245,11 @@ def zauctuj(
             for kod, c in j.zalohy.items()
         ],
         "naklady": [{"sluzba": p.kod, "castka": na_text(p.k_rozdeleni)} for p in v.polozky],
-        "vysledky": [{"jednotka": j.jednotka, "rozdil": na_text(j.rozdil)} for j in v.jednotky],
+        "vysledky": [
+            x
+            for j in v.jednotky
+            for x in vlastnicka_obdobi.vysledky(j.jednotka, j.rozdil, j.obdobi)
+        ],
     }
     try:
         return denik.zauctuj(

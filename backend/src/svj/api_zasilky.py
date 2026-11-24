@@ -50,6 +50,8 @@ class Prehled(BaseModel):
 class DokumentDovnitr(BaseModel):
     jednotka: str = Field(min_length=1, max_length=32)
     html: str = Field(min_length=1, max_length=zasilky.MAX_HTML)
+    # Jen u části vyúčtování pro dřívějšího vlastníka: komu ji poslat.
+    osoby: list[int] = Field(default_factory=list, max_length=20)
 
 
 class Priprava(BaseModel):
@@ -135,7 +137,7 @@ def priprav(p: Priprava, uzivatel: Zapisujici) -> Davka:
                 p.druh,
                 p.klic,
                 p.nazev.strip(),
-                [zasilky.NovyDokument(d.jednotka, d.html) for d in p.dokumenty],
+                [zasilky.NovyDokument(d.jednotka, d.html, d.osoby) for d in p.dokumenty],
                 uzivatel.email,
             )
         except zasilky.ChybaZasilky as e:
